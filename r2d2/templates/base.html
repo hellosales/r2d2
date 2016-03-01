@@ -1,0 +1,41 @@
+{% load compress %}{% load static l10n i18n %}<!doctype html>
+<!--[if IE 9]><html class="lt-ie10" lang="en" > <![endif]-->
+<html class="no-js" lang="en">
+<head{% if user and user.email %}
+    {% url "login_as_user" user.id as login_as_url %}
+    data-user='{"email": "{{ user.email }}", "login_as_url": "{% if login_as_url %}http://{{ site.domain }}{{ login_as_url }}{% else %}{{ user.id }}{% endif %}"}'
+{% endif %}>
+    <meta name="viewport" content="initial-scale=1.0" />
+
+    <title>{% block title %}{{ project_name|title }} {% endblock %}</title>
+    {% if settings.DEBUG %}
+        <!-- Different paths to files, to support live reload -->
+        <link rel="stylesheet" media="all" href="{% static ".sass-cache/main.css" %}" />
+    {% else %}
+        {% compress css %}
+            <link rel="stylesheet" type="text/x-scss" href="{% static "scss/main.scss" %}" />
+        {% endcompress %}
+    {% endif %}
+    {% block css_extra %}{% endblock %}
+    {% compress js %}
+        <script src='{% static 'foundation/js/vendor/modernizr.js' %}'></script>
+    {% endcompress %}
+</head>
+<body class="{%block bodyClass %}{% endblock%}">
+    {% include "inc/google_tag_manager.html" %}
+
+{% block whole_body_content %}
+    {% block above_body_content %}{% endblock %}
+
+    {% block body_content %}
+    {% endblock body_content %}
+
+    {% block reveals %}
+    {% endblock %}
+
+    {% block javascript %}
+    {% endblock %}
+
+{% endblock whole_body_content %}
+</body>
+</html>

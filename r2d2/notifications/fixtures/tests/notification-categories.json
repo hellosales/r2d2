@@ -1,0 +1,18 @@
+[
+{
+    "fields": {
+        "name": "Cadre Update",
+        "slug": "cadre-update"
+    },
+    "model": "notifications.category",
+    "pk": 1
+},
+{
+    "fields": {
+        "name": "Deal Update",
+        "slug": "deal-update"
+    },
+    "model": "notifications.category",
+    "pk": 2
+}
+]

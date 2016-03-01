@@ -1,0 +1,13 @@
+<li class="form-field {{f.auto_id }} {{f.field.widget.attrs.li_class}} {% if f.errors %} invalid error{% endif %}">
+    <label for="{{ f.auto_id }}">{{ f.label }}
+        {% if f.field.required %}<span class="required">*</span>{% endif %}
+    </label>
+    
+    {{f}}
+    {{f.errors|safe}}
+    {% if f.help_text %}
+    <span class="help_text {{f.field.widget.attrs.help_text_class}}">
+        {{f.help_text|safe}}
+    </span>
+    {% endif %}
+</li>

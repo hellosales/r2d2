@@ -1,0 +1,12 @@
+SHELL=/bin/sh
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+NICE=15
+MAILTO=team@arabel.la
+
+PYTHON_DIR = '../Envs/{{ project_name }}/bin/python'
+
+DIR = 'www/'
+
+# m h  dom mon dow   command
+
+0 5 * * *   cd $DIR && $PYTHON_DIR manage.py clearsessions

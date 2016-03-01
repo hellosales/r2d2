@@ -1,0 +1,54 @@
+{% load i18n %}
+{% if f %}
+    <li class="form-field {% if forloop and forloop.counter|divisibleby:2 %}even{% endif %} {{f.auto_id }} {{f.field.li_class}} {% if f.errors %} invalid error{% endif %}">
+        {% if f.field.before %}
+            <span class="before">{{f.field.before}}</span>
+        {% endif %}
+        {% if f.field.or_divider %}
+            <div class="or-divider-container"><div class="or-divider">{% trans "or" %}</div></div>
+        {% endif %}
+        {% if f.help_text and tooltip %}
+            <div class="input_wrapper with_tooltip show_tooltip">
+        {% endif %}
+        {% comment %}
+            example:
+            def __init__(self, *args, **kwargs):
+                super(RegisterUserFullForm, self).__init__(*args, **kwargs)
+                self.fields['consent_processing_of_personal_data'].is_checkbox = True
+        {% endcomment %}
+        {% if f.field.is_checkbox %}
+        <label for="{{f.auto_id}}">
+            {{f}}
+            {{f.label}}
+        </label>
+        {% else %}
+            {% if f.label %}
+                {{f.label_tag}}
+            {% endif %}
+            {{f}}
+        {% endif %}
+        {% if f.help_text and tooltip %}
+            <span class="tooltip_marker">?</span>
+        {% endif %}
+        {% if not no_errors %}
+            {% if f.errors %}
+            <ul class="errorlist">
+                {% for e in f.errors %}
+                    <li>{{e|safe}}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        {% endif %}
+        {% if f.help_text  and not tooltip %}
+            <span class="help_text {{f.field.widget.attrs.help_text_class}}">
+                {{f.help_text|safe}}
+            </span>
+        {% endif %}
+        {% if f.help_text and tooltip %}
+            </div>
+        {% endif %}
+        {% if f.help_text  and tooltip %}
+            {{f.help_text|safe}}
+        {% endif %}
+    </li>
+{% endif %}

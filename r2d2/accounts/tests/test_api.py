@@ -1,0 +1,84 @@
+from rest_framework.reverse import reverse
+from rest_framework.authtoken.models import Token
+
+from django.core import mail
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+
+from r2d2.utils.test_utils import APIBaseTestCase
+from r2d2.accounts.models import (
+    Account
+)
+
+
+class AccountApiTestCase(APIBaseTestCase):
+
+    def test_api_auth(self):
+        self._create_user()
+
+        data = {}
+        response = self.client.post(reverse('auth_api'), data)
+        self.assertEqual(response.status_code, 400)
+
+        data = {
+            'email': self.user.email,
+            'password': self.password
+        }
+        response = self.client.post(reverse('auth_api'), data)
+        self.assertEqual(response.status_code, 200)
+
+        auth = 'Token ' + response.data['token']
+
+        response = self.client.post(reverse('logout_api'), HTTP_AUTHORIZATION=auth)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Token.objects.filter(user=self.user).count(), 0)
+
+    def test_password_recovery(self):
+        self._create_user()
+        mail.outbox = []
+        data = {}
+        response = self.client.post(reverse('reset_password_api'), data=data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(len(mail.outbox), 0)
+
+        data = {
+            'email': 'a@b.com',
+        }
+        response = self.client.post(reverse('reset_password_api'), data=data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(len(mail.outbox), 0)
+
+        data['email'] = self.user.email
+        response = self.client.post(reverse('reset_password_api'), data=data)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(len(mail.outbox), 1)
+
+        data = {}
+        response = self.client.post(reverse('reset_password_confirm_api'), data=data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('token', response.data)
+        self.assertIn('new_password', response.data)
+        self.assertIn('re_new_password', response.data)
+        self.assertIn('user_id', response.data)
+
+        data['user_id'] = urlsafe_base64_encode(str(self.user.id))
+        data['token'] = default_token_generator.make_token(self.user)
+
+        # not valid password
+        data['new_password'] = 'foo'
+        data['re_new_password'] = 'foo'
+        response = self.client.post(reverse('reset_password_confirm_api'), data=data)
+        self.assertEqual(response.status_code, 400)
+
+        # not the same passwords
+        data['new_password'] = 'foooooooo1'
+        data['re_new_password'] = 'foooooooo2'
+        response = self.client.post(reverse('reset_password_confirm_api'), data=data)
+        self.assertEqual(response.status_code, 400)
+
+        data['re_new_password'] = data['new_password']
+        response = self.client.post(reverse('reset_password_confirm_api'), data=data)
+        self.assertEqual(response.status_code, 201)
+
+        user = Account.objects.get(id=self.user.id)
+        self.assertTrue(user.check_password(data['new_password']))

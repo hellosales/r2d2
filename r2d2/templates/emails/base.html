@@ -1,0 +1,149 @@
+{% load i18n get_site get_settings %}
+{% get_site as site %}
+{% get_settings as settings %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        {% block html_header %}
+            <!-- If you delete this tag, the sky will fall on your head -->
+            <meta name="viewport" content="width=device-width" />
+
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+            <title>{{ emailSubject }}</title>
+
+            {# <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/email.css" /> #}
+
+            <style type="text/css">
+
+body {
+    -webkit-font-smoothing:antialiased;
+    -webkit-text-size-adjust:none;
+    width: 100%!important;
+    height: 100%;
+
+    font-size: 14px;
+    line-height: 24px;
+    color: #1f1f1f;
+}
+
+* {
+    margin:0;
+    padding:0;
+}
+* {
+    font-family: "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
+}
+
+img { ;
+    max-width: 100%;
+    height: auto !important;
+}
+
+a {
+    color: #03acd6;
+    text-decoration: none;
+}
+
+p {
+    margin-bottom: 24px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+td.email-content {
+    display:block !important;
+    margin:0 auto !important;
+    clear:both !important;
+    max-width: 494px !important;
+    padding: 40px 28px 28px;
+}
+
+tr.email-header td img {
+    width: 100% !important;
+    display: block;
+}
+
+tr.email-dark_row td {
+    background-color: #1f1f1f;
+}
+
+tr.email-dark_row td.email-content,
+tr.email-dark_row td.email-content p {
+    color: #f1f1f1;
+}
+
+tr.email-dark_row,
+tr.email-dark_row td {
+    background-color: #1f1f1f;
+}
+
+tr.email-footer,
+tr.email-footer td {
+    background-color: #e9e9e9;
+}
+tr.email-footer td.email-content {
+    max-width: 512px !important;
+    padding: 24px 19px 10px;
+}
+
+tr.email-footer td.email-content p {
+    font-size: 11px;
+    line-height: 14px;
+    margin-bottom: 10px;
+}
+
+p.email-smalllh {
+    line-height: 20px;
+    margin-bottom: 20px;
+}
+
+.email-button,
+a.email-button {
+    display: inline-block;
+    font-size: 18px;
+    font-weight: normal;
+    text-decoration:none;
+    color: #FFF;
+    background-color: #03acd6;
+    text-align:center;
+    cursor:pointer;
+    min-width: 198px;
+    padding: 8px;
+    line-height: 24px;
+    border-radius: 4px;
+}
+
+.email-button_td {
+    padding: 0 45px;
+    width: 60%;
+    max-width: 278px !important;
+}
+.email-button_td a.email-button {
+    display: block;
+    min-width: none;
+}
+
+.email-button_td + td {
+    width: 40%;
+}
+
+a.email-dark_link {
+    color: #1f1f1f;
+}
+
+            </style>
+        {% block extra_css %}
+        {% endblock extra_css %}
+        {% endblock html_header %}
+    </head>
+
+    <body bgcolor="#fff">
+
+        {% block content %}
+        {% endblock %}
+
+    </body>
+</html>

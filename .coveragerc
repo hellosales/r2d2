@@ -1,0 +1,2 @@
+[report]
+omit=*/migrations/*,fabfile.py,sass.py,*settings.py,*wsgi*,*tests*,*commands*

@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load i18n compress %}
+
+{% block body_content %}
+
+<section class="section-content">
+    <div class="row">
+        <div class="large-5 columns large-centered">
+
+            <section class="content-box text-center">
+
+                {% block main_section_content %}
+
+                    <h1 class="fs24 lh36 mb20">{%block form_title %}{% trans "Sign In" %}{% endblock %}</h1>
+                    {% if not request.GET.register_thanks%}
+                        {% if messages  or request.GET.reset %}
+                        <ul class="messages">
+                            {% for message in messages %}
+                            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                            {% endfor %}
+                            {% if request.GET.reset %}
+                                <li>Your password has been successfully reset. <br> Login now.</li>
+                            {% endif %}
+                        </ul>
+                        {% endif %}
+                    {% endif %}
+
+                    <form action="." method="post">
+                        {% csrf_token %}
+                        {% if next %}
+                            <input type="hidden" name="next" value="{{ next }}">
+                        {% endif %}
+
+                        {% if form.non_field_errors %}
+                            <ul class="mb20 errorlist">
+                                {% for e in form.non_field_errors %}
+                                    <li class="error">{{e}}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+
+                        {% block form_description %}{% endblock %}
+
+                        <ul class="form-fields">
+                            {%block form_above_fields %}{% endblock %}
+
+                            {% for f in form %}
+                                {% include 'inc/forms/form_as_ul.html' with f=f %}
+                            {% endfor %}
+
+                            {%block form_reset_pwd_link %}
+                                <li class="text-left">
+                                    <a href="{% url "password_reset"%}" >{% trans "Forgot password?" %}</a>
+                                </li>
+                            {% endblock %}
+
+                            <li class="mt40 mb10">
+                                <button type="submit" class="button medium large-9">{% block form_submit_button %}{% trans "Sign In" %}{% endblock %}</button>
+                            </li>
+                            <li>
+                                {% trans "Don’t have an account?" %} <a href="" >{% trans "Sign up" %}</a>
+                            </li>
+
+                        </ul>
+
+                    </form>
+
+                {% endblock main_section_content %}
+
+            </section>
+        </div>
+    </div>
+</section>
+
+{% endblock body_content %}

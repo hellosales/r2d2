@@ -1,0 +1,13 @@
+<li class="row form-field {{f.auto_id }} {{f.field.widget.attrs.li_class}} {% if f.errors %} invalid error{% endif %}">
+    {% if f.label %}
+        <div class="{% if label_columns %} {{label_columns}} {% else %}columns large-4{% endif%}">
+            {% include "inc/forms/label_with_class.html" with class="inline" %}
+        </div>
+    {% endif %}
+    <div class="{% if input_columns %} {{input_columns}} {% else %}columns large-8{% endif %} {% if not f.errors %}pull-4{% endif %}">
+        {{f}}
+    </div>
+    {% if f.errors %}
+        <div class="columns large-4">{{f.errors}}</div>
+    {% endif %}
+</li>
