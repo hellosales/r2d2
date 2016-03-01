@@ -17,7 +17,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'r2d2-dev',
         'USER': 'r2d2',
-        'PASSWORD': '',
+        'PASSWORD': 'TeldakAfHorpoffyiphbitextiekGockTyhutJenreyltajiar',
         'HOST': 'yddevdb.ydtech.co',
         'PORT': '3306',
     },
@@ -45,5 +45,6 @@ ENV_PREFIX = 'r2d2-dev'
 #BROKER_URL = 'librabbitmq://r2d2_dev:iydocuwjp9xt@localhost:5672/r2d2_dev'
 CELERY_ALWAYS_EAGER = False
 
-
-AWS_STORAGE_BUCKET_NAME = 'r2d2-dev'
+AWS_ACCESS_KEY_ID = 'AKIAJYED42CL2EKL756A'
+AWS_SECRET_ACCESS_KEY = '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'
+AWS_STORAGE_BUCKET_NAME = 'r2d2-dev-arabella'

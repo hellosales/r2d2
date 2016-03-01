@@ -14,7 +14,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'r2d2-qa',
         'USER': 'r2d2',
-        'PASSWORD': '',
+        'PASSWORD': 'TeldakAfHorpoffyiphbitextiekGockTyhutJenreyltajiar',
         'HOST': 'ydproddb.cisjmnb7cksz.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
     },
@@ -41,4 +41,6 @@ ENV_PREFIX = 'r2d2-qa'
 CELERY_ALWAYS_EAGER = False
 # BROKER_URL = 'librabbitmq://r2d2_qa:jfyhhgckginv@localhost:5672/r2d2_qa'
 
-AWS_STORAGE_BUCKET_NAME = 'r2d2-dev'
+AWS_ACCESS_KEY_ID = 'AKIAJBZGHE4FDR5M4ROQ'
+AWS_SECRET_ACCESS_KEY = 'af1myj+5KEmZSSYznC3MBhS9N4PLJp030myjdT8'
+AWS_STORAGE_BUCKET_NAME = 'r2d2-qa-arabella'
