@@ -8,6 +8,8 @@
     <meta name="viewport" content="initial-scale=1.0" />
 
     <title>{% block title %}{{ project_name|title }} {% endblock %}</title>
+    {% comment %}
+    Commented out since we have an issue with bower
     {% if settings.DEBUG %}
         <!-- Different paths to files, to support live reload -->
         <link rel="stylesheet" media="all" href="{% static ".sass-cache/main.css" %}" />
@@ -20,6 +22,7 @@
     {% compress js %}
         <script src='{% static 'foundation/js/vendor/modernizr.js' %}'></script>
     {% endcompress %}
+    {% endcomment %}
 </head>
 <body class="{%block bodyClass %}{% endblock%}">
     {% include "inc/google_tag_manager.html" %}
