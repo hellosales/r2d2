@@ -1,5 +1,5 @@
-.. image:: https://requires.io/bitbucket/arabellatech/django-project-template/requirements.svg?branch=master
-     :target: https://requires.io/bitbucket/arabellatech/django-project-template/requirements/?branch=master
+.. image:: https://requires.io/bitbucket/arabellatech/r2d2/requirements.svg?branch=develop
+     :target: https://requires.io/bitbucket/arabellatech/r2d2/requirements/?branch=develop
      :alt: Requirements Status
 
 ********
