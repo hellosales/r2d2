@@ -352,4 +352,3 @@ if TESTING:
 
 # import djcelery
 # djcelery.setup_loader()
-
