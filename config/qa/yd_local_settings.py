@@ -15,7 +15,7 @@ DATABASES = {
         'NAME': 'r2d2-qa',
         'USER': 'r2d2',
         'PASSWORD': 'TeldakAfHorpoffyiphbitextiekGockTyhutJenreyltajiar',
-        'HOST': 'ydproddb.cisjmnb7cksz.us-east-1.rds.amazonaws.com',
+        'HOST': 'yddevdb.ydtech.co',
         'PORT': '3306',
     },
 }
