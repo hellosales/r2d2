@@ -45,7 +45,7 @@ COMPRESS_JS_FILTERS = []
 
 ENV_PREFIX = 'r2d2-dev'
 
-#BROKER_URL = 'librabbitmq://r2d2_dev:iydocuwjp9xt@localhost:5672/r2d2_dev'
+BROKER_URL = 'librabbitmq://r2d2_dev:iydocuwjp9xt@localhost:5672/r2d2_dev'
 CELERY_ALWAYS_EAGER = False
 
 AWS_ACCESS_KEY_ID = 'AKIAJYED42CL2EKL756A'

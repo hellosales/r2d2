@@ -42,7 +42,7 @@ RAVEN_CONFIG = {
 ENV_PREFIX = 'r2d2-qa'
 
 CELERY_ALWAYS_EAGER = False
-# BROKER_URL = 'librabbitmq://r2d2_qa:jfyhhgckginv@localhost:5672/r2d2_qa'
+BROKER_URL = 'librabbitmq://r2d2_qa:jfyhhgckginv@localhost:5672/r2d2_qa'
 
 AWS_ACCESS_KEY_ID = 'AKIAJBZGHE4FDR5M4ROQ'
 AWS_SECRET_ACCESS_KEY = 'af1myj+5KEmZSSYznC3MBhS9N4PLJp030myjdT8'
