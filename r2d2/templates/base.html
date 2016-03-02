@@ -8,6 +8,9 @@
     <meta name="viewport" content="initial-scale=1.0" />
 
     <title>{% block title %}{{ project_name|title }} {% endblock %}</title>
+    {% compress css %}
+        {# remove this compress css tags! #}
+    {% endcompress %}
     {% comment %}
     Commented out since we have an issue with bower
     {% if settings.DEBUG %}
