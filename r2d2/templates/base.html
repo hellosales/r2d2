@@ -5,6 +5,15 @@
     {% url "login_as_user" user.id as login_as_url %}
     data-user='{"email": "{{ user.email }}", "login_as_url": "{% if login_as_url %}http://{{ site.domain }}{{ login_as_url }}{% else %}{{ user.id }}{% endif %}"}'
 {% endif %}>
+    {% if settings.RAVEN_CONFIG %}
+        {# <script src="{% static 'libs/AA-modified-raven-js.js' %}"></script> #}
+        <script src="https://cdn.ravenjs.com/2.1.0/angular/raven.min.js"></script>
+        <script>
+            Raven.config('{{settings.RAVEN_CONFIG.private_dsn}}', {
+                // Raven settings
+            }).install()
+        </script>
+    {% endif %}
     <meta name="viewport" content="initial-scale=1.0" />
 
     <title>{% block title %}{{ project_name|title }} {% endblock %}</title>

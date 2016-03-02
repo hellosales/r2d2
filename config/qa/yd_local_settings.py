@@ -44,3 +44,13 @@ CELERY_ALWAYS_EAGER = False
 AWS_ACCESS_KEY_ID = 'AKIAJBZGHE4FDR5M4ROQ'
 AWS_SECRET_ACCESS_KEY = 'af1myj+5KEmZSSYznC3MBhS9N4PLJp030myjdT8'
 AWS_STORAGE_BUCKET_NAME = 'r2d2-qa-arabella'
+
+import raven
+
+RAVEN_CONFIG = {
+    'dsn': 'https://97293106f2a543859de54e596489f320:7a544014f02644f289d2353dc452f2bb@sentry.arabel.la/7',
+    'private_dsn': 'https://97293106f2a543859de54e596489f320@sentry.arabel.la/7',
+    # If you are using git, you can also automatically configure the
+    # release based on the git info.
+    'release': raven.fetch_git_sha(os.path.join(str(project()), '..'))
+}
