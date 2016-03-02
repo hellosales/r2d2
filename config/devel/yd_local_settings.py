@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 import os
 
+project = lambda: os.path.dirname(os.path.realpath(__file__))
+location = lambda x: os.path.join(str(project()), str(x))
+
 DEBUG = False
 SASS_DEBUG = DEBUG
 TEMPLATE_DEBUG = False
