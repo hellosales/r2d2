@@ -24,6 +24,10 @@ urlpatterns = patterns(
     url(r"^api/", include('r2d2.api_urls')),
     url(r'^api/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^api-docs/', include('rest_framework_swagger.urls')),
+
+    # oauth callbacks
+    url(r'^shopify/', include('r2d2.shopify_api.urls')),
+
     (r'^%s(?P<path>.*)$' % settings.STATIC_URL[1:],  # cut away leading slash
      'django.views.static.serve', {'document_root': settings.STATIC_ROOT,
                                    'show_indexes': True}),
