@@ -8,6 +8,9 @@ urlpatterns = patterns(
     '',
     url(r'^accounts/', include('r2d2.accounts.api_urls')),
     url(r'^notifications', include('r2d2.notifications.api_urls')),
+
+    # shopify
+    url(r'^shopify/', include('r2d2.shopify_api.api_urls')),
 )
 
 router = DefaultRouter()
