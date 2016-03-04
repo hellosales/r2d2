@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 """ handling callback from etsy """
-from django.conf import settings
-
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
@@ -10,7 +8,7 @@ from r2d2.etsy_api.models import EtsyAccount
 
 
 class EtsyCallbackAPI(GenericAPIView):
-    """ handling oauth callback from shopify """
+    """ handling oauth callback from etsy """
 
     @classmethod
     def get(cls, request):
