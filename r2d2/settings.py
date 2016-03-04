@@ -128,6 +128,7 @@ PROJECT_APPS = (
     'r2d2.etsy_api',
     'r2d2.notifications',
     'r2d2.shopify_api',
+    'r2d2.squareup_api',
     'r2d2.utils',
 )
 
@@ -361,6 +362,9 @@ ETSY_SCOPE = ['email_r', 'listings_r', 'transactions_r', 'billing_r', 'profile_r
 # other possible scopes:
 # 'listings_w', 'listings_d', 'transactions_w', 'profile_w', 'address_w', 'favorites_rw', 'shops_rw', 'cart_rw',
 # 'recommend_rw', 'feedback_r', 'treasury_r', 'treasury_w'
+
+SQUAREUP_API_KEY = 'p4OiJb_Aa9527UGzFbFz4g'
+SQUAREUP_API_SECRET = 'tBWttX7fCBcphFF7JUkoeHt-JSKkmZ9J_Qc-w6K8yhY'
 
 if TESTING:
     from test_settings import *

@@ -28,6 +28,7 @@ urlpatterns = patterns(
     # oauth callbacks
     url(r'^etsy/', include('r2d2.etsy_api.urls')),
     url(r'^shopify/', include('r2d2.shopify_api.urls')),
+    url(r'^squareup/', include('r2d2.squareup_api.urls')),
 
     (r'^%s(?P<path>.*)$' % settings.STATIC_URL[1:],  # cut away leading slash
      'django.views.static.serve', {'document_root': settings.STATIC_ROOT,
