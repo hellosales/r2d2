@@ -13,8 +13,8 @@ AUTH_RESPONSE = 'http://localhost:8000/etsy/auth/callback?id=1&oauth_token=ec590
 MOCK_TOKEN = Token.from_string('oauth_token=5f5f41deb2e7e6acae9933965dd99f&oauth_token_secret=dd9967f234')
 
 
-class ShopifyApiTestCase(APIBaseTestCase):
-    """ tests for shopify API """
+class EtsyApiTestCase(APIBaseTestCase):
+    """ tests for Etsy API """
 
     def test_setting_up_account(self):
         """ test if checking / setting up account conenction works fine """
