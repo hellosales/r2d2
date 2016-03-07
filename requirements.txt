@@ -10,7 +10,7 @@ ipython==4.1.2
 
 # Project Base
 # 1.8 is LTS
-Django==1.8.10 # rq.filter: >=1.8.7,< 1.9
+Django==1.8.11 # rq.filter: >=1.8.7,< 1.9
 #South==1.0
 MySQL-python==1.2.5
 premailer==2.9.7
@@ -23,8 +23,8 @@ pytz>2012
 contactBox==0.1.8
 Pillow==3.1.1
 django-tinymce==2.2.0
-django-grappelli==2.7.3
-django-filebrowser==3.6.1
+django-grappelli==2.8.1
+django-filebrowser==3.6.2
 raven==5.11.0 # rq.filter: >=5.0.0,< 5.2.0  # sentry update required - painfull.
 #django-modeltranslation==0.4.1
 ydcommon==0.1.42
@@ -32,7 +32,7 @@ lxml==3.5.0
 BeautifulSoup==3.2.1
 flup==1.0.2
 #celery
-celery==3.1.20
+celery==3.1.21
 django-celery==3.1.17
 amqp==1.4.9
 librabbitmq==1.6.1
