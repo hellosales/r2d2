@@ -9,10 +9,6 @@ from django.utils import timezone
 
 from r2d2.accounts.models import Account
 
-AUTHORIZATION_ENDPOINT = 'https://connect.squareup.com/oauth2/authorize?client_id=%s'
-ACCESS_TOKEN_ENDPOINT = 'https://connect.squareup.com/oauth2/token'
-RENEW_TOKEN_ENDPOINT = 'https://connect.squareup.com/oauth2/clients/%s/access-token/renew'
-
 
 class SquareupAccount(models.Model):
     """ model for storing connection between squareup account and user,
@@ -56,7 +52,7 @@ class SquareupAccount(models.Model):
             return None
 
         if not hasattr(self, '_authorization_url'):
-            self._authorization_url = AUTHORIZATION_ENDPOINT%settings.SQUAREUP_API_KEY
+            self._authorization_url = settings.SQUAREUP_AUTHORIZATION_ENDPOINT%settings.SQUAREUP_API_KEY
 
         return self._authorization_url
 
@@ -81,7 +77,7 @@ class SquareupAccount(models.Model):
           'code': authorization_code
         }
 
-        response = requests.post(ACCESS_TOKEN_ENDPOINT, request_data)
+        response = requests.post(settings.SQUAREUP_ACCESS_TOKEN_ENDPOINT, request_data)
         if response.status_code == 200:
             return self._save_token(response.json())
         return False
@@ -90,7 +86,7 @@ class SquareupAccount(models.Model):
         """ refresh token """
         if self.access_token:
             response = requests.post(
-                RENEW_TOKEN_ENDPOINT%settings.SQUAREUP_API_KEY,
+                settings.SQUAREUP_RENEW_TOKEN_ENDPOINT%settings.SQUAREUP_API_KEY,
                 {'access_token': self.access_token},
                 headers={'Authorization': 'Client %s'%settings.SQUAREUP_API_SECRET}
             )

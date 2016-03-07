@@ -365,6 +365,10 @@ ETSY_SCOPE = ['email_r', 'listings_r', 'transactions_r', 'billing_r', 'profile_r
 
 SQUAREUP_API_KEY = 'p4OiJb_Aa9527UGzFbFz4g'
 SQUAREUP_API_SECRET = 'tBWttX7fCBcphFF7JUkoeHt-JSKkmZ9J_Qc-w6K8yhY'
+SQUAREUP_AUTHORIZATION_ENDPOINT = 'https://connect.squareup.com/oauth2/authorize?client_id=%s'
+SQUAREUP_ACCESS_TOKEN_ENDPOINT = 'https://connect.squareup.com/oauth2/token'
+SQUAREUP_RENEW_TOKEN_ENDPOINT = 'https://connect.squareup.com/oauth2/clients/%s/access-token/renew'
+
 
 if TESTING:
     from test_settings import *
