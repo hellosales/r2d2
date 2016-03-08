@@ -3,7 +3,7 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin
 NICE=15
 MAILTO=team@arabel.la
 
-PYTHON_DIR = '../Envs/{{ project_name }}/bin/python'
+PYTHON_DIR = '../Envs/r2d2/bin/python'
 
 DIR = 'www/'
 
