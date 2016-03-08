@@ -10,8 +10,7 @@ from r2d2.etsy_api.models import EtsyAccount
 class EtsyCallbackAPI(GenericAPIView):
     """ handling oauth callback from etsy """
 
-    @classmethod
-    def get(cls, request):
+    def get(self, request):
         """ get the access token & save it into the model """
         try:
             etsy_account = EtsyAccount.objects.get(id=request.GET.get('id', ''), user=request.user)
