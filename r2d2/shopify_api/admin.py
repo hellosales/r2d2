@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-""" (c) @ Arabel.la 2016
-
-    shopify admin
-
-    authors: Pawel Krzyzaniak"""
+""" shopify admin """
 from django.contrib import admin
 
 from r2d2.shopify_api.models import ShopifyStore

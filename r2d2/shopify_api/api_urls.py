@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-""" (c) @ Arabel.la 2016
-
-    shopify API urls
-
-    authors: Pawel Krzyzaniak"""
+""" shopify API urls """
 from django.conf.urls import patterns
 from django.conf.urls import url
 

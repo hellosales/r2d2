@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-""" (c) @ Arabel.la 2016
-
-    shopify serializers
-
-    authors: Pawel Krzyzaniak"""
+""" shopify serializers """
 from rest_framework import serializers
 
 from r2d2.shopify_api.models import ShopifyStore

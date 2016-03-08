@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-""" (c) @ Arabel.la 2016
-
-    shopify API
-
-    authors: Pawel Krzyzaniak"""
+""" shopify API """
 from rest_framework.generics import ListCreateAPIView
 
 from r2d2.shopify_api.models import ShopifyStore

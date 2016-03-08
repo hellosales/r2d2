@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-""" (c) @ Arabel.la 2016
-
-    shopify views
-
-    authors: Pawel Krzyzaniak"""
+""" shopify views """
 import shopify
 
 from django.conf import settings

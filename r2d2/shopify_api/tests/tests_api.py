@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-""" (c) @ Arabel.la 2016
-
-    tests for shopify
-
-    authors: Pawel Krzyzaniak"""
+""" tests for shopify """
 import mock
 
 from rest_framework.reverse import reverse
