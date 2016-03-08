@@ -147,3 +147,46 @@ Start the server
 ::
 
 ./manage.py runserver
+
+
+Etsy/Shopify/Squareup
+=====================
+
+Configure Site with your server domain (/admin/sites/site/).
+Please note: squareup default settings works only with localhost:8000.
+
+Go to admin:
+
+    http://localhost:8000/admin/etsy_api/etsyaccount/
+    http://localhost:8000/admin/shopify_api/shopifystore/
+    http://localhost:8000/admin/squareup_api/squareupaccount/
+
+and create an account for the service you want. For Etsy/Squareup name is just our identifier and may be chosen at will,
+however for Shopify it must point to existing store. Our test store is: arabel-la-store
+
+Run shell and get authorization urls:
+
+::
+    ./manage.py shell
+
+    from r2d2.shopify_api.models import ShopifyStore
+    from r2d2.etsy_api.models import EtsyAccount
+    from r2d2.squareup_api.models import SquareupAccount
+
+    ShopifyStore.objects.all()[0].authorization_url
+    EtsyAccount.objects.all()[0].authorization_url
+    SquareupAccount.objects.all()[0].authorization_url
+
+
+Paste the links generated above to the browser (you must be logged in as the user that created above accounts),
+you should get 200 OK response. Once done, you may access to the access_token in the admin pages linked above.
+Logins for each services can be found in the following document
+
+::
+
+    https://docs.google.com/document/d/1uI3EgX72Zc45UzxV6sFFznyLISpcbE5rVfzjR0_ZqJw/edit
+
+
+If you get empty string instead of authorization_url it probably means you've already authorized the account - check in
+admin if you have access token for it.
+
