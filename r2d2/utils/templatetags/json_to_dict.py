@@ -13,7 +13,7 @@ def json_to_dict(string):
 
     For example, to re-display a date string in another format (uncomment):
 
-        
+
 
     """
     try:

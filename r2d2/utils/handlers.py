@@ -7,11 +7,17 @@ from django.core.cache import cache
 from django.core.files.uploadhandler import FileUploadHandler
 from django.conf import settings
 
-myip = lambda request: request.META.get('X-Forwarded-For',
-                request.META['REMOTE_ADDR'])
-cachekey = lambda req, prog_id: "{0}_{1}".format(myip(req),
-                prog_id)
-filehash = lambda filename: hashlib.md5(filename).hexdigest()
+
+def myip(request):
+    return request.META.get('X-Forwarded-For', request.META['REMOTE_ADDR'])
+
+
+def cachekey(req, prog_id):
+    return "{0}_{1}".format(myip(req), prog_id)
+
+
+def filehash(filename):
+    return hashlib.md5(filename).hexdigest()
 
 
 class UploadProgressCachedHandler(FileUploadHandler):

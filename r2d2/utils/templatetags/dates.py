@@ -34,7 +34,7 @@ class CountDate(Node):
             tzinfo = get_current_timezone() if settings.USE_TZ else None
             self.start_date = datetime.now(tz=tzinfo)
         else:
-            self.start_date = datetime.datetime.strptime('start_date', "%Y-%m-%d").date()
+            self.start_date = datetime.strptime('start_date', "%Y-%m-%d").date()
 
         self.value = int(value)
         self.string_format = string_format
@@ -65,12 +65,12 @@ class CountDate(Node):
 @register.tag(name="count_date")
 def count_date(parser, token):
     """
-        
+
         Return a date counted from given date.
 
         For example, to count today - 14 days:
 
-            
+
 
         Possible choices are:
         - start_date: date in ISO format or now for today

@@ -2,6 +2,7 @@ from django.db import connection
 from django.conf import settings
 import os
 
+
 def terminal_width():
     """
     Function to compute the terminal width.
@@ -10,7 +11,9 @@ def terminal_width():
     """
     width = 0
     try:
-        import struct, fcntl, termios
+        import struct
+        import fcntl
+        import termios
         s = struct.pack('HHHH', 0, 0, 0, 0)
         x = fcntl.ioctl(1, termios.TIOCGWINSZ, s)
         width = struct.unpack('HHHH', x)[1]
@@ -25,6 +28,7 @@ def terminal_width():
         width = 80
     return width
 
+
 class SqlPrintingMiddleware(object):
     """
     Middleware which prints out a list of all SQL queries done
@@ -36,7 +40,7 @@ class SqlPrintingMiddleware(object):
             width = terminal_width()
             total_time = 0.0
             for query in connection.queries:
-                nice_sql = query['sql'].replace('"', '').replace(',',', ')
+                nice_sql = query['sql'].replace('"', '').replace(',', ', ')
                 sql = "\033[1;31m[%s]\033[0m %s" % (query['time'], nice_sql)
                 total_time = total_time + float(query['time'])
                 while len(sql) > width-indentation:

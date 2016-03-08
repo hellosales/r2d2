@@ -70,6 +70,7 @@ class JSONField(models.TextField):
         defaults.update(kwargs)
         return super(JSONField, self).formfield(**defaults)
 
+
 class JSONFormField(Field):
     def clean(self, value):
 
@@ -138,9 +139,11 @@ class JSONCharField(JSONFieldBase, models.CharField):
     stored in the database like a CharField, which enables it to be used
     e.g. in unique keys"""
 
+
 def uncompress_string(s):
     """helper function to reverse django.utils.text.compress_string"""
-    import cStringIO, gzip
+    import cStringIO
+    import gzip
     try:
         val = s.encode('utf').decode('base64')
         zbuf = cStringIO.StringIO(val)
@@ -191,8 +194,8 @@ class CompressedTextField(models.TextField):
 
     def db_type(self, **kwargs):
         from django.conf import settings
-        db_types = {'django.db.backends.mysql':'longblob', 'django.db.backends.sqlite3':'blob'}
+        db_types = {'django.db.backends.mysql': 'longblob', 'django.db.backends.sqlite3': 'blob'}
         try:
             return db_types[settings.DATABASES['default']['ENGINE']]
         except KeyError:
-            raise Exception, '%s currently works only with: %s' % (self.__class__.__name__, ','.join(db_types.keys()))
+            raise Exception('%s currently works only with: %s' % (self.__class__.__name__, ','.join(db_types.keys())))

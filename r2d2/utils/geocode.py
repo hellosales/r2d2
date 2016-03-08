@@ -4,6 +4,7 @@ import json
 
 from django.conf import settings
 
+
 def geocode(location, *args, **kwargs):
     """Geocode a string
     Keyword arguments:
@@ -19,8 +20,8 @@ def geocode(location, *args, **kwargs):
 
     """
     location = urllib.urlencode(location, True)
-    url =  settings.BING_MAPS_API_URL + (location)
-    
+    url = settings.BING_MAPS_API_URL + (location)
+
     data = json.loads(urllib.urlopen(url).read())
     if data['statusDescription'] == '1OK':
         return {

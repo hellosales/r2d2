@@ -1,5 +1,6 @@
 import gc
 
+
 # From http://www.mellowmorning.com/2010/03/03/django-query-set-iterator-for-really-large-querysets/
 def queryset_iterator(queryset, chunksize=1000):
     '''''

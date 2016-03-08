@@ -21,8 +21,7 @@ class AlreadyFinishedError(ProgressBarError):
 
 def get_terminal_width():
     try:
-        width = struct.unpack('hh',
-            fcntl.ioctl(0, termios.TIOCGWINSZ, '1234'))[1]
+        width = struct.unpack('hh', fcntl.ioctl(0, termios.TIOCGWINSZ, '1234'))[1]
     except (IndexError, IOError):
         width = None
     return width
@@ -32,8 +31,7 @@ class ProgressBar(object):
 
     default_elements = ['percentage', 'bar', 'steps', 'eta', 'time']
 
-    def __init__(self, steps=100, stream=None, elements=None, sequence=None,
-        width=20):
+    def __init__(self, steps=100, stream=None, elements=None, sequence=None, width=20):
         self.step = 0
         self.steps = steps
         self.stream = stream or sys.stderr
@@ -177,8 +175,7 @@ class ProgressBar(object):
             transferred = '-'
         else:
             transferred = filesizeformat(float(step))
-        return self.transfer_template.format(label=self.transfer_label,
-            done=transferred, total=total)
+        return self.transfer_template.format(label=self.transfer_label, done=transferred, total=total)
 
     def get_rendered_whirl(self):
         chars = '-/|\\*'
@@ -206,8 +203,7 @@ class ProgressBar(object):
     def write(self, data):
         self.stream.write(data)
 
-    def get_rendered(self, step, finish=True, return_prefix=True,
-            write_new_line_if_finish=True):
+    def get_rendered(self, step, finish=True, return_prefix=True, write_new_line_if_finish=True):
         line = None
         if not self.started:
             self.started = datetime.datetime.now()
@@ -220,8 +216,7 @@ class ProgressBar(object):
                 if return_prefix:
                     self.write('\r')
                 self.write(line)
-            elif (not self.hide_output_if_not_isatty and
-                self.get_percentage() - self.last_percentage_done >= 1):
+            elif not self.hide_output_if_not_isatty and self.get_percentage() - self.last_percentage_done >= 1:
                 self.write('%s\n' % line)
         self.last_percentage_done = int(self.get_percentage())
         if finish and step == self.steps:
@@ -386,4 +381,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

@@ -13,7 +13,7 @@ def parse_date(date_string, format):
 
     For example, to re-display a date string in another format (uncomment):
 
-       
+
 
     """
     try:
