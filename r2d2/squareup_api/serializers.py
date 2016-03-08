@@ -11,6 +11,6 @@ class SquareupAccountSerializer(serializers.ModelSerializer):
         model = SquareupAccount
 
         fields = ['id', 'name', 'authorization_date', 'last_successfull_call', 'is_authorized', 'in_authorization',
-            'authorization_url']
+                  'authorization_url']
         read_only_fields = ['id', 'authorization_date', 'last_successfull_call', 'is_authorized', 'in_authorization',
-            'authorization_url']
+                            'authorization_url']

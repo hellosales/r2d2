@@ -14,5 +14,5 @@ class USZipModelField(models.CharField):
         defaults.update(kwargs)
         return super(USZipModelField, self).formfield(**defaults)
 
-#from south.modelsinspector import add_introspection_rules
-add_introspection_rules([], ["^r2d2\.accounts\.fields\.USZipModelField"])
+# from south.modelsinspector import add_introspection_rules
+# add_introspection_rules([], ["^r2d2\.accounts\.fields\.USZipModelField"])

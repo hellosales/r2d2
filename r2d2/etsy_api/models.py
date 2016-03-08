@@ -41,10 +41,10 @@ class EtsyAccount(models.Model):
 
         if not hasattr(self, '_authorization_url'):
             client = EtsyOAuthClient(settings.ETSY_API_KEY, settings.ETSY_API_SECRET, etsy_env=EtsyEnvProduction())
-            callback_link = '%s://%s%s?id=%d'%('https' if getattr(settings, 'IS_SECURE', False) else 'http',
-                Site.objects.get_current().domain, reverse('etsy-callback'), self.id)
+            callback_link = '%s://%s%s?id=%d' % ('https' if getattr(settings, 'IS_SECURE', False) else 'http',
+                                                 Site.objects.get_current().domain, reverse('etsy-callback'), self.id)
             self._authorization_url = client.get_signin_url(oauth_callback=callback_link)
-            self.request_token = client.token.to_string() # request token is required in callback
+            self.request_token = client.token.to_string()  # request token is required in callback
             self.save()
 
         return self._authorization_url
@@ -52,7 +52,7 @@ class EtsyAccount(models.Model):
     def get_access_token(self, oauth_verifier):
         """ gets access token and stores it into the model """
         client = EtsyOAuthClient(settings.ETSY_API_KEY, settings.ETSY_API_SECRET, etsy_env=EtsyEnvProduction(),
-            token=Token.from_string(self.request_token))
+                                 token=Token.from_string(self.request_token))
         token = client.get_access_token(oauth_verifier)
         if not token:
             return False
@@ -64,4 +64,3 @@ class EtsyAccount(models.Model):
 
     def __unicode__(self):
         return self.name
-

@@ -14,9 +14,9 @@ ACCOUNT_NAME = 'some name'
 ACCOUNT_NAME2 = 'other name'
 AUTH_RESPONSE = "http://localhost:8000/squareup/auth/callback?code=nG6OZZZ4TH-ajn82dMG3mg&response_type=code#="
 TOKEN_JSON_MOCK = {'access_token': 'SVYHS6Gk2apDw8ScRLkwag', 'token_type': 'bearer', 'merchant_id': '0GDD85Z6AAFCQ',
-    'expires_at': '2016-04-03T13:06:21Z'}
+                   'expires_at': '2016-04-03T13:06:21Z'}
 RENEW_TOKEN_JSON_MOCK = {'access_token': 'Gc7t0eNwUxSDTBMQE7VMVQ', 'token_type': 'bearer',
-    'merchant_id': '0GDD85Z6AAFCQ', 'expires_at': '2016-04-03T13:08:21Z'}
+                         'merchant_id': '0GDD85Z6AAFCQ', 'expires_at': '2016-04-03T13:08:21Z'}
 
 
 class SquareupApiTestCase(APIBaseTestCase):
@@ -88,8 +88,9 @@ class SquareupApiTestCase(APIBaseTestCase):
         account_to_renew = SquareupAccount.objects.get(pk=account.pk)
 
         with requests_mock.mock() as m:
-            m.post('https://connect.squareup.com/oauth2/clients/%s/access-token/renew'%settings.SQUAREUP_API_KEY,
-                json=RENEW_TOKEN_JSON_MOCK, request_headers={'Authorization': 'Client %s'%settings.SQUAREUP_API_SECRET})
+            m.post('https://connect.squareup.com/oauth2/clients/%s/access-token/renew' % settings.SQUAREUP_API_KEY,
+                   json=RENEW_TOKEN_JSON_MOCK,
+                   request_headers={'Authorization': 'Client %s' % settings.SQUAREUP_API_SECRET})
             account_to_renew.refresh_token()
 
         self.assertNotEqual(account.access_token, account_to_renew.access_token)

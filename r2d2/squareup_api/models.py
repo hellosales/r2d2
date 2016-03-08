@@ -25,7 +25,7 @@ class SquareupAccount(models.Model):
     user = models.ForeignKey(Account)
     name = models.CharField(max_length=255, db_index=True)
     access_token = models.CharField(max_length=255, null=True, blank=True)
-    in_authorization = models.BooleanField(default=True) # on creation we assume authroization
+    in_authorization = models.BooleanField(default=True)  # on creation we assume authroization
     authorization_date = models.DateTimeField(null=True, blank=True)
     token_expiration = models.DateTimeField(null=True, blank=True, db_index=True)
     merchant_id = models.CharField(max_length=255, null=True, blank=True)
@@ -52,7 +52,7 @@ class SquareupAccount(models.Model):
             return None
 
         if not hasattr(self, '_authorization_url'):
-            self._authorization_url = settings.SQUAREUP_AUTHORIZATION_ENDPOINT%settings.SQUAREUP_API_KEY
+            self._authorization_url = settings.SQUAREUP_AUTHORIZATION_ENDPOINT % settings.SQUAREUP_API_KEY
 
         return self._authorization_url
 
@@ -86,13 +86,12 @@ class SquareupAccount(models.Model):
         """ refresh token """
         if self.access_token:
             response = requests.post(
-                settings.SQUAREUP_RENEW_TOKEN_ENDPOINT%settings.SQUAREUP_API_KEY,
+                settings.SQUAREUP_RENEW_TOKEN_ENDPOINT % settings.SQUAREUP_API_KEY,
                 {'access_token': self.access_token},
-                headers={'Authorization': 'Client %s'%settings.SQUAREUP_API_SECRET}
+                headers={'Authorization': 'Client %s' % settings.SQUAREUP_API_SECRET}
             )
             if response.status_code == 200:
                 return self._save_token(response.json())
 
     def __unicode__(self):
         return self.name
-

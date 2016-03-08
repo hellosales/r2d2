@@ -40,14 +40,13 @@ class ShopifyStore(models.Model):
             return None
 
         if not hasattr(self, '_authorization_url'):
-            callback_link = '%s://%s%s'%('https' if getattr(settings, 'IS_SECURE', False) else 'http',
-                Site.objects.get_current().domain, reverse('shopify-callback'))
+            callback_link = '%s://%s%s' % ('https' if getattr(settings, 'IS_SECURE', False) else 'http',
+                                           Site.objects.get_current().domain, reverse('shopify-callback'))
             shopify.Session.setup(api_key=settings.SHOPIFY_API_KEY, secret=settings.SHOPIFY_API_SECRET)
-            session = shopify.Session("%s.myshopify.com"%self.name)
+            session = shopify.Session("%s.myshopify.com" % self.name)
             self._authorization_url = session.create_permission_url(settings.SHOPIFY_SCOPES, callback_link)
 
         return self._authorization_url
 
     def __unicode__(self):
         return self.name
-

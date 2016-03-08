@@ -6,6 +6,7 @@ from django.conf.urls import url
 from r2d2.squareup_api.views import SquareupCallbackAPI
 
 
-urlpatterns = patterns('',
+urlpatterns = patterns(
+    '',
     url(r'^auth/callback$', SquareupCallbackAPI.as_view(), name='squareup-callback'),
 )

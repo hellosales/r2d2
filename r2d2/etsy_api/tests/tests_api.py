@@ -9,7 +9,8 @@ from r2d2.utils.test_utils import APIBaseTestCase
 
 
 ACCOUNT_NAME = 'some name'
-AUTH_RESPONSE = 'http://localhost:8000/etsy/auth/callback?id=1&oauth_token=ec59018efdd2a5625f305fadccb0c5&oauth_verifier=fb82e71d#_=_'
+AUTH_RESPONSE = ('http://localhost:8000/etsy/auth/callback?id=1&oauth_token=ec59018efdd2a5625f305fadccb0c5'
+                 '&oauth_verifier=fb82e71d#_=_')
 MOCK_TOKEN = Token.from_string('oauth_token=5f5f41deb2e7e6acae9933965dd99f&oauth_token_secret=dd9967f234')
 
 

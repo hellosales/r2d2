@@ -8,7 +8,9 @@ from r2d2.utils.test_utils import APIBaseTestCase
 
 
 STORE_NAME = 'arabel-la-store'
-AUTH_RESPONSE = "http://localhost:8000/shopify/auth/callback?code=a0d0223aaa75d7c3019e4f01e2dfadee&hmac=f6d46746192848df6ee711199e33eb4ee8fc3d615a3d49e0e8353a8006fda72f&shop=arabel-la-store.myshopify.com&signature=25e6b31fa09d8c0cb92410731a096b35&timestamp=1456992047"
+AUTH_RESPONSE = ("http://localhost:8000/shopify/auth/callback?code=a0d0223aaa75d7c3019e4f01e2dfadee"
+                 "&hmac=f6d46746192848df6ee711199e33eb4ee8fc3d615a3d49e0e8353a8006fda72f"
+                 "&shop=arabel-la-store.myshopify.com&signature=25e6b31fa09d8c0cb92410731a096b35&timestamp=1456992047")
 
 
 class ShopifyApiTestCase(APIBaseTestCase):

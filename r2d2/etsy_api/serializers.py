@@ -12,4 +12,3 @@ class EtsyAccountSerializer(serializers.ModelSerializer):
 
         fields = ['id', 'name', 'authorization_date', 'last_successfull_call', 'is_authorized', 'authorization_url']
         read_only_fields = ['id', 'authorization_date', 'last_successfull_call', 'is_authorized', 'authorization_url']
-

@@ -36,7 +36,7 @@ class ShopifyCallbackAPI(GenericAPIView):
         session = shopify.Session(request.GET.get('shop', ''))
         try:
             token = session.request_token(params)
-        except: # shopify can throw here general exception
+        except:  # shopify can throw here general exception
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         store.access_token = token

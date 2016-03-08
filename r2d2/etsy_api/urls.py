@@ -6,6 +6,7 @@ from django.conf.urls import url
 from r2d2.etsy_api.views import EtsyCallbackAPI
 
 
-urlpatterns = patterns('',
+urlpatterns = patterns(
+    '',
     url(r'^auth/callback$', EtsyCallbackAPI.as_view(), name='etsy-callback'),
 )
