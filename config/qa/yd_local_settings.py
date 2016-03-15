@@ -7,7 +7,7 @@ location = lambda x: os.path.join(str(project()), str(x))
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 ADMINS = (
-    ('YD', 'team@arabel.la'),
+    ('Team', 'team@ydtech.co'),
 )
 
 MANAGERS = ADMINS
