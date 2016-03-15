@@ -8,14 +8,14 @@ project = lambda: os.path.dirname(os.path.realpath(__file__))
 location = lambda x: os.path.join(str(project()), str(x))
 
 EMAIL_USE_TLS = True
-EMAIL_HOST = 'email-smtp.us-east-1.amazonaws.com'
-EMAIL_HOST_PASSWORD = 'AoQcpXJ+B4go1BuP8DtB/GYSHn+dBrqYdaQTWJr3CXG+'
-EMAIL_HOST_USER = 'AKIAIJQ2QA6WO6UKCYKQ'
+EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_HOST_PASSWORD = "adoipovyuHerdUttAbIb11"
+EMAIL_HOST_USER = 'rtwodtwo'
 EMAIL_PORT = 587
-DEFAULT_FROM_EMAIL = '"Arabella No-reply" <no-reply@arabel.la>'
+DEFAULT_FROM_EMAIL = '"Arabella No-reply" <no-reply@ydtech.co>'
 
 ADMINS = (
-    ('Team', 'team@arabel.la'),
+    ('Team', 'team@ydtech.co'),
 )
 MANAGERS = ADMINS
 
