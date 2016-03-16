@@ -1,7 +1,11 @@
-from fabric.api import env, sudo, cd, local
+from fabric.api import cd
+from fabric.api import env
+from fabric.api import local
+from fabric.api import sudo
 
 from ydcommon.fab import *
-from ydcommon.fab import _get_branch_name, _check_branch
+from ydcommon.fab import _check_branch
+from ydcommon.fab import _get_branch_name
 
 env.hosts = ['dev.arabel.la', ]
 env.use_ssh_config = True
@@ -9,12 +13,12 @@ env.use_ssh_config = True
 
 def _set_env():
     branch = _get_branch_name()
-    user = 'r2d2-dev'
+    user = 'r2d2-dev-api'
     prefix = "dev"
     environment = 'devel'
     app_dir = 'r2d2'
     if branch == 'qa' or 'release' in branch:
-        user = 'r2d2-qa'
+        user = 'r2d2-qa-api'
         prefix = "qa"
         environment = 'qa'
         env.hosts = 'qa.arabel.la'
@@ -23,7 +27,7 @@ def _set_env():
         env.user = "yd"
         env.shell = "/bin/bash -c"
         prefix = "production"
-        user = 'r2d2'
+        user = 'r2d2-api'
         environment = 'production'
 
     env.remote_user = user
@@ -60,9 +64,9 @@ def deploy(full=False, libs=False, migrate=False, local_git=False):
         sudo(env.python + ' manage.py compress -f', user=env.remote_user)
     if env.prefix == 'production':
         sudo('supervisorctl restart r2d2')
-        #sudo('supervisorctl restart r2d2-celery')
+        # sudo('supervisorctl restart r2d2-celery')
     else:
         sudo('supervisorctl restart r2d2-%s' % env.prefix)
-        #sudo('supervisorctl restart r2d2-celery-%s' % env.prefix)
+        # sudo('supervisorctl restart r2d2-celery-%s' % env.prefix)
     if full:
         update_cron()
