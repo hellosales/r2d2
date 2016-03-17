@@ -150,6 +150,7 @@ INSTALLED_APPS = (
     # 'modeltranslation',
     'django_su',
     'django.contrib.admin',
+    'djmoney_rates',
     'raven.contrib.django.raven_compat',
     'django_jenkins',
     'ydcommon',
@@ -369,6 +370,10 @@ SQUAREUP_AUTHORIZATION_ENDPOINT = 'https://connect.squareup.com/oauth2/authorize
 SQUAREUP_ACCESS_TOKEN_ENDPOINT = 'https://connect.squareup.com/oauth2/token'
 SQUAREUP_RENEW_TOKEN_ENDPOINT = 'https://connect.squareup.com/oauth2/clients/%s/access-token/renew'
 
+DJANGO_MONEY_RATES = {
+    'DEFAULT_BACKEND': 'djmoney_rates.backends.CurrencyLayerBackend',
+    'CURRENCYLAYER_KEY': '601a320b8b2e70e3cba08579d74c2095'
+}
 
 if TESTING:
     from test_settings import *
