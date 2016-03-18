@@ -6,9 +6,10 @@ from r2d2.etsy_api.models import EtsyAccount
 
 
 class EtsyAccountSerializer(serializers.ModelSerializer):
-    """ serializer for shopify store """
+    """ serializer for etsy account """
     class Meta:
         model = EtsyAccount
 
-        fields = ['id', 'name', 'authorization_date', 'last_successfull_call', 'is_authorized', 'authorization_url']
-        read_only_fields = ['id', 'authorization_date', 'last_successfull_call', 'is_authorized', 'authorization_url']
+        fields = ['pk', 'name', 'access_token', 'authorization_date', 'last_successfull_call', 'is_authorized',
+                  'authorization_url']
+        read_only_fields = ['pk', 'authorization_date', 'last_successfull_call', 'is_authorized', 'authorization_url']
