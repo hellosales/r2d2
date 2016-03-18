@@ -9,12 +9,13 @@ from r2d2.utils.rest_api_helpers import UserFilteredMixin
 
 
 class EtsyAccountListAPI(UserFilteredMixin, ListCreateAPIView):
-    """ API for creating & managing stores """
+    """ API for creating & managing etsy account """
     serializer_class = EtsyAccountSerializer
     queryset = EtsyAccount.objects.all()
     ordering = ('name',)
 
 
 class EtsyAccountAPI(UserFilteredMixin, RetrieveUpdateDestroyAPIView):
+    """ API for updating & deleting etsy account """
     serializer_class = EtsyAccountSerializer
     queryset = EtsyAccount.objects.all()

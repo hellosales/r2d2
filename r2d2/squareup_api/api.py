@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 """ squareup API """
 from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
 
 from r2d2.squareup_api.models import SquareupAccount
 from r2d2.squareup_api.serializers import SquareupAccountSerializer
+from r2d2.utils.rest_api_helpers import UserFilteredMixin
 
 
-class SquareupAccountAPI(ListCreateAPIView):
+class SquareupAccountListAPI(UserFilteredMixin, ListCreateAPIView):
     """ API for creating & managing accounts """
     serializer_class = SquareupAccountSerializer
     queryset = SquareupAccount.objects.all()
     ordering = ('name',)
 
-    def get_queryset(self):
-        queryset = super(SquareupAccountAPI, self).get_queryset()
-        queryset = queryset.filter(user=self.request.user)
-        return queryset
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+class SquareupAccountAPI(UserFilteredMixin, RetrieveUpdateDestroyAPIView):
+    """ API for updating & deleting shopify store """
+    serializer_class = SquareupAccountSerializer
+    queryset = SquareupAccount.objects.all()
