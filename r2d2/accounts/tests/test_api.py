@@ -1,9 +1,14 @@
+# -*- coding: utf-8 -*-
+import json
+from datetime import date
+
 from rest_framework.reverse import reverse
 from rest_framework.authtoken.models import Token
 
 from django.core import mail
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
+from freezegun import freeze_time
 
 from r2d2.utils.test_utils import APIBaseTestCase
 from r2d2.accounts.models import (
@@ -82,3 +87,29 @@ class AccountApiTestCase(APIBaseTestCase):
 
         user = Account.objects.get(id=self.user.id)
         self.assertTrue(user.check_password(data['new_password']))
+
+    def test_register_api(self):
+        self.assertEqual(Account.objects.count(), 0)
+        self.assertEqual(len(mail.outbox), 0)
+
+        data = {
+            'first_name': 'Joe',
+            'last_name': 'Doe',
+            'password': '123456',
+            'email': 'joe@doe.com',
+        }
+
+        with freeze_time('2016-03-17'):
+            response = self.client.post(reverse('register_api'), data)
+            self.assertEqual(response.status_code, 201)
+            response_data = json.loads(response.content)
+            self.assertTrue('token' in response_data)
+
+            accounts = Account.objects.all()
+            self.assertEqual(accounts.count(), 1)
+            self.assertFalse(accounts[0].is_active)
+            self.assertFalse(accounts[0].is_staff)
+            self.assertTrue(accounts[0].check_password('123456'))
+            self.assertEqual(accounts[0].date_joined.date(), date(2016, 3, 17))
+
+            self.assertEqual(len(mail.outbox), 2)  # one mail for newly registered user, one for admin
