@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """ etsy models """
+from constance import config
+from etsy.oauth import EtsyEnvProduction
+from etsy.oauth import EtsyOAuthClient
 from oauth2 import Token
-from etsy.oauth import EtsyOAuthClient, EtsyEnvProduction
 
 from django.conf import settings
-from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils import timezone
@@ -42,7 +43,7 @@ class EtsyAccount(models.Model):
         if not hasattr(self, '_authorization_url'):
             client = EtsyOAuthClient(settings.ETSY_API_KEY, settings.ETSY_API_SECRET, etsy_env=EtsyEnvProduction())
             callback_link = '%s://%s%s?id=%d' % ('https' if getattr(settings, 'IS_SECURE', False) else 'http',
-                                                 Site.objects.get_current().domain, reverse('etsy-callback'), self.id)
+                                                 config.CLIENT_DOMAIN, reverse('etsy-callback'), self.id)
             self._authorization_url = client.get_signin_url(oauth_callback=callback_link)
             self.request_token = client.token.to_string()  # request token is required in callback
             self.save()
