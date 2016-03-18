@@ -50,6 +50,14 @@ AWS_STORAGE_BUCKET_NAME = 'r2d2-'
 AWS_ACCESS_KEY_ID = ''
 AWS_SECRET_ACCESS_KEY = ''
 
+# TODO: create app for r2d2 production
+SQUAREUP_API_KEY = 'p4OiJb_Aa9527UGzFbFz4g'
+SQUAREUP_API_SECRET = 'tBWttX7fCBcphFF7JUkoeHt-JSKkmZ9J_Qc-w6K8yhY'
+
+CONSTANCE_CONFIG = {
+    'CLIENT_DOMAIN': ('r2d2.com', 'client domain')
+}
+
 import raven
 
 RAVEN_CONFIG = {
