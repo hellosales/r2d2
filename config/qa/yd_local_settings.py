@@ -48,6 +48,14 @@ AWS_ACCESS_KEY_ID = 'AKIAJBZGHE4FDR5M4ROQ'
 AWS_SECRET_ACCESS_KEY = 'af1myj+5KEmZSSYznC3MBhS9N4PLJp030myjdT8'
 AWS_STORAGE_BUCKET_NAME = 'r2d2-qa-arabella'
 
+# TODO: create app for r2d2 qa
+SQUAREUP_API_KEY = 'p4OiJb_Aa9527UGzFbFz4g'
+SQUAREUP_API_SECRET = 'tBWttX7fCBcphFF7JUkoeHt-JSKkmZ9J_Qc-w6K8yhY'
+
+CONSTANCE_CONFIG = {
+    'CLIENT_DOMAIN': ('r2d2-qa.arabel.la', 'client domain')
+}
+
 import raven
 
 RAVEN_CONFIG = {

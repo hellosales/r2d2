@@ -10,5 +10,6 @@ class ShopifyStoreSerializer(serializers.ModelSerializer):
     class Meta:
         model = ShopifyStore
 
-        fields = ['id', 'name', 'authorization_date', 'last_successfull_call', 'is_authorized', 'authorization_url']
+        fields = ['id', 'name', 'access_token', 'authorization_date', 'last_successfull_call', 'is_authorized',
+                  'authorization_url']
         read_only_fields = ['id', 'authorization_date', 'last_successfull_call', 'is_authorized', 'authorization_url']

@@ -52,6 +52,14 @@ AWS_ACCESS_KEY_ID = 'AKIAJYED42CL2EKL756A'
 AWS_SECRET_ACCESS_KEY = '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'
 AWS_STORAGE_BUCKET_NAME = 'r2d2-dev-arabella'
 
+# TODO: create app for r2d2 devel
+SQUAREUP_API_KEY = 'p4OiJb_Aa9527UGzFbFz4g'
+SQUAREUP_API_SECRET = 'tBWttX7fCBcphFF7JUkoeHt-JSKkmZ9J_Qc-w6K8yhY'
+
+CONSTANCE_CONFIG = {
+    'CLIENT_DOMAIN': ('r2d2-devel.arabel.la', 'client domain')
+}
+
 import raven
 
 RAVEN_CONFIG = {

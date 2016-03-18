@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 """ etsy API """
 from rest_framework.generics import ListCreateAPIView
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
 
 from r2d2.etsy_api.models import EtsyAccount
 from r2d2.etsy_api.serializers import EtsyAccountSerializer
+from r2d2.utils.rest_api_helpers import UserFilteredMixin
 
 
-class EtsyAccountListAPI(ListCreateAPIView):
-    """ API for creating & managing stores """
+class EtsyAccountListAPI(UserFilteredMixin, ListCreateAPIView):
+    """ API for creating & managing etsy account """
     serializer_class = EtsyAccountSerializer
     queryset = EtsyAccount.objects.all()
     ordering = ('name',)
 
-    def get_queryset(self):
-        queryset = super(EtsyAccountListAPI, self).get_queryset()
-        queryset = queryset.filter(user=self.request.user)
-        return queryset
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+class EtsyAccountAPI(UserFilteredMixin, RetrieveUpdateDestroyAPIView):
+    """ API for updating & deleting etsy account """
+    serializer_class = EtsyAccountSerializer
+    queryset = EtsyAccount.objects.all()

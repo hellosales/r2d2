@@ -2,6 +2,7 @@
 """ tests for squareup api """
 import requests_mock
 
+from copy import copy
 from rest_framework.reverse import reverse
 
 from django.conf import settings
@@ -21,6 +22,8 @@ RENEW_TOKEN_JSON_MOCK = {'access_token': 'Gc7t0eNwUxSDTBMQE7VMVQ', 'token_type':
 
 class SquareupApiTestCase(APIBaseTestCase):
     """ tests for squareup API """
+    def setUp(self):
+        self._create_user()
 
     def test_setting_up_account(self):
         """ test if checking / setting up account conenction works fine """
@@ -31,7 +34,6 @@ class SquareupApiTestCase(APIBaseTestCase):
         self.assertEqual(response.status_code, 401)
 
         # list should be empty
-        self._create_user()
         self._login()
         response = self.client.get(reverse('squareup-account'))
         self.assertEqual(response.status_code, 200)
@@ -95,3 +97,37 @@ class SquareupApiTestCase(APIBaseTestCase):
 
         self.assertNotEqual(account.access_token, account_to_renew.access_token)
         self.assertNotEqual(account.token_expiration, account_to_renew.token_expiration)
+
+    def test_retrieve_update_delete_account(self):
+        """ test plan:
+            * create account with an access_token (by hand)
+            * retrieve it by pk by API [authorization url should not be present]
+            * remove access_token (by API) - [authorization url should be present]
+            * delete account (by API) """
+        self.assertEqual(SquareupAccount.objects.count(), 0)
+
+        account = SquareupAccount.objects.create(user=self.user, name=ACCOUNT_NAME,
+                                                 access_token=TOKEN_JSON_MOCK['access_token'])
+        self.assertEqual(SquareupAccount.objects.count(), 1)
+
+        # get account
+        response = self.client.get(reverse('squareup-account', kwargs={'pk': account.pk}))
+        self.assertEqual(response.status_code, 401)
+
+        self._login()
+        response = self.client.get(reverse('squareup-account', kwargs={'pk': account.pk}))
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(response.data['authorization_url'])
+        self.assertTrue(response.data['is_authorized'])
+
+        # remove access_token - this is the way to re-authorize the account
+        put_data = copy(response.data)
+        put_data['access_token'] = ''
+        response = self.client.put(reverse('squareup-account', kwargs={'pk': account.pk}), put_data)
+        self.assertIsNotNone(response.data['authorization_url'])
+        self.assertFalse(response.data['is_authorized'])
+
+        # delete account
+        response = self.client.delete(reverse('squareup-account', kwargs={'pk': account.pk}))
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(SquareupAccount.objects.count(), 0)

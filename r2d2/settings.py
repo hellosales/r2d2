@@ -142,6 +142,8 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'basic_cms',
     'compressor',
+    'constance',
+    'constance.backends.database',
     'taggit',
     # 'mptt',
     "tinymce",
@@ -374,6 +376,14 @@ DJANGO_MONEY_RATES = {
     'DEFAULT_BACKEND': 'djmoney_rates.backends.CurrencyLayerBackend',
     'CURRENCYLAYER_KEY': '601a320b8b2e70e3cba08579d74c2095'
 }
+
+USER_SIGNED_UP_ALERT_EMAIL = ('TODO', )
+
+# here you can put settigns that can be edited through panel
+CONSTANCE_CONFIG = {
+    'CLIENT_DOMAIN': ('localhost:8000', 'client domain')
+}
+CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 
 if TESTING:
     from test_settings import *
