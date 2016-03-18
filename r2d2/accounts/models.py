@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
+from django.contrib.auth.models import AbstractBaseUser
+from django.contrib.auth.models import BaseUserManager
+from django.contrib.auth.models import PermissionsMixin
 from django.db import models
+from django.db.models.signals import post_save
 from django.utils.translation import ugettext_lazy as _
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 
 from rest_framework.authtoken.models import Token
+
+from r2d2.accounts.signals import account_post_save
 
 
 class AccountManager(BaseUserManager):
@@ -67,3 +72,6 @@ class Account(AbstractBaseUser, PermissionsMixin):
 
     def __unicode__(self):
         return self.email.split('@')[0]
+
+
+post_save.connect(account_post_save, sender=Account)

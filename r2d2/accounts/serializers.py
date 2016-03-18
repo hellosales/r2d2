@@ -78,3 +78,16 @@ class ResetPasswordConfirmSerializer(serializers.Serializer):
             self.user = user
             return data
         raise serializers.ValidationError(_("Token is not valid"))
+
+
+class RegisterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = ('first_name', 'last_name', 'email', 'password')
+        write_only_fields = ('password',)
+
+    def create(self, validated_data):
+        user = super(RegisterSerializer, self).create(validated_data)
+        user.set_password(validated_data['password'])
+        user.save()
+        return user

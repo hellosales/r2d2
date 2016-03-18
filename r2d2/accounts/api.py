@@ -15,7 +15,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny
 
 from r2d2.accounts.serializers import (
-    AccountSerializer, AuthSerializer, ResetPasswordSerializer, ResetPasswordConfirmSerializer
+    AccountSerializer, AuthSerializer, ResetPasswordSerializer, ResetPasswordConfirmSerializer, RegisterSerializer
 )
 from r2d2.accounts.models import Account
 from r2d2.utils.api import BadRequestException
@@ -107,3 +107,20 @@ class ResetPasswordConfirmAPI(CreateAPIView):
     def perform_create(self, serializer):
         serializer.user.set_password(serializer.validated_data['new_password'])
         serializer.user.save()
+
+
+class RegisterAPI(CreateAPIView):
+    """
+        Register a new account
+    """
+    permission_classes = (AllowAny,)
+    serializer_class = RegisterSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
+            login(request, user)
+            return Response(AccountSerializer(user).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
