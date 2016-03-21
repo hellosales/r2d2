@@ -57,7 +57,7 @@ SQUAREUP_API_KEY = 'p4OiJb_Aa9527UGzFbFz4g'
 SQUAREUP_API_SECRET = 'tBWttX7fCBcphFF7JUkoeHt-JSKkmZ9J_Qc-w6K8yhY'
 
 CONSTANCE_CONFIG = {
-    'CLIENT_DOMAIN': ('r2d2-devel.arabel.la', 'client domain')
+    'CLIENT_DOMAIN': ('r2d2-dev-api.arabel.la', 'client domain')
 }
 
 import raven
