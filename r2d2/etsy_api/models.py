@@ -10,15 +10,29 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils import timezone
 
-from r2d2.data_importer.models import AbstractDataProvider
+from r2d2.accounts.models import Account
 
 
-class EtsyAccount(AbstractDataProvider):
+class EtsyAccount(models.Model):
     """ model for storing connection between etsy accounts and user
 
         this model keeps also token if the user authorized
         our app to use this account"""
+    user = models.ForeignKey(Account)
+    name = models.CharField(max_length=255)
+    access_token = models.CharField(max_length=255, null=True, blank=True)
     request_token = models.CharField(max_length=255, null=True, blank=True)
+    authorization_date = models.DateTimeField(null=True, blank=True)
+    last_successfull_call = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('user', 'name')
+        ordering = ('name', )
+
+    @property
+    def is_authorized(self):
+        """ if token is set we assume we have authorization """
+        return bool(self.access_token)
 
     @property
     def authorization_url(self):
