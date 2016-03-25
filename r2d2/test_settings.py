@@ -34,3 +34,15 @@ def update_settings_for_tests(settings):
                 'ENGINE': 'django.db.backends.sqlite3',
             },
         }
+
+    if len(settings['MONGODB_DATABASES']) == 0:
+        settings['MONGODB_DATABASES'] = {
+            'mongo': {
+                'name': 'yd-mongodb-test',
+                'username': 'db',
+                'password': 'rUQT4mQAD92WG4PQ985V',
+                'host': 'ds025469.mlab.com',
+                'port': 25469,
+            }
+        }
+
