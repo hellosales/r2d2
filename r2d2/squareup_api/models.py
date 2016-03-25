@@ -7,6 +7,7 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
+from r2d2.data_importer.api import DataImporter
 from r2d2.data_importer.models import AbstractDataProvider
 
 
@@ -81,3 +82,6 @@ class SquareupAccount(AbstractDataProvider):
 
     def __unicode__(self):
         return self.name
+
+
+DataImporter.register(SquareupAccount)

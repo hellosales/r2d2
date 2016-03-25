@@ -7,6 +7,7 @@ from constance import config
 from django.conf import settings
 from django.core.urlresolvers import reverse
 
+from r2d2.data_importer.api import DataImporter
 from r2d2.data_importer.models import AbstractDataProvider
 
 
@@ -36,3 +37,6 @@ class ShopifyStore(AbstractDataProvider):
 
     def __unicode__(self):
         return self.name
+
+
+DataImporter.register(ShopifyStore)
