@@ -112,6 +112,28 @@ in your local settings, otherwise live reload of css will not work.
 Hint: if you use FireFox for development try this:
 https://addons.mozilla.org/en-US/firefox/addon/firesass-for-firebug/
 
+:: install mongo
+
+    brew install mongodb
+
+:: run mongo
+
+    mongod --dbpath "SOME_PATH_TO_DATA" --directoryperdb &
+
+mongo by default runs on port 27017, you can override it with --port option
+
+Add mongo settings to your local_settings:
+
+    MONGODB_DATABASES = {
+        'mongo': {
+            'name': 'r2d2',
+            'username': '',
+            'password': '',
+            'host': 'localhost',
+            'port': 27017,
+        }
+    }
+
 Create the static
 
 ::
