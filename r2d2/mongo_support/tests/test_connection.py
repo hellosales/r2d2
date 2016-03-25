@@ -17,4 +17,4 @@ class MongoConnectionTest(TestCase):
             conn = connection.get_connection(alias)
             server_info = conn.server_info()
             self.assertIn('version', server_info)
-            self.assertGreater(server_info['version'], '3.2.0')
+            self.assertGreater(server_info['version'], '3.0.0')

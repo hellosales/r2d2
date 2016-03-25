@@ -23,6 +23,16 @@ DATABASES = {
     },
 }
 
+MONGODB_DATABASES = {
+    'mongo': {
+        'name': 'yd-mongodb-prod',
+        'username': 'db',
+        'password': 'BzUatHShXTFN9qyfHFnX',
+        'host': 'ds025389.mlab.com',
+        'port': 25389,
+    }
+}
+
 DEBUG = False
 
 SECRET_KEY = 'prodvay&e&9hdwo_bniq-$z0j64q4w27-fm58nu9!m+i$nc0e!*!o0'
