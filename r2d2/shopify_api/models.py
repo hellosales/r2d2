@@ -8,7 +8,6 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models
 from django_mongoengine import document
-from django_mongoengine import fields
 
 from r2d2.accounts.models import Account
 
