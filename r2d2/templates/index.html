@@ -1,8 +1,10 @@
-{% extends 'base.html' %}
-{% block body_content %}
-    {% if not user.is_authenticated %}
-        <a href="{% url "login" %}">Login</a>
-    {% else %}
-        Logged in! <a href="{% url "logout" %}">Log out</a>
-    {% endif %}
-{% endblock %}
+<html lang="en">
+<head>
+    <meta name="viewport" content="initial-scale=1.0" />
+
+    <title>R2D2</title>
+</head>
+<body>
+  <h1>It works!</h1>
+</body>
+</html>
