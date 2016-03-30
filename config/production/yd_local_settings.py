@@ -24,7 +24,7 @@ DATABASES = {
 }
 
 MONGODB_DATABASES = {
-    'mongo': {
+    'default': {
         'name': 'yd-mongodb-prod',
         'username': 'db',
         'password': 'BzUatHShXTFN9qyfHFnX',
