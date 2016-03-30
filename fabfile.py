@@ -59,7 +59,6 @@ def deploy(full=False, libs=False, migrate=False, local_git=False):
         if full or migrate:
             sudo(env.python + ' manage.py syncdb', user=env.remote_user)
             sudo(env.python + ' manage.py migrate', user=env.remote_user)
-        sudo('/bin/bash ./scripts/fab_build_bower_npm.sh ' + env.remote_user, user=env.remote_user)
         sudo(env.python + ' manage.py collectstatic -v0 --noinput', user=env.remote_user)
         sudo(env.python + ' manage.py compress -f', user=env.remote_user)
     if env.prefix == 'production':
