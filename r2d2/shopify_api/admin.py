@@ -12,7 +12,7 @@ class ShopifyStoreAdmin(admin.ModelAdmin):
 
 
 @dynamic_fields_list_display('a', 'b', 'c')
-class ShopifyOrderAdmin(mongo_admin.DocumentAdmin):
+class ShopifyOrderAdmin(mongo_admin.JSONDocumentAdmin):
     pass
 
 
