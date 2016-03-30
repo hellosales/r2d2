@@ -17,7 +17,7 @@ DATABASES = {
 }
 
 MONGODB_DATABASES = {
-    'mongo': {
+    'default': {
         'name': '',
         'username': '',
         'password': '',

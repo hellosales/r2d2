@@ -37,7 +37,7 @@ def update_settings_for_tests(settings):
 
     if len(settings['MONGODB_DATABASES']) == 0:
         settings['MONGODB_DATABASES'] = {
-            'mongo': {
+            'default': {
                 'name': 'yd-mongodb-test',
                 'username': 'db',
                 'password': 'rUQT4mQAD92WG4PQ985V',
