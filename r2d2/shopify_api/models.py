@@ -6,10 +6,10 @@ from constance import config
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django_mongoengine import document
 
 from r2d2.data_importer.api import DataImporter
 from r2d2.data_importer.models import AbstractDataProvider
+from r2d2.utils.documents import StorageDynamicDocument
 
 
 class ShopifyStore(AbstractDataProvider):
@@ -42,5 +42,6 @@ class ShopifyStore(AbstractDataProvider):
 DataImporter.register(ShopifyStore)
 
 
-class ShopifyOrder(document.DynamicDocument):
-    pass
+class ImportedShopifyOrder(StorageDynamicDocument):
+    account_model = ShopifyStore
+    prefix = "shopify"
