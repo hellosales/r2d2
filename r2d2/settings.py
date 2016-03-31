@@ -20,6 +20,7 @@ ADMINS = (
 MANAGERS = ADMINS
 
 DATABASES = {}
+MONGODB_DATABASES = {}
 
 FORCE_SCRIPT_NAME = ""
 
@@ -124,6 +125,7 @@ TEMPLATE_CONTEXT_PROCESSORS = [
 
 PROJECT_APPS = (
     'r2d2.accounts',
+    # 'r2d2.data_importer',
     'r2d2.emails',
     'r2d2.etsy_api',
     'r2d2.notifications',
@@ -153,6 +155,8 @@ INSTALLED_APPS = (
     'django_su',
     'django.contrib.admin',
     'djmoney_rates',
+    'django_mongoengine',
+    'django_mongoengine.admin_support',
     'raven.contrib.django.raven_compat',
     'django_jenkins',
     'ydcommon',

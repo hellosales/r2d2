@@ -23,6 +23,16 @@ DATABASES = {
     },
 }
 
+MONGODB_DATABASES = {
+    'default': {
+        'name': 'yd-mongodb-qa',
+        'username': 'db',
+        'password': '6RFMCCpNYhhVZdXTeQj2',
+        'host': 'ds025439.mlab.com',
+        'port': 25439,
+    }
+}
+
 DEBUG = False
 
 SECRET_KEY = 'qavay&e&9hdwo_bniq-$z0j64q4w27-fm58nu9!m+i$nc0e!*!o0'
@@ -53,7 +63,7 @@ SQUAREUP_API_KEY = 'p4OiJb_Aa9527UGzFbFz4g'
 SQUAREUP_API_SECRET = 'tBWttX7fCBcphFF7JUkoeHt-JSKkmZ9J_Qc-w6K8yhY'
 
 CONSTANCE_CONFIG = {
-    'CLIENT_DOMAIN': ('r2d2-qa.arabel.la', 'client domain')
+    'CLIENT_DOMAIN': ('r2d2-qa-api.arabel.la', 'client domain')
 }
 
 import raven

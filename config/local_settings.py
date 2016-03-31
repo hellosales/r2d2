@@ -2,7 +2,7 @@
 DEBUG = True
 SASS_DEBUG = DEBUG
 TEMPLATE_DEBUG = DEBUG
-#COMPRESS_ENABLED = True
+# COMPRESS_ENABLED = True
 ADMINS = ()
 
 DATABASES = {
@@ -16,13 +16,23 @@ DATABASES = {
     },
 }
 
+MONGODB_DATABASES = {
+    'default': {
+        'name': '',
+        'username': '',
+        'password': '',
+        'host': 'localhost',
+        'port': 27017,
+    }
+}
+
 INTERNAL_IPS = (
     "127.0.0.1",
 )
 
 if SASS_DEBUG:
     COMPRESS_PRECOMPILERS = (
-        #('text/x-scss', 'sass --scss  --debug-info {infile} {outfile}'),
+        # ('text/x-scss', 'sass --scss  --debug-info {infile} {outfile}'),
         ('text/x-scss', 'sass --scss --compass  --debug-info {infile} {outfile}'),
     )
 else:

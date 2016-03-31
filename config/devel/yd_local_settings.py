@@ -26,6 +26,16 @@ DATABASES = {
     },
 }
 
+MONGODB_DATABASES = {
+    'default': {
+        'name': 'yd-mongodb-dev',
+        'username': 'db',
+        'password': 'q73nRh3uXJJpacjuFPwa',
+        'host': 'ds021999.mlab.com',
+        'port': 21999,
+    }
+}
+
 SECRET_KEY = 'devvay&e&9hdwo_bniq-$z0j64q4w27-fm58nu9!m+i$nc0e!*!o0'
 
 # Local memcache setting.
@@ -57,7 +67,7 @@ SQUAREUP_API_KEY = 'p4OiJb_Aa9527UGzFbFz4g'
 SQUAREUP_API_SECRET = 'tBWttX7fCBcphFF7JUkoeHt-JSKkmZ9J_Qc-w6K8yhY'
 
 CONSTANCE_CONFIG = {
-    'CLIENT_DOMAIN': ('r2d2-devel.arabel.la', 'client domain')
+    'CLIENT_DOMAIN': ('r2d2-dev-api.arabel.la', 'client domain')
 }
 
 import raven
