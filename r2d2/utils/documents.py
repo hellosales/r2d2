@@ -23,7 +23,7 @@ class StorageDynamicDocument(document.DynamicDocument):
         for key, value in json_data.items():
             obj_key = key
             if hasattr(new_obj, key):
-                obj_key = prefix + key
+                obj_key = "%s_%s" % (cls.prefix, key)
             setattr(new_obj, obj_key, value)
         return new_obj.save()
 

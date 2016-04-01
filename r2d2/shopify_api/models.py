@@ -20,6 +20,7 @@ class ShopifyStore(AbstractDataProvider):
 
         this model keeps also token if the user authorized
         our app to use this account"""
+    MAX_REQUEST_LIMIT = 250
 
     @property
     def authorization_url(self):
@@ -31,10 +32,44 @@ class ShopifyStore(AbstractDataProvider):
             callback_link = '%s://%s%s' % ('https' if getattr(settings, 'IS_SECURE', False) else 'http',
                                            config.CLIENT_DOMAIN, reverse('shopify-callback'))
             shopify.Session.setup(api_key=settings.SHOPIFY_API_KEY, secret=settings.SHOPIFY_API_SECRET)
-            session = shopify.Session("%s.myshopify.com" % self.name)
+            session = shopify.Session(self._store_url)
             self._authorization_url = session.create_permission_url(settings.SHOPIFY_SCOPES, callback_link)
 
         return self._authorization_url
+
+    @property
+    def _store_url(self):
+        return "%s.myshopify.com" % self.name
+
+    def _activate_session(self):
+        assert self.is_authorized
+        session = shopify.Session(self._store_url, self.access_token)
+        shopify.ShopifyResource.activate_session(session)
+        return session
+
+    def import_orders(self, updated_after=None, min_id=None):
+        """ return orders, returns True if there are more items to query """
+        kwargs = {'status': 'any', 'limit': self.MAX_REQUEST_LIMIT}
+        if updated_after:
+            kwargs['updated_at_min'] = updated_after
+        if min_id:
+            kwargs['since_id'] = min_id
+
+        max_id = 0
+        max_updated_at = ''
+        orders = shopify.Order.find(**kwargs)
+        for order in orders:
+            # if objects with given ID already exists - we delete it and create a new one (it was updated, so we want
+            # just to replace it)
+            ImportedShopifyOrder.objects.filter(shopify_id=order['id']).delete()
+            ImportedShopifyOrder.create_from_json(self, order)
+            self.last_api_items_dates['order'] = order['updated_at']
+            self.save()
+            max_id = max(max_id, order['id'])
+            max_updated_at = max(max_updated_at, order['updated_at'])
+        return len(orders) == self.MAX_REQUEST_LIMIT, max_id, max_updated_at
+
+    # def fetch_data(pass):
 
     def __unicode__(self):
         return self.name
