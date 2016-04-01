@@ -2,6 +2,9 @@
 """ Data Importer API
     - registers data provider models
     - runs data importing on registered models """
+from django.utils.timezone import now
+
+from r2d2.data_importer.tasks import fetch_data_task
 
 
 class DataImporter(object):
@@ -22,12 +25,14 @@ class DataImporter(object):
     @classmethod
     def _create_import_task(cls, model, pk):
         """ create celery task for data importer """
-        pass  # TODO
+        model.objects.filter(pk=pk).update(fetch_status=model.FETCH_SCHEDULED, fetch_scheduled_at=now())
+        fetch_data_task.apply_async(args=[model, pk], countdown=60)
 
     @classmethod
-    def run_import(cls):
+    def run_fetching_data(cls):
         """ creates tasks to import data """
         for model in cls.__registered_models:
-            pks = model.objects.filter(access_token__isnull=False).values_list('pk', flat=True)
+            pks = model.objects.filter(fetch_status__in=(model.FETCH_IDLE, model.FETCH_SUCCESS),
+                                       access_token__isnull=False).values_list('pk', flat=True)
             for pk in pks:
                 cls._create_import_task(model, pk)

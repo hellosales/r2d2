@@ -50,6 +50,9 @@ class EtsyAccount(AbstractDataProvider):
         self.save()
         return True
 
+    def _fetch_data_inner(self):
+        pass  # TODO
+
     def __unicode__(self):
         return self.name
 

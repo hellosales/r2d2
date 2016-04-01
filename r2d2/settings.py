@@ -125,7 +125,7 @@ TEMPLATE_CONTEXT_PROCESSORS = [
 
 PROJECT_APPS = (
     'r2d2.accounts',
-    # 'r2d2.data_importer',
+    'r2d2.data_importer',
     'r2d2.emails',
     'r2d2.etsy_api',
     'r2d2.notifications',

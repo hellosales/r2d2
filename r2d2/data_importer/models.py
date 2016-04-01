@@ -26,6 +26,7 @@ class AbstractDataProvider(models.Model):
         (FETCH_SUCCESS, "Success")
     )
     fetch_status = models.CharField(max_length=20, db_index=True, choices=FETCH_STATUS_CHOICES, default=FETCH_IDLE)
+    fetch_scheduled_at = models.DateTimeField(null=True, blank=True)
     last_error = models.TextField(null=True, blank=True)
     last_api_items_dates = JSONField(default={})
 

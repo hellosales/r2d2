@@ -80,6 +80,9 @@ class SquareupAccount(AbstractDataProvider):
             if response.status_code == 200:
                 return self._save_token(response.json())
 
+    def _fetch_data_inner(self):
+        pass  # TODO
+
     def __unicode__(self):
         return self.name
 
