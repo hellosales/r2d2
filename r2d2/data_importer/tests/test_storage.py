@@ -5,7 +5,7 @@ from r2d2.utils.test_utils import APIBaseTestCase
 
 
 class TestStorage(APIBaseTestCase):
-    """ test if registering models work """
+    """ test if storage model works correctly """
 
     def setUp(self):
         self._create_user()

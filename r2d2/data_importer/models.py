@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """ abstract data provider model """
 from django.db import models
-from django.utils import timezone
 
 from r2d2.accounts.models import Account
 from r2d2.utils.fields import JSONField
@@ -35,15 +34,8 @@ class AbstractDataProvider(models.Model):
         unique_together = ('user', 'name')
         ordering = ('name', )
 
-    API_MAPPING = {
-        # 'model': (
-        #     'endpoint': '...',
-        #     'storage': MongoDocumentClassToStoreItIn
-        # )
-    }
-
-    # def _fetch_item(self):
-
+    def _fetch_data_inner(self):
+        raise NotImplementedError
 
     def fetch_data(self):
         if self.fetch_status != self.FETCH_SCHEDULED:
@@ -51,19 +43,7 @@ class AbstractDataProvider(models.Model):
         self.fetch_status = self.FETCH_IN_PROGRESS
         self.save()
 
-        for (key, value) in self.API_MAPPING.iteritems():
-            last_item_date = self.last_api_items_dates.get(key, None)
-            try:
-                last_item_date = self._fetch_item(value['endpoint'], value['storage'], last_item_date)
-                self.last_api_item_dates[key] = last_item_date
-                self.last_successfull_call = timezone.now()
-                self.save()
-            except Exception, e:
-                self.fetch_status = self.FETCH_FAILED
-                self.last_error = unicode(e)
-                self.save()
-                return
-
+        self._fetch_data_inner()
         self.fetch_status = self.FETCH_SUCCESS
         self.save()
 

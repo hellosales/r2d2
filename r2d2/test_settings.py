@@ -21,7 +21,6 @@ def update_settings_for_tests(settings):
     settings['COMPRESS_OFFLINE'] = False
     settings['COMPRESS_ENABLED'] = False
 
-
     print ("Warning: disabling cache middleware for the duration of unit tests")
     settings['MIDDLEWARE_CLASSES'] = [mc
                                       for mc in settings['MIDDLEWARE_CLASSES']
@@ -45,4 +44,5 @@ def update_settings_for_tests(settings):
                 'port': 25469,
             }
         }
-
+    else:
+        settings['MONGODB_DATABASES']['default']['name'] += '_test'

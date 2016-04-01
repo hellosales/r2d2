@@ -47,7 +47,7 @@ class ShopifyStore(AbstractDataProvider):
         shopify.ShopifyResource.activate_session(session)
         return session
 
-    def import_orders(self, updated_after=None, min_id=None):
+    def _import_orders(self, updated_after=None, min_id=None):
         """ return orders, returns True if there are more items to query """
         kwargs = {'status': 'any', 'limit': self.MAX_REQUEST_LIMIT}
         if updated_after:
@@ -67,9 +67,21 @@ class ShopifyStore(AbstractDataProvider):
             self.save()
             max_id = max(max_id, order['id'])
             max_updated_at = max(max_updated_at, order['updated_at'])
-        return len(orders) == self.MAX_REQUEST_LIMIT, max_id, max_updated_at
+        return len(orders) == self.MAX_REQUEST_LIMIT, max_updated_at, max_id
 
-    # def fetch_data(pass):
+    def _fetch_data_inner(self):
+        self._activate_session()
+        last_updated = self.last_api_items_dates.get('order', None)
+        has_more = True
+        if last_updated:
+            while has_more:
+                has_more, last_updated, dummy = self._import_orders(updated_after=last_updated)
+        else:
+            # first import path
+            min_id = None
+            while has_more:
+                has_more, dummy, max_id = self._import_orders(min_id=min_id)
+                min_id = max_id + 1
 
     def __unicode__(self):
         return self.name
