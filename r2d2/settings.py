@@ -48,6 +48,9 @@ PAGE_DEFAULT_TEMPLATE = 'pages/base.html'
 
 PAGE_TEMPLATES = (
     ('pages/base.html', 'base'),
+    ('pages/email-user.html', 'email-user'),
+    ('pages/email-user-second.html', 'email-user-second'),
+    ('pages/email-admin.html', 'email-admin'),
 )
 
 PAGE_USE_SITE_ID = True
