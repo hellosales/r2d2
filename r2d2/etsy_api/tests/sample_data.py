@@ -46,7 +46,7 @@ SHOPS_RESPONSE = [{
 }]
 
 
-TRANSACTIONs_RESPONSE = [{
+TRANSACTIONS_RESPONSE = [{
     'buyer_feedback_id': None,
     'buyer_user_id': 77713718,
     'creation_tsz': 1449600584,
