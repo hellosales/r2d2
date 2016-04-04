@@ -6,6 +6,7 @@ from etsy.oauth import EtsyOAuthClient
 from oauth2 import Token
 
 from django.conf import settings
+from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils import timezone
@@ -32,7 +33,7 @@ class EtsyAccount(AbstractDataProvider):
         if not hasattr(self, '_authorization_url'):
             client = EtsyOAuthClient(settings.ETSY_API_KEY, settings.ETSY_API_SECRET, etsy_env=EtsyEnvProduction())
             callback_link = '%s://%s%s?id=%d' % ('https' if getattr(settings, 'IS_SECURE', False) else 'http',
-                                                 config.CLIENT_DOMAIN, reverse('etsy-callback'), self.id)
+                                                 Site.objects.get_current().domain, reverse('etsy-callback'), self.id)
             self._authorization_url = client.get_signin_url(oauth_callback=callback_link)
             self.request_token = client.token.to_string()  # request token is required in callback
             self.save()
@@ -61,13 +62,25 @@ class EtsyAccount(AbstractDataProvider):
         else:
             return False
 
+    # etsy api methods are dynamicly created (they are queried from the server), so we can not mock them directly
+    def _call_fetch_user(self, **kwargs):
+        return self._etsy_api.getUser(**kwargs)
+
+    def _call_fetch_shops(self, **kwargs):
+        return self._etsy_api.findAllUserShops(**kwargs)
+
+    def _call_fetch_transactions(self, **kwargs):
+        return self._etsy_api.findAllShopTransactions(**kwargs)
+
+    def _call_fetch_receipts(self, **kwargs):
+        return self._etsy_api.findAllShopReceipts(**kwargs)
+
     def _fetch_user(self):
-        response = self._etsy_api.getUser(user_id='__SELF__')
-        return response[0]['user_id']
+        return self._call_fetch_user(user_id='__SELF__')[0]['user_id']
 
     def _fetch_user_shops(self, user_id):
         shops_ids = []
-        for shop in self._etsy_api.findAllUserShops(user_id=user_id, limit=100):
+        for shop in self._call_fetch_shops(user_id=user_id, limit=100):
             shops_ids.append(shop['shop_id'])
             ImportedEtsyShop.objects.filter(shop_id=shop['shop_id']).delete()
             ImportedEtsyShop.create_from_json(self, shop)
@@ -81,7 +94,7 @@ class EtsyAccount(AbstractDataProvider):
             'limit': self.MAX_REQUEST_LIMIT
         }
         while True:
-            transactions = self._etsy_api.findAllShopTransactions(**kwargs)
+            transactions = self._call_fetch_transactions(**kwargs)
             for transaction in transactions:
                 ImportedEtsyTransaction.objects.filter(transaction_id=transaction['transaction_id']).delete()
                 ImportedEtsyTransaction.create_from_json(self, transaction)
@@ -101,7 +114,7 @@ class EtsyAccount(AbstractDataProvider):
         if 'receipt' in self.last_api_items_dates:
             kwargs['min_last_modified'] = self.last_api_items_dates['receipt']
         while True:
-            receipts = self._etsy_api.findAllShopReceipts(**kwargs)
+            receipts = self._call_fetch_receipts(**kwargs)
 
             for receipt in receipts:
                 ImportedEtsyReceipt.objects.filter(receipt_id=receipt['receipt_id']).delete()
