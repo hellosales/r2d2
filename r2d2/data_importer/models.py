@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """ abstract data provider model """
 from django.db import models
+from django.utils.timezone import now
 
 from r2d2.accounts.models import Account
 from r2d2.utils.fields import JSONField
@@ -28,7 +29,7 @@ class AbstractDataProvider(models.Model):
     fetch_status = models.CharField(max_length=20, db_index=True, choices=FETCH_STATUS_CHOICES, default=FETCH_IDLE)
     fetch_scheduled_at = models.DateTimeField(null=True, blank=True)
     last_error = models.TextField(null=True, blank=True)
-    last_api_items_dates = JSONField(default={}, blank=True)
+    last_api_items_dates = JSONField(default={}, blank=True, help_text='used for querying API only for updates')
 
     class Meta:
         abstract = True
@@ -44,8 +45,14 @@ class AbstractDataProvider(models.Model):
         self.fetch_status = self.FETCH_IN_PROGRESS
         self.save()
 
-        self._fetch_data_inner()
-        self.fetch_status = self.FETCH_SUCCESS
+        try:
+            self._fetch_data_inner()
+            self.fetch_status = self.FETCH_SUCCESS
+            self.last_successfull_call = now()
+        except Exception, e:
+            self.fetch_status = self.FETCH_FAILED
+            self.last_error = unicode(e)
+
         self.save()
 
     @property

@@ -3,17 +3,18 @@
 from django.contrib import admin
 from django_mongoengine.admin_support.decorators import dynamic_fields_list_display
 
+from r2d2.data_importer.admin import DataImporterAdmin
 from r2d2.etsy_api.models import EtsyAccount
+from r2d2.etsy_api.models import ImportedEtsyReceipt
 from r2d2.etsy_api.models import ImportedEtsyShop
 from r2d2.etsy_api.models import ImportedEtsyTransaction
-from r2d2.etsy_api.models import ImportedEtsyReceipt
 # from r2d2.etsy_api.models import ImportedEtsyPayment
 # from r2d2.etsy_api.models import ImportedEtsyPaymentAdjustment
 from r2d2.utils.documents import StorageDocumentAdmin
 
 
-class EtsyAccountAdmin(admin.ModelAdmin):
-    list_display = ('name', 'user', 'is_authorized')
+class EtsyAccountAdmin(DataImporterAdmin):
+    pass
 
 
 @dynamic_fields_list_display('shop_id', 'shop_name', 'user_id')

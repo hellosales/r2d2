@@ -105,7 +105,6 @@ class EtsyAccount(AbstractDataProvider):
             offset += self.MAX_REQUEST_LIMIT
 
     def _fetch_receipts(self, shop_id):
-        offset = 0
         kwargs = {
             'shop_id': shop_id,
             'offset': 0,
@@ -138,7 +137,7 @@ class EtsyAccount(AbstractDataProvider):
         shops_ids = self._fetch_user_shops(user_id)
         for shop_id in shops_ids:
             self._fetch_transactions(shop_id)
-            dummy_receipt_ids = self._fetch_receipts(shop_id)
+            self._fetch_receipts(shop_id)
             # ## it is reduntant, but if Matt decide he wants us to import it:
             # for receipt_id in recepit_ids:
             #     # self._etsy_api.findShopPaymentByReceipt(shop_id=, receipt_id=)

@@ -44,6 +44,7 @@ class DataImporterApiTestCase(APIBaseTestCase):
             account = ShopifyStore.objects.get(id=account.id)
             account.fetch_data()
             self.assertEqual(account.fetch_status, ShopifyStore.FETCH_SUCCESS)
+            self.assertIsNotNone(account.last_successfull_call)
             mocked_fetch_data_inner.assert_any_call()
 
         with mock.patch('r2d2.shopify_api.models.ShopifyStore._fetch_data_inner') as mocked_fetch_data_inner:
@@ -60,3 +61,14 @@ class DataImporterApiTestCase(APIBaseTestCase):
 
             DataImporter.run_fetching_data()
             self.assertEqual(ShopifyStore.objects.get(id=account.id).fetch_status, ShopifyStore.FETCH_SCHEDULED)
+
+        # test if error is handled correctly
+        with mock.patch('r2d2.shopify_api.models.ShopifyStore._fetch_data_inner') as mocked_fetch_data_inner:
+            mocked_fetch_data_inner.side_effect = Exception('failed')
+
+            account.fetch_status = ShopifyStore.FETCH_SCHEDULED
+            account.fetch_data()
+
+            account = ShopifyStore.objects.get(id=account.id)
+            self.assertEqual(account.fetch_status, ShopifyStore.FETCH_FAILED)
+            self.assertEqual(account.last_error, 'failed')
