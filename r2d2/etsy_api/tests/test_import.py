@@ -22,11 +22,7 @@ class TestImport(APIBaseTestCase):
         ImportedEtsyTransaction.objects.filter(account_id=self.account.id).delete()
 
     def test_import(self):
-        """ test importing data from shopify
-            - call fetch_data for the first time - make sure we go with first import path, object is created & data
-                of last transaction update is saved
-            - call fetch_data for the second time - make sure we go with the update path, object should be updated
-                (since the same one will be returned) """
+        """ test importing data from etsy """
 
         with mock.patch('r2d2.etsy_api.models.EtsyAccount._prepare_api') as mocked_api:
             mocked_api.return_value = True

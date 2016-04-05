@@ -2,6 +2,9 @@
 """ etsy models """
 import requests
 
+from datetime import datetime
+from datetime import timedelta
+
 from dateutil.parser import parse as parse_date
 from django.conf import settings
 from django.db import models
@@ -9,6 +12,7 @@ from django.utils import timezone
 
 from r2d2.data_importer.api import DataImporter
 from r2d2.data_importer.models import AbstractDataProvider
+from r2d2.utils.documents import StorageDynamicDocument
 
 
 class SquareupAccount(AbstractDataProvider):
@@ -23,6 +27,9 @@ class SquareupAccount(AbstractDataProvider):
         Trying to authorize two account simultaneously for one user will end up a mess.
 
         This model keeps also token if the user authorized our app to use this account"""
+    MAX_REQUEST_LIMIT = 200
+    MIN_TIME = datetime(year=2013, month=1, day=1)
+
     in_authorization = models.BooleanField(default=True)  # on creation we assume authroization
     token_expiration = models.DateTimeField(null=True, blank=True, db_index=True)
     merchant_id = models.CharField(max_length=255, null=True, blank=True)
@@ -80,11 +87,42 @@ class SquareupAccount(AbstractDataProvider):
             if response.status_code == 200:
                 return self._save_token(response.json())
 
+    def _call_payments_api(self, location, **kwargs):
+        response = requests.get(settings.SQUAREUP_BASE_URL + 'v1/%s/payments' % location, params=kwargs,
+                                headers={'Authorization': 'Bearer %s' % self.access_token})
+        if response.status_code == 200:
+            return response.json()
+        else:
+            raise Exception('call returned status code %d' % response.status_code)
+
     def _fetch_data_inner(self):
-        pass  # TODO
+        start_time = self.MIN_TIME
+        now = datetime.now()
+        while True:
+            end_time = start_time + timedelta(days=365)
+            if end_time > now:
+                end_time = now
+
+            payments = self._call_payments_api('me', begin_time=start_time.isoformat(), end_time=end_time.isoformat(),
+                                               limit=self.MAX_REQUEST_LIMIT)
+            for payment in payments:
+                ImportedSquareupPayment.objects.filter(squareup_id=payment['id']).delete()
+                ImportedSquareupPayment.create_from_json(self, payment)
+
+            if len(payments) == self.MAX_REQUEST_LIMIT:
+                start_time = parse_date(payments[-1]['created_at'])
+            elif end_time < now:
+                start_time = end_time
+            else:
+                break
 
     def __unicode__(self):
         return self.name
 
 
 DataImporter.register(SquareupAccount)
+
+
+class ImportedSquareupPayment(StorageDynamicDocument):
+    account_model = SquareupAccount
+    prefix = "squareup"
