@@ -54,8 +54,8 @@ class DataImporter(object):
 
 
 class DataImporterAccountsAPI(GenericAPIView):
-    """ allows to list, create & update data importer accounts
-        account can be of one of following class: EtsyAccount, ShopifyStore, SquareupAccount """
+    """ Allows to list, create & update data importer accounts.
+        Account can be of one of following class: EtsyAccount, ShopifyStore, SquareupAccount """
 
     def get(self, request):
         # get all accounts for a logged in user
@@ -70,8 +70,9 @@ class DataImporterAccountsAPI(GenericAPIView):
         return Response(serializer.data)
 
     def post(self, request):
-        """ creates a new account
-            class -- required, account class """
+        """ Creates a new account.
+            class -- required, account class
+            name -- required, account name """
         model_class = DataImporter.get_model_by_name(request.data.pop('class', None))
         if model_class:
             serializer = model_class.get_serializer()(data=request.data)
@@ -82,7 +83,7 @@ class DataImporterAccountsAPI(GenericAPIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request):
-        """ updates an account
+        """ Updates an account. In order to deactivate account, simply set access_token to null.
             class -- required, account class
             pk -- required, account pk """
         model_class = DataImporter.get_model_by_name(request.data.pop('class', None))
