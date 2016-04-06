@@ -103,8 +103,15 @@ class AccountApiTestCase(APIBaseTestCase):
             response = self.client.post(reverse('register_api'), data)
             self.assertEqual(response.status_code, 400)
             self.assertIn('merchant_name', response.data)
+            self.assertIn('confirm_password', response.data)
 
             data['merchant_name'] = 'Joex'
+            data['confirm_password'] = '12345'
+            response = self.client.post(reverse('register_api'), data)
+            self.assertEqual(response.status_code, 400)
+            self.assertIn('confirm_password', response.data)
+
+            data['confirm_password'] = '123456'
             response = self.client.post(reverse('register_api'), data)
             self.assertEqual(response.status_code, 201)
             response_data = json.loads(response.content)

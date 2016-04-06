@@ -84,13 +84,23 @@ class ResetPasswordConfirmSerializer(serializers.Serializer):
 
 class RegisterSerializer(serializers.ModelSerializer):
     merchant_name = serializers.CharField(required=True)
+    confirm_password = serializers.CharField(allow_blank=False, write_only=True)
 
     class Meta:
         model = Account
-        fields = ('first_name', 'last_name', 'email', 'password', 'merchant_name')
+        fields = ('first_name', 'last_name', 'email', 'password', 'merchant_name', 'confirm_password')
         write_only_fields = ('password',)
 
+    def validate(self, validated_data):
+        password = validated_data.get('password')
+        confirm_password = validated_data.get('confirm_password')
+        if password != confirm_password:
+            raise serializers.ValidationError({'confirm_password': _('Password should match')})
+
+        return validated_data
+
     def create(self, validated_data):
+        validated_data.pop('confirm_password')
         user = super(RegisterSerializer, self).create(validated_data)
         user.set_password(validated_data['password'])
         user.save()
