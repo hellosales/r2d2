@@ -86,7 +86,7 @@ class DataImporterAccountsAPI(GenericAPIView):
         """ Creates a new account.
             class -- required, account class
             name -- required, account name """
-        model_class = DataImporter.get_model_by_name(request.data.pop('class', None))
+        model_class = DataImporter.get_model_by_name(request.data.get('class', None))
         if model_class:
             serializer = model_class.get_serializer()(data=request.data)
             if serializer.is_valid():
@@ -99,10 +99,10 @@ class DataImporterAccountsAPI(GenericAPIView):
         """ Updates an account. In order to deactivate account, simply set access_token to null.
             class -- required, account class
             pk -- required, account pk """
-        model_class = DataImporter.get_model_by_name(request.data.pop('class', None))
+        model_class = DataImporter.get_model_by_name(request.data.get('class', None))
         if model_class:
             try:
-                instance = model_class.objects.get(pk=request.data.pop('pk', None))
+                instance = model_class.objects.get(pk=request.data.get('pk', None))
                 serializer = model_class.get_serializer()(instance=instance, data=request.data)
                 if serializer.is_valid():
                     serializer.save()
