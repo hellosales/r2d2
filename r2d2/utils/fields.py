@@ -6,8 +6,8 @@ import zlib
 from django.db import models
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.translation import ugettext_lazy as _
-from django.forms.fields import Field
-from django.forms.util import ValidationError as FormValidationError
+from django.forms import fields
+from django.forms.utils import ValidationError as FormValidationError
 from django.utils.text import compress_string
 from django.db.models.signals import post_init
 from django.core import exceptions
@@ -71,7 +71,7 @@ class JSONField(models.TextField):
         return super(JSONField, self).formfield(**defaults)
 
 
-class JSONFormField(Field):
+class JSONFormField(fields.CharField):
     def clean(self, value):
 
         if not value and not self.required:

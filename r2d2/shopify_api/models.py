@@ -2,16 +2,16 @@
 """ shopify models """
 import shopify
 
-from constance import config
-
 from django.conf import settings
+from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
-from django.db import models
 
-from r2d2.accounts.models import Account
+from r2d2.data_importer.api import DataImporter
+from r2d2.data_importer.models import AbstractDataProvider
+from r2d2.utils.documents import StorageDynamicDocument
 
 
-class ShopifyStore(models.Model):
+class ShopifyStore(AbstractDataProvider):
     """ model for storing connection between store and user,
         each user may be connected with many stores,
         each store may be connected with many users [unsure if one user will not log out the other]
@@ -19,20 +19,7 @@ class ShopifyStore(models.Model):
 
         this model keeps also token if the user authorized
         our app to use this account"""
-    user = models.ForeignKey(Account)
-    name = models.SlugField(max_length=255, db_index=True)
-    access_token = models.CharField(max_length=255, null=True, blank=True)
-    authorization_date = models.DateTimeField(null=True, blank=True)
-    last_successfull_call = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        unique_together = ('user', 'name')
-        ordering = ('name', )
-
-    @property
-    def is_authorized(self):
-        """ if token is set we assume store is authorized """
-        return bool(self.access_token)
+    MAX_REQUEST_LIMIT = 250
 
     @property
     def authorization_url(self):
@@ -42,12 +29,65 @@ class ShopifyStore(models.Model):
 
         if not hasattr(self, '_authorization_url'):
             callback_link = '%s://%s%s' % ('https' if getattr(settings, 'IS_SECURE', False) else 'http',
-                                           config.CLIENT_DOMAIN, reverse('shopify-callback'))
+                                           Site.objects.get_current().domain, reverse('shopify-callback'))
             shopify.Session.setup(api_key=settings.SHOPIFY_API_KEY, secret=settings.SHOPIFY_API_SECRET)
-            session = shopify.Session("%s.myshopify.com" % self.name)
+            session = shopify.Session(self._store_url)
             self._authorization_url = session.create_permission_url(settings.SHOPIFY_SCOPES, callback_link)
 
         return self._authorization_url
 
+    @property
+    def _store_url(self):
+        return "%s.myshopify.com" % self.name
+
+    def _activate_session(self):
+        assert self.is_authorized
+        session = shopify.Session(self._store_url, self.access_token)
+        shopify.ShopifyResource.activate_session(session)
+        return session
+
+    def _import_orders(self, updated_after=None, min_id=None):
+        """ return orders, returns True if there are more items to query """
+        kwargs = {'status': 'any', 'limit': self.MAX_REQUEST_LIMIT}
+        if updated_after:
+            kwargs['updated_at_min'] = updated_after
+        if min_id:
+            kwargs['since_id'] = min_id
+
+        max_id = 0
+        max_updated_at = ''
+        orders = shopify.Order.find(**kwargs)
+        for order in orders:
+            # if objects with given ID already exists - we delete it and create a new one (it was updated, so we want
+            # just to replace it)
+            ImportedShopifyOrder.objects.filter(shopify_id=order['id']).delete()
+            ImportedShopifyOrder.create_from_json(self, order)
+            self.last_api_items_dates['order'] = order['updated_at']
+            self.save()
+            max_id = max(max_id, order['id'])
+            max_updated_at = max(max_updated_at, order['updated_at'])
+        return len(orders) == self.MAX_REQUEST_LIMIT, max_updated_at, max_id
+
+    def _fetch_data_inner(self):
+        self._activate_session()
+        last_updated = self.last_api_items_dates.get('order', None)
+        has_more = True
+        if last_updated:
+            while has_more:
+                has_more, last_updated, dummy = self._import_orders(updated_after=last_updated)
+        else:
+            # first import path
+            min_id = None
+            while has_more:
+                has_more, dummy, max_id = self._import_orders(min_id=min_id)
+                min_id = max_id + 1
+
     def __unicode__(self):
         return self.name
+
+DataImporter.register(ShopifyStore)
+
+
+class ImportedShopifyOrder(StorageDynamicDocument):
+    account_model = ShopifyStore
+    prefix = "shopify"

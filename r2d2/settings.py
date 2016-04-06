@@ -48,6 +48,9 @@ PAGE_DEFAULT_TEMPLATE = 'pages/base.html'
 
 PAGE_TEMPLATES = (
     ('pages/base.html', 'base'),
+    ('pages/email-user.html', 'email-user'),
+    ('pages/email-user-second.html', 'email-user-second'),
+    ('pages/email-admin.html', 'email-admin'),
 )
 
 PAGE_USE_SITE_ID = True
@@ -125,10 +128,9 @@ TEMPLATE_CONTEXT_PROCESSORS = [
 
 PROJECT_APPS = (
     'r2d2.accounts',
-    # 'r2d2.data_importer',
+    'r2d2.data_importer',
     'r2d2.emails',
     'r2d2.etsy_api',
-    'r2d2.mongo_support',
     'r2d2.notifications',
     'r2d2.shopify_api',
     'r2d2.squareup_api',
@@ -156,6 +158,8 @@ INSTALLED_APPS = (
     'django_su',
     'django.contrib.admin',
     'djmoney_rates',
+    'django_mongoengine',
+    'django_mongoengine.admin_support',
     'raven.contrib.django.raven_compat',
     'django_jenkins',
     'ydcommon',
@@ -358,7 +362,7 @@ PEP8_RCFILE = 'pep8.rc'
 SHOPIFY_API_KEY = '9701bcb247e85adcb062a0b210d5f1cb'
 SHOPIFY_API_SECRET = 'f8070f057e7bcc15a64a881d07d5b3f8'
 SHOPIFY_SCOPES = ['read_content', 'read_themes', 'read_products', 'read_customers', 'read_orders',
-    'read_script_tags', 'read_fulfillments', 'read_shipping']
+                  'read_script_tags', 'read_fulfillments', 'read_shipping']
 # other possible scopes:
 # write_themes, write_products, write_customers, write_orders, write_script_tags, write_fulfillments, write_shipping
 
@@ -371,9 +375,10 @@ ETSY_SCOPE = ['email_r', 'listings_r', 'transactions_r', 'billing_r', 'profile_r
 
 SQUAREUP_API_KEY = 'p4OiJb_Aa9527UGzFbFz4g'
 SQUAREUP_API_SECRET = 'tBWttX7fCBcphFF7JUkoeHt-JSKkmZ9J_Qc-w6K8yhY'
-SQUAREUP_AUTHORIZATION_ENDPOINT = 'https://connect.squareup.com/oauth2/authorize?client_id=%s'
-SQUAREUP_ACCESS_TOKEN_ENDPOINT = 'https://connect.squareup.com/oauth2/token'
-SQUAREUP_RENEW_TOKEN_ENDPOINT = 'https://connect.squareup.com/oauth2/clients/%s/access-token/renew'
+SQUAREUP_BASE_URL = 'https://connect.squareup.com/'
+SQUAREUP_AUTHORIZATION_ENDPOINT = SQUAREUP_BASE_URL + 'oauth2/authorize?client_id=%s'
+SQUAREUP_ACCESS_TOKEN_ENDPOINT = SQUAREUP_BASE_URL + 'oauth2/token'
+SQUAREUP_RENEW_TOKEN_ENDPOINT = SQUAREUP_BASE_URL + 'oauth2/clients/%s/access-token/renew'
 
 DJANGO_MONEY_RATES = {
     'DEFAULT_BACKEND': 'djmoney_rates.backends.CurrencyLayerBackend',

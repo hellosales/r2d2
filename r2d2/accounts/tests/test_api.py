@@ -113,3 +113,13 @@ class AccountApiTestCase(APIBaseTestCase):
             self.assertEqual(accounts[0].date_joined.date(), date(2016, 3, 17))
 
             self.assertEqual(len(mail.outbox), 2)  # one mail for newly registered user, one for admin
+
+    def test_user_api(self):
+        self._create_user()
+        self._login()
+        response = self.client.get(reverse('user_api'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('first_name', response.data)
+        self.assertIn('last_name', response.data)
+        self.assertIn('id', response.data)
+        self.assertIn('email', response.data)

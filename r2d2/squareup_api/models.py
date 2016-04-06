@@ -2,15 +2,20 @@
 """ etsy models """
 import requests
 
+from datetime import datetime
+from datetime import timedelta
+
 from dateutil.parser import parse as parse_date
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
-from r2d2.accounts.models import Account
+from r2d2.data_importer.api import DataImporter
+from r2d2.data_importer.models import AbstractDataProvider
+from r2d2.utils.documents import StorageDynamicDocument
 
 
-class SquareupAccount(models.Model):
+class SquareupAccount(AbstractDataProvider):
     """ model for storing connection between squareup account and user,
         each user may be connected with many accounts,
 
@@ -22,28 +27,17 @@ class SquareupAccount(models.Model):
         Trying to authorize two account simultaneously for one user will end up a mess.
 
         This model keeps also token if the user authorized our app to use this account"""
-    user = models.ForeignKey(Account)
-    name = models.CharField(max_length=255, db_index=True)
-    access_token = models.CharField(max_length=255, null=True, blank=True)
+    MAX_REQUEST_LIMIT = 200
+    MIN_TIME = datetime(year=2013, month=1, day=1)
+
     in_authorization = models.BooleanField(default=True)  # on creation we assume authroization
-    authorization_date = models.DateTimeField(null=True, blank=True)
     token_expiration = models.DateTimeField(null=True, blank=True, db_index=True)
     merchant_id = models.CharField(max_length=255, null=True, blank=True)
-    last_successfull_call = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        unique_together = ('user', 'name')
-        ordering = ('name', )
 
     def save(self, *args, **kwargs):
         super(SquareupAccount, self).save(*args, **kwargs)
         if self.in_authorization:
             SquareupAccount.objects.filter(user=self.user).exclude(pk=self.pk).update(in_authorization=False)
-
-    @property
-    def is_authorized(self):
-        """ if token is set we assume account is authorized """
-        return bool(self.access_token)
 
     @property
     def authorization_url(self):
@@ -93,5 +87,42 @@ class SquareupAccount(models.Model):
             if response.status_code == 200:
                 return self._save_token(response.json())
 
+    def _call_payments_api(self, location, **kwargs):
+        response = requests.get(settings.SQUAREUP_BASE_URL + 'v1/%s/payments' % location, params=kwargs,
+                                headers={'Authorization': 'Bearer %s' % self.access_token})
+        if response.status_code == 200:
+            return response.json()
+        else:
+            raise Exception('call returned status code %d' % response.status_code)
+
+    def _fetch_data_inner(self):
+        start_time = self.MIN_TIME
+        now = datetime.now()
+        while True:
+            end_time = start_time + timedelta(days=365)
+            if end_time > now:
+                end_time = now
+
+            payments = self._call_payments_api('me', begin_time=start_time.isoformat(), end_time=end_time.isoformat(),
+                                               limit=self.MAX_REQUEST_LIMIT)
+            for payment in payments:
+                ImportedSquareupPayment.objects.filter(squareup_id=payment['id']).delete()
+                ImportedSquareupPayment.create_from_json(self, payment)
+
+            if len(payments) == self.MAX_REQUEST_LIMIT:
+                start_time = parse_date(payments[-1]['created_at'])
+            elif end_time < now:
+                start_time = end_time
+            else:
+                break
+
     def __unicode__(self):
         return self.name
+
+
+DataImporter.register(SquareupAccount)
+
+
+class ImportedSquareupPayment(StorageDynamicDocument):
+    account_model = SquareupAccount
+    prefix = "squareup"

@@ -124,3 +124,17 @@ class RegisterAPI(CreateAPIView):
             login(request, user)
             return Response(AccountSerializer(user).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserAPI(GenericAPIView):
+    """
+        Get user information
+    """
+    serializer_class = AccountSerializer
+    accept_inactive = True
+    accept_upgrade = True
+
+    def get(self, request):
+        response = Response(self.serializer_class(request.user, many=False, context={'request': request}).data)
+        response['Cache-Control'] = 'no-cache'
+        return response

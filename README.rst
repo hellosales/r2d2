@@ -171,6 +171,24 @@ Start the server
 ./manage.py runserver
 
 
+Money exchange rates
+====================
+
+To download exchange rates daily add to cron:
+
+::
+    manage.py update_rates yesterday
+
+Please note that we are using average rates, that is why we don't pull data for current day, always for the day before.
+
+To fill up rates history run:
+
+::
+    manage.py update_rates date_from[YYYY-MM-DD] date_to[YYYY-MM-DD]
+
+Please mind the 1000 calls/month limit while filling up history! (1 day = 1 call)
+
+
 Etsy/Shopify/Squareup
 =====================
 
