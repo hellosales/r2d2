@@ -58,7 +58,8 @@ class ResetPasswordAPI(CreateAPIView):
         Request email to reset password
     """
     serializer_class = ResetPasswordSerializer
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
+    authentication_classes = ()
 
     def perform_create(self, serializer):
         unknown_user_error = mark_safe(_(
@@ -102,7 +103,8 @@ class ResetPasswordConfirmAPI(CreateAPIView):
         Set new password with token from reset password
     """
     serializer_class = ResetPasswordConfirmSerializer
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
+    authentication_classes = ()
 
     def perform_create(self, serializer):
         serializer.user.set_password(serializer.validated_data['new_password'])
@@ -113,6 +115,7 @@ class RegisterAPI(CreateAPIView):
     """
         Register a new account
     """
+    authentication_classes = ()
     permission_classes = (AllowAny,)
     serializer_class = RegisterSerializer
 
