@@ -1,9 +1,7 @@
 import mock
 
 from r2d2.data_importer.api import DataImporter
-from r2d2.etsy_api.models import EtsyAccount
 from r2d2.shopify_api.models import ShopifyStore
-from r2d2.squareup_api.models import SquareupAccount
 from r2d2.utils.test_utils import APIBaseTestCase
 from rest_framework.reverse import reverse
 
@@ -86,16 +84,16 @@ class DataImporterAccountsApiTestCase(APIBaseTestCase):
         self._login()
         response = self.client.post(reverse('data-importer-accounts'),
                                     {"name": "other name", "access_token": "token", "class": "SquareupAccount"})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         response = self.client.post(reverse('data-importer-accounts'),
                                     {"name": "other-name", "access_token": "token", "class": "ShopifyStore"})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         response = self.client.post(reverse('data-importer-accounts'),
                                     {"name": "same-name", "access_token": "token", "class": "EtsyAccount"})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         response = self.client.post(reverse('data-importer-accounts'),
                                     {"name": "same-name", "access_token": "token", "class": "ShopifyStore"})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
 
         response = self.client.get(reverse('data-importer-accounts'))
         self.assertEqual(response.status_code, 200)
@@ -110,6 +108,11 @@ class DataImporterAccountsApiTestCase(APIBaseTestCase):
         self.assertEqual(response.data[3]['name'], 'same-name')
 
         account = response.data[0]
+        response = self.client.get(reverse('data-importer-accounts'), {'class': account['class'], 'pk': account['pk']})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['class'], 'SquareupAccount')
+        self.assertEqual(response.data['name'], 'other name')
+
         response = self.client.put(reverse('data-importer-accounts'), {'name': account['name'], 'access_token': '',
                                                                        'class': account['class'], 'pk': account['pk']})
         self.assertEqual(response.status_code, 200)

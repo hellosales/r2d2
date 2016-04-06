@@ -58,16 +58,29 @@ class DataImporterAccountsAPI(GenericAPIView):
         Account can be of one of following class: EtsyAccount, ShopifyStore, SquareupAccount """
 
     def get(self, request):
+        """ Gets list of accounts, or single account if class & pk is passed
+            class -- optional, account class
+            pk -- optional, account pk """
         # get all accounts for a logged in user
-        accounts = []
-        for model in DataImporter.get_registered_models():
-            accounts += list(model.objects.filter(user=request.user))
+        model_class = DataImporter.get_model_by_name(request.query_params.get('class', None))
+        pk = request.query_params.get('pk', None)
+        if model_class and pk:
+            try:
+                obj = model_class.objects.get(pk=pk)
+                serializer = DataImporterAccountSerializer(obj)
+                return Response(serializer.data)
+            except model_class.DoesNotExist:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            accounts = []
+            for model in DataImporter.get_registered_models():
+                accounts += list(model.objects.filter(user=request.user))
 
-        # sort them by name
-        accounts.sort(key=lambda x: (x.name, x.__class__.__name__))
+            # sort them by name
+            accounts.sort(key=lambda x: (x.name, x.__class__.__name__))
 
-        serializer = DataImporterAccountSerializer(accounts, many=True)
-        return Response(serializer.data)
+            serializer = DataImporterAccountSerializer(accounts, many=True)
+            return Response(serializer.data)
 
     def post(self, request):
         """ Creates a new account.
@@ -78,7 +91,7 @@ class DataImporterAccountsAPI(GenericAPIView):
             serializer = model_class.get_serializer()(data=request.data)
             if serializer.is_valid():
                 serializer.save(user=self.request.user)
-                return Response(serializer.data)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 

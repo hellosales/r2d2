@@ -11,4 +11,3 @@ class DataImporterAccountSerializer(serializers.Serializer):
         representation = serializer.to_representation(obj)
         representation['class'] = obj.__class__.__name__
         return representation
-
