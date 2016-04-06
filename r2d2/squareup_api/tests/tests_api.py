@@ -28,19 +28,19 @@ class SquareupApiTestCase(APIBaseTestCase):
     def test_setting_up_account(self):
         """ test if checking / setting up account conenction works fine """
         # get / post account info - should not work without user
-        response = self.client.get(reverse('squareup-account'))
+        response = self.client.get(reverse('squareup-accounts'))
         self.assertEqual(response.status_code, 401)
-        response = self.client.post(reverse('squareup-account'), {'name': ACCOUNT_NAME})
+        response = self.client.post(reverse('squareup-accounts'), {'name': ACCOUNT_NAME})
         self.assertEqual(response.status_code, 401)
 
         # list should be empty
         self._login()
-        response = self.client.get(reverse('squareup-account'))
+        response = self.client.get(reverse('squareup-accounts'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 0)
 
         # creating a new account
-        response = self.client.post(reverse('squareup-account'), {'name': ACCOUNT_NAME})
+        response = self.client.post(reverse('squareup-accounts'), {'name': ACCOUNT_NAME})
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['name'], ACCOUNT_NAME)
         self.assertFalse(response.data['is_authorized'])
@@ -48,14 +48,14 @@ class SquareupApiTestCase(APIBaseTestCase):
         self.assertIn('authorization_url', response.data)
 
         # creating second acount - and checking if 'in authorization' flag for the first account was set to false
-        response = self.client.post(reverse('squareup-account'), {'name': ACCOUNT_NAME2})
+        response = self.client.post(reverse('squareup-accounts'), {'name': ACCOUNT_NAME2})
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['name'], ACCOUNT_NAME2)
         self.assertFalse(response.data['is_authorized'])
         self.assertTrue(response.data['in_authorization'])
         self.assertIn('authorization_url', response.data)
 
-        response = self.client.get(reverse('squareup-account'))
+        response = self.client.get(reverse('squareup-accounts'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 2)
         for result in response.data['results']:
@@ -73,7 +73,7 @@ class SquareupApiTestCase(APIBaseTestCase):
             self.assertEqual(response.status_code, 200)
 
         # check if token was updated
-        response = self.client.get(reverse('squareup-account'))
+        response = self.client.get(reverse('squareup-accounts'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 2)
         for result in response.data['results']:
@@ -111,11 +111,11 @@ class SquareupApiTestCase(APIBaseTestCase):
         self.assertEqual(SquareupAccount.objects.count(), 1)
 
         # get account
-        response = self.client.get(reverse('squareup-account', kwargs={'pk': account.pk}))
+        response = self.client.get(reverse('squareup-accounts', kwargs={'pk': account.pk}))
         self.assertEqual(response.status_code, 401)
 
         self._login()
-        response = self.client.get(reverse('squareup-account', kwargs={'pk': account.pk}))
+        response = self.client.get(reverse('squareup-accounts', kwargs={'pk': account.pk}))
         self.assertEqual(response.status_code, 200)
         self.assertIsNone(response.data['authorization_url'])
         self.assertTrue(response.data['is_authorized'])
@@ -123,11 +123,11 @@ class SquareupApiTestCase(APIBaseTestCase):
         # remove access_token - this is the way to re-authorize the account
         put_data = copy(response.data)
         put_data['access_token'] = ''
-        response = self.client.put(reverse('squareup-account', kwargs={'pk': account.pk}), put_data)
+        response = self.client.put(reverse('squareup-accounts', kwargs={'pk': account.pk}), put_data)
         self.assertIsNotNone(response.data['authorization_url'])
         self.assertFalse(response.data['is_authorized'])
 
         # delete account
-        response = self.client.delete(reverse('squareup-account', kwargs={'pk': account.pk}))
+        response = self.client.delete(reverse('squareup-accounts', kwargs={'pk': account.pk}))
         self.assertEqual(response.status_code, 204)
         self.assertEqual(SquareupAccount.objects.count(), 0)

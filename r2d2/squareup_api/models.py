@@ -34,6 +34,11 @@ class SquareupAccount(AbstractDataProvider):
     token_expiration = models.DateTimeField(null=True, blank=True, db_index=True)
     merchant_id = models.CharField(max_length=255, null=True, blank=True)
 
+    @classmethod
+    def get_serializer(cls):
+        from r2d2.squareup_api.serializers import SquareupAccountSerializer
+        return SquareupAccountSerializer
+
     def save(self, *args, **kwargs):
         super(SquareupAccount, self).save(*args, **kwargs)
         if self.in_authorization:

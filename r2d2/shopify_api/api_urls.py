@@ -9,6 +9,6 @@ from r2d2.shopify_api.api import ShopifyStoreListAPI
 
 urlpatterns = patterns(
     '',
-    url(r'^store$', ShopifyStoreListAPI.as_view(), name='shopify-store'),
-    url(r'^store/(?P<pk>[\d]+)$', ShopifyStoreAPI.as_view(), name='shopify-store'),
+    url(r'^stores$', ShopifyStoreListAPI.as_view(), name='shopify-stores'),
+    url(r'^stores/(?P<pk>[\d]+)$', ShopifyStoreAPI.as_view(), name='shopify-stores'),
 )

@@ -21,6 +21,11 @@ class ShopifyStore(AbstractDataProvider):
         our app to use this account"""
     MAX_REQUEST_LIMIT = 250
 
+    @classmethod
+    def get_serializer(cls):
+        from r2d2.shopify_api.serializers import ShopifyStoreSerializer
+        return ShopifyStoreSerializer
+
     @property
     def authorization_url(self):
         """ getting authorization url for the store """

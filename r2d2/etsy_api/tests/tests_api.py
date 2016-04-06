@@ -24,19 +24,19 @@ class EtsyApiTestCase(APIBaseTestCase):
     def test_setting_up_account(self):
         """ test if checking / setting up account conenction works fine """
         # get / post account info - should not work without user
-        response = self.client.get(reverse('etsy-account'))
+        response = self.client.get(reverse('etsy-accounts'))
         self.assertEqual(response.status_code, 401)
-        response = self.client.post(reverse('etsy-account'), {'name': ACCOUNT_NAME})
+        response = self.client.post(reverse('etsy-accounts'), {'name': ACCOUNT_NAME})
         self.assertEqual(response.status_code, 401)
 
         # list should be empty
         self._login()
-        response = self.client.get(reverse('etsy-account'))
+        response = self.client.get(reverse('etsy-accounts'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 0)
 
         # creating a new account
-        response = self.client.post(reverse('etsy-account'), {'name': ACCOUNT_NAME})
+        response = self.client.post(reverse('etsy-accounts'), {'name': ACCOUNT_NAME})
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['name'], ACCOUNT_NAME)
         self.assertFalse(response.data['is_authorized'])
@@ -50,7 +50,7 @@ class EtsyApiTestCase(APIBaseTestCase):
             self.assertEqual(response.status_code, 200)
 
         # check if token was updated
-        response = self.client.get(reverse('etsy-account'))
+        response = self.client.get(reverse('etsy-accounts'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
         self.assertTrue(response.data['results'][0]["is_authorized"])
@@ -68,11 +68,11 @@ class EtsyApiTestCase(APIBaseTestCase):
         self.assertEqual(EtsyAccount.objects.count(), 1)
 
         # get account
-        response = self.client.get(reverse('etsy-account', kwargs={'pk': account.pk}))
+        response = self.client.get(reverse('etsy-accounts', kwargs={'pk': account.pk}))
         self.assertEqual(response.status_code, 401)
 
         self._login()
-        response = self.client.get(reverse('etsy-account', kwargs={'pk': account.pk}))
+        response = self.client.get(reverse('etsy-accounts', kwargs={'pk': account.pk}))
         self.assertEqual(response.status_code, 200)
         self.assertIsNone(response.data['authorization_url'])
         self.assertTrue(response.data['is_authorized'])
@@ -80,11 +80,11 @@ class EtsyApiTestCase(APIBaseTestCase):
         # remove access_token - this is the way to re-authorize the account
         put_data = copy(response.data)
         put_data['access_token'] = ''
-        response = self.client.put(reverse('etsy-account', kwargs={'pk': account.pk}), put_data)
+        response = self.client.put(reverse('etsy-accounts', kwargs={'pk': account.pk}), put_data)
         self.assertIsNotNone(response.data['authorization_url'])
         self.assertFalse(response.data['is_authorized'])
 
         # delete account
-        response = self.client.delete(reverse('etsy-account', kwargs={'pk': account.pk}))
+        response = self.client.delete(reverse('etsy-accounts', kwargs={'pk': account.pk}))
         self.assertEqual(response.status_code, 204)
         self.assertEqual(EtsyAccount.objects.count(), 0)

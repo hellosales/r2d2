@@ -24,6 +24,11 @@ class EtsyAccount(AbstractDataProvider):
     request_token = models.CharField(max_length=255, null=True, blank=True)
     MAX_REQUEST_LIMIT = 100
 
+    @classmethod
+    def get_serializer(cls):
+        from r2d2.etsy_api.serializers import EtsyAccountSerializer
+        return EtsyAccountSerializer
+
     @property
     def authorization_url(self):
         """ getting authorization url for the account & storing request token """

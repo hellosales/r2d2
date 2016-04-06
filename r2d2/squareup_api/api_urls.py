@@ -9,6 +9,6 @@ from r2d2.squareup_api.api import SquareupAccountListAPI
 
 urlpatterns = patterns(
     '',
-    url(r'^store$', SquareupAccountListAPI.as_view(), name='squareup-account'),
-    url(r'^store/(?P<pk>[\d]+)$', SquareupAccountAPI.as_view(), name='squareup-account'),
+    url(r'^accounts$', SquareupAccountListAPI.as_view(), name='squareup-accounts'),
+    url(r'^accounts/(?P<pk>[\d]+)$', SquareupAccountAPI.as_view(), name='squareup-accounts'),
 )

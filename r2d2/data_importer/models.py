@@ -36,6 +36,10 @@ class AbstractDataProvider(models.Model):
         unique_together = ('user', 'name')
         ordering = ('name', )
 
+    @classmethod
+    def get_serializer(cls):
+        raise NotImplementedError
+
     def _fetch_data_inner(self):
         raise NotImplementedError
 

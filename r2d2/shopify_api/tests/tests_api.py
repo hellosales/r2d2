@@ -24,19 +24,19 @@ class ShopifyApiTestCase(APIBaseTestCase):
     def test_setting_up_store(self):
         """ test if checking / setting up store conenction works fine """
         # get / put store info - should not work without user
-        response = self.client.get(reverse('shopify-store'))
+        response = self.client.get(reverse('shopify-stores'))
         self.assertEqual(response.status_code, 401)
-        response = self.client.post(reverse('shopify-store'), {'name': STORE_NAME})
+        response = self.client.post(reverse('shopify-stores'), {'name': STORE_NAME})
         self.assertEqual(response.status_code, 401)
 
         # list should be empty
         self._login()
-        response = self.client.get(reverse('shopify-store'))
+        response = self.client.get(reverse('shopify-stores'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 0)
 
         # creating a new store
-        response = self.client.post(reverse('shopify-store'), {'name': STORE_NAME})
+        response = self.client.post(reverse('shopify-stores'), {'name': STORE_NAME})
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['name'], STORE_NAME)
         self.assertFalse(response.data['is_authorized'])
@@ -49,7 +49,7 @@ class ShopifyApiTestCase(APIBaseTestCase):
             self.assertEqual(response.status_code, 200)
 
         # check if token was updated
-        response = self.client.get(reverse('shopify-store'))
+        response = self.client.get(reverse('shopify-stores'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
         self.assertTrue(response.data['results'][0]["is_authorized"])
@@ -66,11 +66,11 @@ class ShopifyApiTestCase(APIBaseTestCase):
         self.assertEqual(ShopifyStore.objects.count(), 1)
 
         # get account
-        response = self.client.get(reverse('shopify-store', kwargs={'pk': account.pk}))
+        response = self.client.get(reverse('shopify-stores', kwargs={'pk': account.pk}))
         self.assertEqual(response.status_code, 401)
 
         self._login()
-        response = self.client.get(reverse('shopify-store', kwargs={'pk': account.pk}))
+        response = self.client.get(reverse('shopify-stores', kwargs={'pk': account.pk}))
         self.assertEqual(response.status_code, 200)
         self.assertIsNone(response.data['authorization_url'])
         self.assertTrue(response.data['is_authorized'])
@@ -78,11 +78,11 @@ class ShopifyApiTestCase(APIBaseTestCase):
         # remove access_token - this is the way to re-authorize the account
         put_data = copy(response.data)
         put_data['access_token'] = ''
-        response = self.client.put(reverse('shopify-store', kwargs={'pk': account.pk}), put_data)
+        response = self.client.put(reverse('shopify-stores', kwargs={'pk': account.pk}), put_data)
         self.assertIsNotNone(response.data['authorization_url'])
         self.assertFalse(response.data['is_authorized'])
 
         # delete account
-        response = self.client.delete(reverse('shopify-store', kwargs={'pk': account.pk}))
+        response = self.client.delete(reverse('shopify-stores', kwargs={'pk': account.pk}))
         self.assertEqual(response.status_code, 204)
         self.assertEqual(ShopifyStore.objects.count(), 0)

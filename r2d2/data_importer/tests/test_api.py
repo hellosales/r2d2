@@ -1,12 +1,15 @@
 import mock
 
 from r2d2.data_importer.api import DataImporter
+from r2d2.etsy_api.models import EtsyAccount
 from r2d2.shopify_api.models import ShopifyStore
+from r2d2.squareup_api.models import SquareupAccount
 from r2d2.utils.test_utils import APIBaseTestCase
+from rest_framework.reverse import reverse
 
 
 class DataImporterApiTestCase(APIBaseTestCase):
-    """ test if registering models work """
+    """ test if registering models work & if flow works correctly """
     def test_registering_models(self):
         """ simple checks registered models
             please add here models when a new data importer API is added"""
@@ -72,3 +75,41 @@ class DataImporterApiTestCase(APIBaseTestCase):
             account = ShopifyStore.objects.get(id=account.id)
             self.assertEqual(account.fetch_status, ShopifyStore.FETCH_FAILED)
             self.assertEqual(account.last_error, 'failed')
+
+
+class DataImporterAccountsApiTestCase(APIBaseTestCase):
+    """ tests creating & listing accounts through API """
+    def setUp(self):
+        self._create_user()
+
+    def test_accounts_api(self):
+        self._login()
+        response = self.client.post(reverse('data-importer-accounts'),
+                                    {"name": "other name", "access_token": "token", "class": "SquareupAccount"})
+        self.assertEqual(response.status_code, 200)
+        response = self.client.post(reverse('data-importer-accounts'),
+                                    {"name": "other-name", "access_token": "token", "class": "ShopifyStore"})
+        self.assertEqual(response.status_code, 200)
+        response = self.client.post(reverse('data-importer-accounts'),
+                                    {"name": "same-name", "access_token": "token", "class": "EtsyAccount"})
+        self.assertEqual(response.status_code, 200)
+        response = self.client.post(reverse('data-importer-accounts'),
+                                    {"name": "same-name", "access_token": "token", "class": "ShopifyStore"})
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(reverse('data-importer-accounts'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 4)
+        self.assertEqual(response.data[0]['class'], 'SquareupAccount')
+        self.assertEqual(response.data[0]['name'], 'other name')
+        self.assertEqual(response.data[1]['class'], 'ShopifyStore')
+        self.assertEqual(response.data[1]['name'], 'other-name')
+        self.assertEqual(response.data[2]['class'], 'EtsyAccount')
+        self.assertEqual(response.data[2]['name'], 'same-name')
+        self.assertEqual(response.data[3]['class'], 'ShopifyStore')
+        self.assertEqual(response.data[3]['name'], 'same-name')
+
+        account = response.data[0]
+        response = self.client.put(reverse('data-importer-accounts'), {'name': account['name'], 'access_token': '',
+                                                                       'class': account['class'], 'pk': account['pk']})
+        self.assertEqual(response.status_code, 200)

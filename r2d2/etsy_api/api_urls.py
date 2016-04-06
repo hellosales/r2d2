@@ -9,6 +9,6 @@ from r2d2.etsy_api.api import EtsyAccountListAPI
 
 urlpatterns = patterns(
     '',
-    url(r'^account$', EtsyAccountListAPI.as_view(), name='etsy-account'),
-    url(r'^account/(?P<pk>[\d]+)$', EtsyAccountAPI.as_view(), name='etsy-account'),
+    url(r'^accounts$', EtsyAccountListAPI.as_view(), name='etsy-accounts'),
+    url(r'^accounts/(?P<pk>[\d]+)$', EtsyAccountAPI.as_view(), name='etsy-accounts'),
 )
