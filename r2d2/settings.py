@@ -104,12 +104,33 @@ TEMPLATE_LOADERS = (
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.BrokenLinkEmailsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     # 'django.middleware.doc.XViewMiddleware',
+)
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_HEADERS = (
+    'x-requested-with',
+    'content-type',
+    'accept',
+    'origin',
+    'authorization',
+    # 'x-csrftoken',
+    # 'x-device-version',
+    # 'x-app-version',
+    # 'x-app-id',
+    # 'x-device-model',
+    # 'x-device-platform',
+    'authentication',
+)
+
+CORS_EXPOSE_HEADERS = (
+    # 'x-mobile-version',
 )
 
 ROOT_URLCONF = 'r2d2.urls'
@@ -168,6 +189,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'rest_framework.authtoken',
     'templateaddons',
+    'corsheaders',
     'sorl.thumbnail',
 ) + PROJECT_APPS
 
