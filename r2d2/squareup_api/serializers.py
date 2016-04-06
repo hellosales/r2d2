@@ -10,7 +10,7 @@ class SquareupAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = SquareupAccount
 
-        fields = ['id', 'name', 'access_token', 'authorization_date', 'last_successfull_call', 'is_authorized',
+        fields = ['pk', 'name', 'access_token', 'authorization_date', 'last_successfull_call', 'is_authorized',
                   'in_authorization', 'authorization_url']
-        read_only_fields = ['id', 'authorization_date', 'last_successfull_call', 'is_authorized', 'in_authorization',
+        read_only_fields = ['pk', 'authorization_date', 'last_successfull_call', 'is_authorized', 'in_authorization',
                             'authorization_url']

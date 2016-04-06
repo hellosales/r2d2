@@ -14,8 +14,8 @@ urlpatterns = patterns(
     url(r'^logout$', LogoutAPI.as_view(), name='logout_api'),
     url(r'^reset-password$', ResetPasswordAPI.as_view(), name='reset_password_api'),
     url(r'^reset-password-confirm$', ResetPasswordConfirmAPI.as_view(), name='reset_password_confirm_api'),
-    url(r'^user/$', UserAPI.as_view(), name="user_api"),
-    url(r'^user/register/$', RegisterAPI.as_view(), name="register_api"),
+    url(r'^user$', UserAPI.as_view(), name="user_api"),
+    url(r'^user/register$', RegisterAPI.as_view(), name="register_api"),
 )
 
 router = DefaultRouter()
