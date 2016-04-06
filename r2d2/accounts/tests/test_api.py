@@ -101,6 +101,11 @@ class AccountApiTestCase(APIBaseTestCase):
 
         with freeze_time('2016-03-17'):
             response = self.client.post(reverse('register_api'), data)
+            self.assertEqual(response.status_code, 400)
+            self.assertIn('merchant_name', response.data)
+
+            data['merchant_name'] = 'Joex'
+            response = self.client.post(reverse('register_api'), data)
             self.assertEqual(response.status_code, 201)
             response_data = json.loads(response.content)
             self.assertTrue('token' in response_data)

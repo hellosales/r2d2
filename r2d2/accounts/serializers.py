@@ -13,6 +13,7 @@ from r2d2.accounts.validators import password_validator
 
 
 class AccountSerializer(serializers.ModelSerializer):
+    merchant_name = serializers.CharField(required=True)
 
     class Meta:
         model = Account
@@ -22,6 +23,7 @@ class AccountSerializer(serializers.ModelSerializer):
             'last_name',
             'email',
             'token',
+            'merchant_name'
         ]
         read_only_fields = ['id']
 
@@ -81,9 +83,11 @@ class ResetPasswordConfirmSerializer(serializers.Serializer):
 
 
 class RegisterSerializer(serializers.ModelSerializer):
+    merchant_name = serializers.CharField(required=True)
+
     class Meta:
         model = Account
-        fields = ('first_name', 'last_name', 'email', 'password')
+        fields = ('first_name', 'last_name', 'email', 'password', 'merchant_name')
         write_only_fields = ('password',)
 
     def create(self, validated_data):

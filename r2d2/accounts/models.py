@@ -47,6 +47,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
                                               'active. Unselect this instead of deleting accounts.')
     first_name = models.CharField(_('first name'), max_length=255, blank=True)
     last_name = models.CharField(_('last name'), max_length=255, blank=True)
+    merchant_name = models.CharField(max_length=255, null=True, blank=True)
 
     USERNAME_FIELD = 'email'
 
