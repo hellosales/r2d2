@@ -10,7 +10,9 @@ from r2d2.utils.documents import StorageDocumentAdmin
 
 
 class SquareupAccountAdmin(DataImporterAdmin):
-    pass
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = super(SquareupAccountAdmin, self).get_readonly_fields(request, obj)
+        return readonly_fields + ('in_authorization',)
 
 
 @dynamic_fields_list_display('squareup_id', 'created_at')

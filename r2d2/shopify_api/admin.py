@@ -10,7 +10,9 @@ from r2d2.utils.documents import StorageDocumentAdmin
 
 
 class ShopifyStoreAdmin(DataImporterAdmin):
-    pass
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = super(ShopifyStoreAdmin, self).get_readonly_fields(request, obj)
+        return readonly_fields + ('name',)
 
 
 @dynamic_fields_list_display('shopify_id', 'total_price', 'email', 'created_at')

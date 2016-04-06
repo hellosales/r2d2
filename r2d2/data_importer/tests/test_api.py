@@ -83,7 +83,7 @@ class DataImporterAccountsApiTestCase(APIBaseTestCase):
     def test_accounts_api(self):
         self._login()
         response = self.client.post(reverse('data-importer-accounts'),
-                                    {"name": "other name", "access_token": "token", "class": "SquareupAccount"})
+                                    {"name": "other name", "class": "SquareupAccount"})
         self.assertEqual(response.status_code, 201)
         response = self.client.post(reverse('data-importer-accounts'),
                                     {"name": "other-name", "access_token": "token", "class": "ShopifyStore"})
