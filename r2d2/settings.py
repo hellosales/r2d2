@@ -395,7 +395,7 @@ DJANGO_MONEY_RATES = {
     'CURRENCYLAYER_KEY': '601a320b8b2e70e3cba08579d74c2095'
 }
 
-USER_SIGNED_UP_ALERT_EMAIL = ('TODO', )
+USER_SIGNED_UP_ALERT_EMAIL = ('team+r2d2-dev@ydtech.co', )
 
 # here you can put settigns that can be edited through panel
 CONSTANCE_CONFIG = {
