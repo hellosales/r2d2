@@ -1,5 +1,8 @@
 import mock
 
+from datetime import date, timedelta
+from freezegun import freeze_time
+
 from r2d2.data_importer.api import DataImporter
 from r2d2.shopify_api.models import ShopifyStore
 from r2d2.utils.test_utils import APIBaseTestCase
@@ -30,14 +33,17 @@ class DataImporterApiTestCase(APIBaseTestCase):
             mocked_fetch_data.return_value = None
 
             # run importer
-            DataImporter.run_fetching_data()
+            with freeze_time('2014-12-14'):
+                DataImporter.run_fetching_data()
 
-            # check status #1
-            self.assertEqual(ShopifyStore.objects.get(id=account.id).fetch_status, ShopifyStore.FETCH_SCHEDULED)
+                # check status #1
+                store = ShopifyStore.objects.get(id=account.id)
+                self.assertEqual(store.fetch_status, ShopifyStore.FETCH_SCHEDULED)
+                self.assertEqual(store.fetch_scheduled_at.date(), date(year=2014, month=12, day=14))
 
-            # check status #2
-            self.assertEqual(ShopifyStore.objects.get(id=not_authorized_account.id).fetch_status,
-                             ShopifyStore.FETCH_IDLE)
+                # check status #2
+                self.assertEqual(ShopifyStore.objects.get(id=not_authorized_account.id).fetch_status,
+                                 ShopifyStore.FETCH_IDLE)
 
         with mock.patch('r2d2.shopify_api.models.ShopifyStore._fetch_data_inner') as mocked_fetch_data_inner:
             mocked_fetch_data_inner.return_value = None
@@ -60,8 +66,15 @@ class DataImporterApiTestCase(APIBaseTestCase):
         with mock.patch('r2d2.data_importer.tasks.fetch_data_task.apply_async') as mocked_fetch_data:
             mocked_fetch_data.return_value = None
 
-            DataImporter.run_fetching_data()
-            self.assertEqual(ShopifyStore.objects.get(id=account.id).fetch_status, ShopifyStore.FETCH_SCHEDULED)
+            with freeze_time('2014-12-14'):
+                DataImporter.run_fetching_data()
+                # too early - another fetching is not initiated
+                self.assertEqual(ShopifyStore.objects.get(id=account.id).fetch_status, ShopifyStore.FETCH_SUCCESS)
+
+            with freeze_time('2014-12-15'):
+                # pretending the fetching was done one day earlier
+                DataImporter.run_fetching_data()
+                self.assertEqual(ShopifyStore.objects.get(id=account.id).fetch_status, ShopifyStore.FETCH_SCHEDULED)
 
         # test if error is handled correctly
         with mock.patch('r2d2.shopify_api.models.ShopifyStore._fetch_data_inner') as mocked_fetch_data_inner:
@@ -113,6 +126,6 @@ class DataImporterAccountsApiTestCase(APIBaseTestCase):
         self.assertEqual(response.data['class'], 'SquareupAccount')
         self.assertEqual(response.data['name'], 'other name')
 
-        response = self.client.put(reverse('data-importer-accounts'), {'name': account['name'], 'access_token': '',
-                                                                       'class': account['class'], 'pk': account['pk']})
+        account['access_token'] = None
+        response = self.client.put(reverse('data-importer-accounts'), account)
         self.assertEqual(response.status_code, 200)

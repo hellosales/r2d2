@@ -2,6 +2,7 @@
 """ Data Importer API
     - registers data provider models
     - runs data importing on registered models """
+from datetime import timedelta
 from django.utils.timezone import now
 
 from r2d2.data_importer.serializers import DataImporterAccountSerializer
@@ -46,9 +47,11 @@ class DataImporter(object):
     @classmethod
     def run_fetching_data(cls):
         """ creates tasks to import data """
+        time_limit = now() - timedelta(days=1)
         for model in cls.__registered_models:
-            pks = model.objects.filter(fetch_status__in=(model.FETCH_IDLE, model.FETCH_SUCCESS),
-                                       access_token__isnull=False).values_list('pk', flat=True)
+            query = model.objects.filter(fetch_status__in=(model.FETCH_IDLE, model.FETCH_SUCCESS),
+                                         access_token__isnull=False).exclude(fetch_scheduled_at__gt=time_limit)
+            pks = query.values_list('pk', flat=True)
             for pk in pks:
                 cls._create_import_task(model, pk)
 
