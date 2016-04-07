@@ -5,10 +5,12 @@ from django.conf.urls import url
 
 from r2d2.etsy_api.api import EtsyAccountAPI
 from r2d2.etsy_api.api import EtsyAccountListAPI
+from r2d2.etsy_api.views import EtsyCallbackAPI
 
 
 urlpatterns = patterns(
     '',
     url(r'^accounts$', EtsyAccountListAPI.as_view(), name='etsy-accounts'),
     url(r'^accounts/(?P<pk>[\d]+)$', EtsyAccountAPI.as_view(), name='etsy-accounts'),
+    url(r'^auth/callback$', EtsyCallbackAPI.as_view(), name='etsy-callback'),
 )
