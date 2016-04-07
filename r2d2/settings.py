@@ -411,7 +411,7 @@ USER_SIGNED_UP_ALERT_EMAIL = ('TODO', )
 
 # here you can put settigns that can be edited through panel
 CONSTANCE_CONFIG = {
-    'CLIENT_DOMAIN': ('localhost:8000', 'client domain')
+    'CLIENT_DOMAIN': ('localhost:3000', 'client domain')
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 

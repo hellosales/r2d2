@@ -91,7 +91,7 @@ class DataImporterAccountsAPI(GenericAPIView):
             name -- required, account name """
         model_class = DataImporter.get_model_by_name(request.data.get('class', None))
         if model_class:
-            serializer = model_class.get_serializer()(data=request.data)
+            serializer = model_class.get_serializer()(data=request.data, context=self.get_serializer_context())
             if serializer.is_valid():
                 serializer.save(user=self.request.user)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -106,7 +106,8 @@ class DataImporterAccountsAPI(GenericAPIView):
         if model_class:
             try:
                 instance = model_class.objects.get(pk=request.data.get('pk', None))
-                serializer = model_class.get_serializer()(instance=instance, data=request.data)
+                serializer = model_class.get_serializer()(instance=instance, data=request.data,
+                                                          context=self.get_serializer_context())
                 if serializer.is_valid():
                     serializer.save()
                     return Response(serializer.data)
