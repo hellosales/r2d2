@@ -47,7 +47,7 @@ class SquareupAccount(AbstractDataProvider):
     @property
     def authorization_url(self):
         """ getting authorization url for the account """
-        if self.is_authorized or not self.in_authorization:
+        if self.is_authorized:
             return None
 
         if not hasattr(self, '_authorization_url'):
