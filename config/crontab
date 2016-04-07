@@ -1,14 +1,15 @@
 SHELL=/bin/sh
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 NICE=15
-MAILTO=team@arabel.la
+MAILTO=team@ydtech.co
 
 PYTHON_DIR = '../Envs/r2d2/bin/python'
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
 
 DIR = 'www/'
-
 # m h  dom mon dow   command
 
-0 5 * * *   $PYTHON_DIR manage.py clearsessions
-10 0 * * *  $PYTHON_DIR manage.py update_rates yesterday
-* * * * *   $PYTHON_DIR manage.py schedule_fetching_data
+0 5 * * *   cd $DIR && $PYTHON_DIR manage.py clearsessions
+10 0 * * *  cd $DIR && $PYTHON_DIR manage.py update_rates yesterday
+* * * * *   cd $DIR && $PYTHON_DIR manage.py schedule_fetching_data
