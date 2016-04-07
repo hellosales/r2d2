@@ -114,5 +114,4 @@ class DataImporterAccountsAPI(GenericAPIView):
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             except model_class.DoesNotExist:
                 raise
-                pass
         return Response(status=status.HTTP_400_BAD_REQUEST)
