@@ -61,7 +61,7 @@ class SquareupApiTestCase(APIBaseTestCase):
         for result in response.data['results']:
             if result['name'] == ACCOUNT_NAME:
                 self.assertFalse(result['in_authorization'])
-                self.assertIsNone(result['authorization_url'])
+                self.assertIsNotNone(result['authorization_url'])
             elif result['name'] == ACCOUNT_NAME2:
                 self.assertTrue(result['in_authorization'])
                 self.assertIsNotNone(result['authorization_url'])
