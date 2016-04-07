@@ -369,18 +369,6 @@ AWS_STORAGE_BUCKET_NAME = 'r2d2-dev'
 AWS_QUERYSTRING_AUTH = False
 DEFAULT_FILE_STORAGE = 'r2d2.utils.storage.S3BotoStorageFixed'
 
-try:
-    from local_settings import *
-except ImportError:
-    print ("no local_settings.py file?")
-
-MEDIA_URL = 'https://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
-
-import sys
-TESTING = ('test' in sys.argv or 'jenkins' in sys.argv)
-TEST_CHARSET = 'utf8'
-PEP8_RCFILE = 'pep8.rc'
-
 SHOPIFY_API_KEY = '9701bcb247e85adcb062a0b210d5f1cb'
 SHOPIFY_API_SECRET = 'f8070f057e7bcc15a64a881d07d5b3f8'
 SHOPIFY_SCOPES = ['read_content', 'read_themes', 'read_products', 'read_customers', 'read_orders',
@@ -414,6 +402,18 @@ CONSTANCE_CONFIG = {
     'CLIENT_DOMAIN': ('localhost:3000', 'client domain')
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
+
+try:
+    from local_settings import *
+except ImportError:
+    print ("no local_settings.py file?")
+
+MEDIA_URL = 'https://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
+
+import sys
+TESTING = ('test' in sys.argv or 'jenkins' in sys.argv)
+TEST_CHARSET = 'utf8'
+PEP8_RCFILE = 'pep8.rc'
 
 if TESTING:
     from test_settings import *
