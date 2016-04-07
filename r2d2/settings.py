@@ -395,8 +395,8 @@ ETSY_SCOPE = ['email_r', 'listings_r', 'transactions_r', 'billing_r', 'profile_r
 # 'listings_w', 'listings_d', 'transactions_w', 'profile_w', 'address_w', 'favorites_rw', 'shops_rw', 'cart_rw',
 # 'recommend_rw', 'feedback_r', 'treasury_r', 'treasury_w'
 
-SQUAREUP_API_KEY = 'p4OiJb_Aa9527UGzFbFz4g'
-SQUAREUP_API_SECRET = 'tBWttX7fCBcphFF7JUkoeHt-JSKkmZ9J_Qc-w6K8yhY'
+SQUAREUP_API_KEY = 'fQa48ZcUHUUNZR542VGfxg'
+SQUAREUP_API_SECRET = 'dwt11ZGm1cxSb1Kk94JprNSbInsFUfupOEdz3bwnAEs'
 SQUAREUP_BASE_URL = 'https://connect.squareup.com/'
 SQUAREUP_AUTHORIZATION_ENDPOINT = SQUAREUP_BASE_URL + 'oauth2/authorize?client_id=%s'
 SQUAREUP_ACCESS_TOKEN_ENDPOINT = SQUAREUP_BASE_URL + 'oauth2/token'
