@@ -3,7 +3,7 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin
 NICE=15
 MAILTO=team@ydtech.co
 
-PYTHON_DIR = '../Envs/nutrimom/bin/python'
+PYTHON_DIR = '../Envs/r2d2/bin/python'
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 
