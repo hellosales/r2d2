@@ -1,6 +1,6 @@
 import mock
 
-from datetime import date, timedelta
+from datetime import date
 from freezegun import freeze_time
 
 from r2d2.data_importer.api import DataImporter
