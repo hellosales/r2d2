@@ -184,7 +184,7 @@ INSTALLED_APPS = (
     'raven.contrib.django.raven_compat',
     'django_jenkins',
     'ydcommon',
-    # 'djcelery',
+    'djcelery',
     'rest_framework_swagger',
     'rest_framework',
     'rest_framework.authtoken',
