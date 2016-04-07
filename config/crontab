@@ -9,6 +9,6 @@ DIR = 'www/'
 
 # m h  dom mon dow   command
 
-0 5 * * *   cd $DIR && $PYTHON_DIR manage.py clearsessions
-10 0 * * *  cd $DIR && $PYTHON_DIR manage.py update_rates yesterday
-* * * * *   cd $DIR && $PYTHON_DIR manage.py schedule_fetching_data
+0 5 * * *   $PYTHON_DIR manage.py clearsessions
+10 0 * * *  $PYTHON_DIR manage.py update_rates yesterday
+* * * * *   $PYTHON_DIR manage.py schedule_fetching_data
