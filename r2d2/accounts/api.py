@@ -134,8 +134,6 @@ class UserAPI(GenericAPIView):
         Get user information
     """
     serializer_class = AccountSerializer
-    accept_inactive = True
-    accept_upgrade = True
 
     def get(self, request):
         response = Response(self.serializer_class(request.user, many=False, context={'request': request}).data)
