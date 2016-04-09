@@ -38,6 +38,11 @@ class AccountManager(BaseUserManager):
 
 
 class Account(AbstractBaseUser, PermissionsMixin):
+
+    def __init__(self, *args, **kwargs):
+        super(Account, self).__init__(*args, **kwargs)
+        self._old_is_active = self.is_active
+
     email = models.EmailField(_('email address'), max_length=110, unique=True)
     date_joined = models.DateTimeField(_('date joined'), auto_now_add=True)
     is_staff = models.BooleanField('staff status', default=False,

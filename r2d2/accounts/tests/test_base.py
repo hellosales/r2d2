@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
+from django.core import mail
 from django.test import TestCase
 
-from r2d2.accounts.models import Account
 from r2d2.accounts.forms import AdminRegisterUserFullForm
+from r2d2.accounts.models import Account
 
 
 class AccountsTests(TestCase):
@@ -30,3 +31,13 @@ class AccountsTests(TestCase):
 
         # Logout
         self.client.get('/logout/')
+
+    def test_account_activation(self):
+        self.assertEqual(len(mail.outbox), 0)
+        self.user = Account.objects.create(
+            email='joe@doe.com',
+            is_active=False)
+        self.assertEqual(len(mail.outbox), 2)
+        self.user.is_active = True
+        self.user.save()
+        self.assertEqual(len(mail.outbox), 3)

@@ -84,6 +84,8 @@ class ResetPasswordConfirmSerializer(serializers.Serializer):
 
 class RegisterSerializer(serializers.ModelSerializer):
     merchant_name = serializers.CharField(required=True)
+    first_name = serializers.CharField(required=True)
+    last_name = serializers.CharField(required=True)
     confirm_password = serializers.CharField(allow_blank=False, write_only=True)
 
     class Meta:

@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-import logging
 import cssutils
+import logging
 
-from django.contrib.sites.models import Site
-from django.template.loader import render_to_string
-from django.core.mail import EmailMessage
 from django.conf import settings
+from django.contrib.sites.models import Site
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
 
 from premailer import Premailer
 
@@ -13,6 +13,8 @@ cssutils.log.setLevel(logging.CRITICAL)
 
 
 def send_email(template, to, subject, variables={}, fail_silently=False, cms=False, replace_variables={}):
+    if not isinstance(to, (list, tuple)):
+        to = [to]
     variables['site'] = Site.objects.get_current()
     variables['STATIC_URL'] = settings.STATIC_URL
     variables['is_secure'] = getattr(settings, 'IS_SECURE', False)
@@ -34,6 +36,6 @@ def send_email(template, to, subject, variables={}, fail_silently=False, cms=Fal
                      include_star_selectors=True,
                      strip_important=False,
                      base_url=base).transform()
-    email = EmailMessage(subject, html, settings.DEFAULT_FROM_EMAIL, [to])
+    email = EmailMessage(subject, html, settings.DEFAULT_FROM_EMAIL, to)
     email.content_subtype = "html"
     email.send(fail_silently=fail_silently)
