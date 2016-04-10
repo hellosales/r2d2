@@ -30,6 +30,8 @@ INTERNAL_IPS = (
     "127.0.0.1",
 )
 
+CELERY_ALWAYS_EAGER = True
+
 if SASS_DEBUG:
     COMPRESS_PRECOMPILERS = (
         # ('text/x-scss', 'sass --scss  --debug-info {infile} {outfile}'),
