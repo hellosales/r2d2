@@ -62,10 +62,10 @@ def deploy(full=False, libs=False, migrate=False, local_git=False):
         sudo(env.python + ' manage.py collectstatic -v0 --noinput', user=env.remote_user)
         sudo(env.python + ' manage.py compress -f', user=env.remote_user)
     if env.prefix == 'production':
-        sudo('supervisorctl restart r2d2')
-        # sudo('supervisorctl restart r2d2-celery')
+        sudo('supervisorctl restart r2d2-api')
+        sudo('supervisorctl restart r2d2-api-celery')
     else:
         sudo('supervisorctl restart r2d2-%s' % env.prefix)
-        # sudo('supervisorctl restart r2d2-celery-%s' % env.prefix)
+        sudo('supervisorctl restart r2d2-celery-%s' % env.prefix)
     if full:
         update_cron()
