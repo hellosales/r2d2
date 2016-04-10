@@ -364,6 +364,9 @@ CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 
 EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
 
+import djcelery
+djcelery.setup_loader()
+
 GOOGLE_TAG_MANAGER = ''
 
 AWS_ACCESS_KEY_ID = 'AKIAJ7QEF3AJBXLTJ63A'
@@ -422,5 +425,3 @@ if TESTING:
     from test_settings import *
     update_settings_for_tests(locals())
 
-# import djcelery
-# djcelery.setup_loader()
