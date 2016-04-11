@@ -382,8 +382,11 @@ SHOPIFY_SCOPES = ['read_content', 'read_themes', 'read_products', 'read_customer
 # other possible scopes:
 # write_themes, write_products, write_customers, write_orders, write_script_tags, write_fulfillments, write_shipping
 
-ETSY_API_KEY = 'a4elzoo928uftgjb8vgk3ej0'
-ETSY_API_SECRET = 'hifylh7a8o'
+# matt's keys
+ETSY_API_KEY = "7gw45bcpljnujp2wlfe6398b"
+ETSY_API_SECRET = "zpruv2b1cs"
+# ETSY_API_KEY = 'a4elzoo928uftgjb8vgk3ej0'
+# ETSY_API_SECRET = 'hifylh7a8o'
 ETSY_SCOPE = ['email_r', 'listings_r', 'transactions_r', 'billing_r', 'profile_r', 'address_r']
 # other possible scopes:
 # 'listings_w', 'listings_d', 'transactions_w', 'profile_w', 'address_w', 'favorites_rw', 'shops_rw', 'cart_rw',
