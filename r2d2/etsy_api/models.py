@@ -7,6 +7,7 @@ from etsy.oauth import EtsyOAuthClient
 from oauth2 import Token
 
 from django.conf import settings
+from django.core.cache import cache
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils import timezone
@@ -36,12 +37,16 @@ class EtsyAccount(AbstractDataProvider):
             return None
 
         if not hasattr(self, '_authorization_url'):
+            self._authorization_url = cache.get("etsy:auth_url:%d" % self.id)
+
+        if not self._authorization_url:
             client = EtsyOAuthClient(settings.ETSY_API_KEY, settings.ETSY_API_SECRET, etsy_env=EtsyEnvProduction())
             callback_link = '%s://%s%s?id=%d' % ('https' if getattr(settings, 'IS_SECURE', False) else 'http',
                                                  config.CLIENT_DOMAIN, reverse('etsy-callback'), self.id)
             self._authorization_url = client.get_signin_url(oauth_callback=callback_link)
             self.request_token = client.token.to_string()  # request token is required in callback
             self.save()
+            cache.set("etsy:auth_url:%d" % self.id, self._authorization_url, 60 * 60)
 
         return self._authorization_url
 
