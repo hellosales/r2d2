@@ -42,6 +42,8 @@ class EtsyApiTestCase(APIBaseTestCase):
         self.assertFalse(response.data['is_authorized'])
         self.assertIn('authorization_url', response.data)
         account_pk = response.data['pk']
+        etsy_account = EtsyAccount.objects.get(pk=account_pk)
+        self.assertIsNotNone(etsy_account.request_token)
 
         # let's pretend we have called authorization_url and now we have the callback:
         with mock.patch('etsy.oauth.EtsyOAuthClient.get_access_token') as get_access_token:
