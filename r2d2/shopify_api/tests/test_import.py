@@ -2,6 +2,7 @@ import mock
 
 from datetime import date
 from freezegun import freeze_time
+from shopify import Order
 
 from r2d2.shopify_api.models import ImportedShopifyOrder
 from r2d2.shopify_api.models import ShopifyStore
@@ -27,10 +28,11 @@ class TestImport(APIBaseTestCase):
                 (since the same one will be returned) """
 
         order_json = SHOPIFY_ORDERS['orders'][0]
+        self.account._activate_session()
 
         with freeze_time('2016-04-01'):
             with mock.patch('shopify.Order.find') as mocked_find:
-                mocked_find.return_value = SHOPIFY_ORDERS['orders']
+                mocked_find.return_value = [Order(attributes=x) for x in SHOPIFY_ORDERS['orders']]
 
                 self.account.fetch_status = ShopifyStore.FETCH_SCHEDULED
                 self.account.fetch_data()

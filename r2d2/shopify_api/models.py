@@ -65,6 +65,7 @@ class ShopifyStore(AbstractDataProvider):
         for order in orders:
             # if objects with given ID already exists - we delete it and create a new one (it was updated, so we want
             # just to replace it)
+            order = order.to_dict()
             ImportedShopifyOrder.objects.filter(shopify_id=order['id']).delete()
             ImportedShopifyOrder.create_from_json(self, order)
             self.last_api_items_dates['order'] = order['updated_at']
