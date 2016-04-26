@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-from django.conf.urls import patterns, url, include
+from django.conf.urls import include
+from django.conf.urls import patterns
+from django.conf.urls import url
 
 from rest_framework.routers import DefaultRouter
 
@@ -7,6 +9,7 @@ from rest_framework.routers import DefaultRouter
 urlpatterns = patterns(
     '',
     url(r'^accounts/', include('r2d2.accounts.api_urls')),
+    url(r'^insights', include('r2d2.insights.api_urls')),
     url(r'^notifications', include('r2d2.notifications.api_urls')),
 
     url(r'^data_importer/', include('r2d2.data_importer.api_urls')),

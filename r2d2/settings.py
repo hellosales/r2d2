@@ -152,6 +152,7 @@ PROJECT_APPS = (
     'r2d2.data_importer',
     'r2d2.emails',
     'r2d2.etsy_api',
+    'r2d2.insights',
     'r2d2.notifications',
     'r2d2.shopify_api',
     'r2d2.squareup_api',
@@ -352,7 +353,7 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.QueryParameterVersioning',
     'DEFAULT_VERSION': 1,
-    'PAGE_SIZE': 10,
+    'PAGE_SIZE': 20,
     'TEST_REQUEST_DEFAULT_FORMAT': 'json'
 }
 BROKER_URL = ""
