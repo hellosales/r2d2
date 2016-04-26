@@ -11,7 +11,8 @@ class InsightsAPITestCase(APIBaseTestCase):
     def setUp(self):
         user = self._create_user()
         for i in range(0, 30):
-            Insight.objects.create(user=user, text="insight %d" % i, generator_class="FakeGenerator")
+            insight = Insight.objects.create(user=user, text="insight %d" % i, generator_class="FakeGenerator")
+            print insight.id, insight.text
 
     def test_getting_insights(self):
         """ Insights shoulde be returned in two pages [page_size = 20 elements], there shoulde be
