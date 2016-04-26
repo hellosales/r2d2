@@ -26,6 +26,12 @@ def update_settings_for_tests(settings):
                                       for mc in settings['MIDDLEWARE_CLASSES']
                                       if 'CacheMiddleware' not in mc]
 
+    settings['CACHES'] = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        }
+    }
+
     if os.getenv('FASTER'):
         settings['DATABASES'] = {
             'default': {
