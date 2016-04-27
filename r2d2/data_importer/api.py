@@ -39,7 +39,7 @@ class DataImporter(object):
         return None
 
     @classmethod
-    def _create_import_task(cls, model, pk):
+    def create_import_task(cls, model, pk):
         """ create celery task for data importer """
         model.objects.filter(pk=pk).update(fetch_status=model.FETCH_SCHEDULED, fetch_scheduled_at=now())
         fetch_data_task.apply_async(args=[model, pk], countdown=60)
@@ -53,7 +53,7 @@ class DataImporter(object):
                                          access_token__isnull=False).exclude(fetch_scheduled_at__gt=time_limit)
             pks = query.values_list('pk', flat=True)
             for pk in pks:
-                cls._create_import_task(model, pk)
+                cls.create_import_task(model, pk)
 
 
 class DataImporterAccountsAPI(GenericAPIView):
