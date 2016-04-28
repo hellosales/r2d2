@@ -1,5 +1,6 @@
 import mock
 
+from r2d2.common_layer.models import CommonTransaction
 from r2d2.etsy_api.models import EtsyAccount
 from r2d2.etsy_api.models import ImportedEtsyReceipt
 from r2d2.etsy_api.models import ImportedEtsyShop
@@ -20,6 +21,11 @@ class TestImport(APIBaseTestCase):
         ImportedEtsyReceipt.objects.filter(account_id=self.account.id).delete()
         ImportedEtsyShop.objects.filter(account_id=self.account.id).delete()
         ImportedEtsyTransaction.objects.filter(account_id=self.account.id).delete()
+        CommonTransaction.objects.all().delete()
+
+    def test_mapping(self):
+        """ test correct mapping of object """
+        self.fail()
 
     def test_import(self):
         """ test importing data from etsy """
@@ -47,3 +53,7 @@ class TestImport(APIBaseTestCase):
                             self.assertEqual(ImportedEtsyShop.objects.filter(**kwargs).count(), 1)
                             self.assertEqual(ImportedEtsyTransaction.objects.filter(**kwargs).count(), 2)
                             self.assertEqual(ImportedEtsyReceipt.objects.filter(**kwargs).count(), 1)
+
+                            self.assertEqual(CommonTransaction.objects.count(), 1)
+                            common_transaction = CommonTransaction.objects.all()[0]
+                            self.assertEqual(common_transaction.source, "EtsyAccount")

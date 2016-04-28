@@ -3,9 +3,11 @@
 import shopify
 
 from constance import config
+from decimal import Decimal
 from django.conf import settings
 from django.core.urlresolvers import reverse
 
+from r2d2.common_layer.signals import object_imported
 from r2d2.data_importer.api import DataImporter
 from r2d2.data_importer.models import AbstractDataProvider
 from r2d2.utils.documents import StorageDynamicDocument
@@ -41,6 +43,35 @@ class ShopifyStore(AbstractDataProvider):
 
         return self._authorization_url
 
+    @classmethod
+    def map_data(cls, imported_shopify_order):
+        mapped_data = {
+            'transaction_id': imported_shopify_order.shopify_id,
+            'date': imported_shopify_order.created_at,
+            'total_price': Decimal(imported_shopify_order.total_line_items_price),
+            'total_tax': Decimal(imported_shopify_order.total_tax),
+            'total_discount': Decimal(imported_shopify_order.total_discounts),
+            'total_total': Decimal(imported_shopify_order.total_price),
+            'products': []
+        }
+
+        for item in imported_shopify_order.line_items:
+            mapped_product = {
+                'name': item['title'],
+                'sku': item['sku'],
+                'quantity': item['quantity'],
+                'price': Decimal(item['price']),
+                'tax': Decimal(0),
+                'discount': Decimal(item['total_discount']),
+                'total': Decimal(0)
+            }
+            for line in item['tax_lines']:
+                mapped_product['tax'] += Decimal(line['price'])
+            mapped_product['total'] = mapped_product['price'] - mapped_product['discount'] + mapped_product['tax']
+            mapped_data['products'].append(mapped_product)
+
+        return mapped_data
+
     @property
     def _store_url(self):
         return "%s.myshopify.com" % self.name
@@ -67,11 +98,15 @@ class ShopifyStore(AbstractDataProvider):
             # just to replace it)
             order = order.to_dict()
             ImportedShopifyOrder.objects.filter(shopify_id=order['id']).delete()
-            ImportedShopifyOrder.create_from_json(self, order)
+            imported_shopify_order = ImportedShopifyOrder.create_from_json(self, order)
             self.last_api_items_dates['order'] = order['updated_at']
             self.save()
             max_id = max(max_id, order['id'])
             max_updated_at = max(max_updated_at, order['updated_at'])
+
+            # mapping data & sending it out
+            mapped_data = self.map_data(imported_shopify_order)
+            object_imported.send(sender=None, importer_class=ShopifyStore, mapped_data=mapped_data)
         return len(orders) == self.MAX_REQUEST_LIMIT, max_updated_at, max_id
 
     def _fetch_data_inner(self):
