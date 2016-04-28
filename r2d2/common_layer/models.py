@@ -9,25 +9,25 @@ from r2d2.common_layer.utils import map_id
 
 class CommonTransactionProduct(document.EmbeddedDocument):
     """ unified product - to be embedded only """
-    name = fields.StringField(required=True)
-    sku = fields.StringField(required=True)
-    quantity = fields.DecimalField(precision=10, required=True)
+    name = fields.StringField()
+    sku = fields.StringField()
+    quantity = fields.DecimalField(precision=10)
     price = fields.DecimalField(precision=2, required=True)
-    tax = fields.DecimalField(precision=2, required=False)
-    discount = fields.DecimalField(precision=2, required=False)
-    total = fields.DecimalField(precision=2, required=True)
+    tax = fields.DecimalField(precision=2, null=True, blank=True)
+    discount = fields.DecimalField(precision=2, null=True, blank=True)
+    total = fields.DecimalField(precision=2)
 
 
 class CommonTransaction(document.Document):
     """ unified transaction """
-    transaction_id = fields.StringField(required=True, db_index=True, unique=True)
-    date = fields.DateTimeField(required=True)
+    transaction_id = fields.StringField(db_index=True, unique=True)
+    date = fields.DateTimeField()
     products = fields.ListField(fields.EmbeddedDocumentField('CommonTransactionProduct'))
-    total_price = fields.DecimalField(precision=2, required=True)
-    total_tax = fields.DecimalField(precision=2, required=False)
-    total_discount = fields.DecimalField(precision=2, required=False)
-    total_total = fields.DecimalField(precision=2, required=True)
-    source = fields.StringField(required=True)
+    total_price = fields.DecimalField(precision=2)
+    total_tax = fields.DecimalField(precision=2)
+    total_discount = fields.DecimalField(precision=2)
+    total_total = fields.DecimalField(precision=2)
+    source = fields.StringField()
 
 
 def object_imported_handler(**kwargs):

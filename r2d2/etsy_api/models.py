@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """ etsy models """
 from constance import config
+from datetime import datetime
+from decimal import Decimal
 from etsy import Etsy
 from etsy.oauth import EtsyEnvProduction
 from etsy.oauth import EtsyOAuthClient
@@ -12,6 +14,7 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils import timezone
 
+from r2d2.common_layer.signals import object_imported
 from r2d2.data_importer.api import DataImporter
 from r2d2.data_importer.models import AbstractDataProvider
 from r2d2.utils.documents import StorageDynamicDocument
@@ -122,12 +125,14 @@ class EtsyAccount(AbstractDataProvider):
         }
         if 'receipt' in self.last_api_items_dates:
             kwargs['min_last_modified'] = self.last_api_items_dates['receipt']
+
+        imported_receipts = []
         while True:
             receipts = self._call_fetch_receipts(**kwargs)
 
             for receipt in receipts:
                 ImportedEtsyReceipt.objects.filter(receipt_id=receipt['receipt_id']).delete()
-                ImportedEtsyReceipt.create_from_json(self, receipt)
+                imported_receipts.append(ImportedEtsyReceipt.create_from_json(self, receipt))
 
                 if ('receipt' not in self.last_api_items_dates or
                         self.last_api_items_dates['receipt'] < receipt['last_modified_tsz']):
@@ -138,6 +143,33 @@ class EtsyAccount(AbstractDataProvider):
                 break
 
             kwargs['offset'] += self.MAX_REQUEST_LIMIT
+        return imported_receipts
+
+    @classmethod
+    def map_data(cls, receipt, transactions):
+        mapped_data = {
+            'transaction_id': str(receipt.receipt_id),
+            'date': datetime.fromtimestamp(receipt.creation_tsz).isoformat(),
+            'total_price': Decimal(receipt.total_price),
+            'total_tax': Decimal(receipt.total_tax_cost) + Decimal(receipt.total_vat_cost),
+            'total_discount': Decimal(receipt.discount_amt),
+            'total_total': Decimal(receipt.adjusted_grandtotal),
+            'products': []
+        }
+
+        for item in transactions:
+            mapped_product = {
+                'name': item.title,
+                'sku': str(item.listing_id),
+                'quantity': Decimal(item.quantity),
+                'price': Decimal(item.price),
+                'tax': None,
+                'discount': None,
+                'total': Decimal(item.price)
+            }
+            mapped_data['products'].append(mapped_product)
+
+        return mapped_data
 
     def _fetch_data_inner(self):
         if not self._prepare_api():
@@ -147,7 +179,13 @@ class EtsyAccount(AbstractDataProvider):
         shops_ids = self._fetch_user_shops(user_id)
         for shop_id in shops_ids:
             self._fetch_transactions(shop_id)
-            self._fetch_receipts(shop_id)
+            receipts = self._fetch_receipts(shop_id)
+
+            for receipt in receipts:
+                transactions = ImportedEtsyTransaction.objects.filter(receipt_id=receipt.receipt_id)
+                mapped_data = self.map_data(receipt, transactions)
+                object_imported.send(sender=None, importer_class=EtsyAccount, mapped_data=mapped_data)
+
             # ## it is reduntant, but if Matt decide he wants us to import it:
             # for receipt_id in recepit_ids:
             #     # self._etsy_api.findShopPaymentByReceipt(shop_id=, receipt_id=)

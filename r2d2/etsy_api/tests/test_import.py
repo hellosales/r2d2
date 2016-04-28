@@ -1,5 +1,7 @@
 import mock
 
+from decimal import Decimal
+
 from r2d2.common_layer.models import CommonTransaction
 from r2d2.etsy_api.models import EtsyAccount
 from r2d2.etsy_api.models import ImportedEtsyReceipt
@@ -7,6 +9,33 @@ from r2d2.etsy_api.models import ImportedEtsyShop
 from r2d2.etsy_api.models import ImportedEtsyTransaction
 from r2d2.etsy_api.tests import sample_data
 from r2d2.utils.test_utils import APIBaseTestCase
+
+
+ETSY_MAPPED_DATA = {
+    'transaction_id': '1062792031',
+    'date': '2015-12-08T13:49:44',
+    'products': [{
+        'name': u'Silk Scarf',
+        'sku': '259848284',
+        'quantity': Decimal("3"),
+        'price': Decimal('0.20'),
+        'tax': None,
+        'discount': None,
+        'total': Decimal('0.20')
+    }, {
+        'name': 'Silk Scarf Clasp',
+        'sku': '259743529',
+        'quantity': Decimal("1"),
+        'price': Decimal('0.30'),
+        'tax': None,
+        'discount': None,
+        'total': Decimal('0.30')
+    }],
+    'total_price': Decimal('0.9'),
+    'total_tax': Decimal('0.0'),
+    'total_discount': Decimal('0.00'),
+    'total_total': Decimal('1.90')
+}
 
 
 class TestImport(APIBaseTestCase):
@@ -22,10 +51,6 @@ class TestImport(APIBaseTestCase):
         ImportedEtsyShop.objects.filter(account_id=self.account.id).delete()
         ImportedEtsyTransaction.objects.filter(account_id=self.account.id).delete()
         CommonTransaction.objects.all().delete()
-
-    def test_mapping(self):
-        """ test correct mapping of object """
-        self.fail()
 
     def test_import(self):
         """ test importing data from etsy """
@@ -53,6 +78,12 @@ class TestImport(APIBaseTestCase):
                             self.assertEqual(ImportedEtsyShop.objects.filter(**kwargs).count(), 1)
                             self.assertEqual(ImportedEtsyTransaction.objects.filter(**kwargs).count(), 2)
                             self.assertEqual(ImportedEtsyReceipt.objects.filter(**kwargs).count(), 1)
+
+                            # test mapping
+                            imported_receipt = ImportedEtsyReceipt.objects.filter(**kwargs)[0]
+                            imported_transactions = ImportedEtsyTransaction.objects.filter(**kwargs).order_by('id')
+                            mapped_data = EtsyAccount.map_data(imported_receipt, imported_transactions)
+                            self.assertEqual(mapped_data, ETSY_MAPPED_DATA)
 
                             self.assertEqual(CommonTransaction.objects.count(), 1)
                             common_transaction = CommonTransaction.objects.all()[0]
