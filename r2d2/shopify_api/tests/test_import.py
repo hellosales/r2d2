@@ -18,7 +18,7 @@ SHOPIFY_MAPPED_DATA = {
     'products': [{
         'name': "IPod Nano - 8gb",
         'sku': "IPOD2008GREEN",
-        'quantity': 1,
+        'quantity': Decimal(1),
         'price': Decimal('199.00'),
         'tax': Decimal('3.98'),
         'discount': Decimal('0'),
@@ -26,7 +26,7 @@ SHOPIFY_MAPPED_DATA = {
     }, {
         'name': "IPod Nano - 8gb",
         'sku': "IPOD2008RED",
-        'quantity': 1,
+        'quantity': Decimal(1),
         'price': Decimal('199.00'),
         'tax': Decimal('3.98'),
         'discount': Decimal('0'),
@@ -34,7 +34,7 @@ SHOPIFY_MAPPED_DATA = {
     }, {
         'name': "IPod Nano - 8gb",
         'sku': "IPOD2008BLACK",
-        'quantity': 1,
+        'quantity': Decimal(1),
         'price': Decimal('199.00'),
         'tax': Decimal('3.98'),
         'discount': Decimal('0'),

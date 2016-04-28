@@ -11,7 +11,7 @@ class CommonTransactionProduct(document.EmbeddedDocument):
     """ unified product - to be embedded only """
     name = fields.StringField(required=True)
     sku = fields.StringField(required=True)
-    quantity = fields.IntField(required=True)
+    quantity = fields.DecimalField(precision=10, required=True)
     price = fields.DecimalField(precision=2, required=True)
     tax = fields.DecimalField(precision=2, required=False)
     discount = fields.DecimalField(precision=2, required=False)

@@ -43,6 +43,10 @@ class ShopifyStore(AbstractDataProvider):
 
         return self._authorization_url
 
+    @property
+    def _store_url(self):
+        return "%s.myshopify.com" % self.name
+
     @classmethod
     def map_data(cls, imported_shopify_order):
         mapped_data = {
@@ -59,7 +63,7 @@ class ShopifyStore(AbstractDataProvider):
             mapped_product = {
                 'name': item['title'],
                 'sku': item['sku'],
-                'quantity': item['quantity'],
+                'quantity': Decimal(item['quantity']),
                 'price': Decimal(item['price']),
                 'tax': Decimal(0),
                 'discount': Decimal(item['total_discount']),
@@ -71,10 +75,6 @@ class ShopifyStore(AbstractDataProvider):
             mapped_data['products'].append(mapped_product)
 
         return mapped_data
-
-    @property
-    def _store_url(self):
-        return "%s.myshopify.com" % self.name
 
     def _activate_session(self):
         assert self.is_authorized

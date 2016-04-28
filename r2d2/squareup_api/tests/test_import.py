@@ -1,6 +1,7 @@
 import mock
 
 from datetime import date
+from decimal import Decimal
 from freezegun import freeze_time
 
 from r2d2.common_layer.models import CommonTransaction
@@ -8,6 +9,25 @@ from r2d2.squareup_api.models import ImportedSquareupPayment
 from r2d2.squareup_api.models import SquareupAccount
 from r2d2.squareup_api.tests.sample_data import PAYMENTS_RESPONSE
 from r2d2.utils.test_utils import APIBaseTestCase
+
+
+SQUAREUP_MAPPED_DATA = {
+    'transaction_id': u'fZR0ZGHuHjprkXOtojv5S',
+    'date': u'2015-11-18T19:30:50Z',
+    'products': [{
+        'name': u'Custom Amount',
+        'sku': u'',
+        'quantity': Decimal("1"),
+        'price': Decimal('100'),
+        'tax': Decimal('0'),
+        'discount': Decimal('0'),
+        'total': Decimal('100')
+    }],
+    'total_price': Decimal('100'),
+    'total_tax': Decimal('0'),
+    'total_discount': Decimal('0'),
+    'total_total': Decimal('100')
+}
 
 
 class TestImport(APIBaseTestCase):
@@ -20,10 +40,6 @@ class TestImport(APIBaseTestCase):
     def tearDown(self):
         ImportedSquareupPayment.objects.filter(account_id=self.account.id).delete()
         CommonTransaction.objects.all().delete()
-
-    def test_mapping(self):
-        """ test correct mapping of object """
-        self.fail()
 
     def test_import(self):
         """ test importing data from squareup """
@@ -40,6 +56,10 @@ class TestImport(APIBaseTestCase):
                 self.assertEqual(isp.squareup_id, PAYMENTS_RESPONSE[0]['id'])
                 self.assertNotEqual(isp.id.generation_time.date(), date(2014, 8, 25))
 
-                self.assertEqual(CommonTransaction.objects.count(), 1)
+                # test mapping
+                mapped_data = SquareupAccount.map_data(isp)
+                self.assertEqual(mapped_data, SQUAREUP_MAPPED_DATA)
+
+                self.assertEqual(CommonTransaction.objects.count(), 3)
                 common_transaction = CommonTransaction.objects.all()[0]
                 self.assertEqual(common_transaction.source, "SquareupAccount")
