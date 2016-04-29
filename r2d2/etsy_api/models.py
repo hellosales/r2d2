@@ -47,9 +47,9 @@ class EtsyAccount(AbstractDataProvider):
             callback_link = '%s://%s%s?id=%d' % ('https' if getattr(settings, 'IS_SECURE', False) else 'http',
                                                  config.CLIENT_DOMAIN, reverse('etsy-callback'), self.id)
             self._authorization_url = client.get_signin_url(oauth_callback=callback_link)
-            cache.set("etsy:auth_url:%d" % self.id, self._authorization_url, 60 * 60)
             self.request_token = client.token.to_string()  # request token is required in callback
             self.save()
+            cache.set("etsy:auth_url:%d" % self.id, self._authorization_url, 60 * 60)
 
         return self._authorization_url
 
