@@ -20,8 +20,9 @@ class CommonTransactionProduct(document.EmbeddedDocument):
 
 class CommonTransaction(document.Document):
     """ unified transaction """
+    user_id = fields.IntField(db_index=True)
     transaction_id = fields.StringField(db_index=True, unique=True)
-    date = fields.DateTimeField()
+    date = fields.DateTimeField(db_index=True)
     products = fields.ListField(fields.EmbeddedDocumentField('CommonTransactionProduct'))
     total_price = fields.DecimalField(precision=2)
     total_tax = fields.DecimalField(precision=2)

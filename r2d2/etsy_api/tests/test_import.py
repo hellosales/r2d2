@@ -82,7 +82,8 @@ class TestImport(APIBaseTestCase):
                             # test mapping
                             imported_receipt = ImportedEtsyReceipt.objects.filter(**kwargs)[0]
                             imported_transactions = ImportedEtsyTransaction.objects.filter(**kwargs).order_by('id')
-                            mapped_data = EtsyAccount.map_data(imported_receipt, imported_transactions)
+                            mapped_data = self.account.map_data(imported_receipt, imported_transactions)
+                            ETSY_MAPPED_DATA['user_id'] = self.user.id
                             self.assertEqual(mapped_data, ETSY_MAPPED_DATA)
 
                             self.assertEqual(CommonTransaction.objects.count(), 1)

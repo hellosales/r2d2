@@ -16,6 +16,7 @@ class TestBase(APIBaseTestCase):
 
     def _get_sample_transaction(self, transaction_id, date):
         return {
+            'user_id': 1,
             'transaction_id': transaction_id,
             'date': date,
             'products': [{

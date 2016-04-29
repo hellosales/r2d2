@@ -194,6 +194,7 @@ INSTALLED_APPS = (
     'templateaddons',
     'corsheaders',
     'sorl.thumbnail',
+    'django_extensions'
 ) + PROJECT_APPS
 
 

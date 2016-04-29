@@ -145,9 +145,9 @@ class EtsyAccount(AbstractDataProvider):
             kwargs['offset'] += self.MAX_REQUEST_LIMIT
         return imported_receipts
 
-    @classmethod
-    def map_data(cls, receipt, transactions):
+    def map_data(self, receipt, transactions):
         mapped_data = {
+            'user_id': self.user_id,
             'transaction_id': str(receipt.receipt_id),
             'date': datetime.fromtimestamp(receipt.creation_tsz).isoformat(),
             'total_price': Decimal(receipt.total_price),

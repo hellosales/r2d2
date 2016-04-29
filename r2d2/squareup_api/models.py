@@ -73,9 +73,9 @@ class SquareupAccount(AbstractDataProvider):
     def get_access_token(self, authorization_code):
         """ obtain access_token using authorization code """
         request_data = {
-          'client_id': settings.SQUAREUP_API_KEY,
-          'client_secret': settings.SQUAREUP_API_SECRET,
-          'code': authorization_code
+            'client_id': settings.SQUAREUP_API_KEY,
+            'client_secret': settings.SQUAREUP_API_SECRET,
+            'code': authorization_code
         }
 
         response = requests.post(settings.SQUAREUP_ACCESS_TOKEN_ENDPOINT, request_data)
@@ -102,9 +102,9 @@ class SquareupAccount(AbstractDataProvider):
         else:
             raise Exception('call returned status code %d' % response.status_code)
 
-    @classmethod
-    def map_data(cls, imported_squareup_payment):
+    def map_data(self, imported_squareup_payment):
         mapped_data = {
+            'user_id': self.user_id,
             'transaction_id': imported_squareup_payment.squareup_id,
             'date': imported_squareup_payment.created_at,
             'total_price': Decimal(imported_squareup_payment.net_sales_money['amount']),

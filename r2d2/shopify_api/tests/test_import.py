@@ -91,7 +91,8 @@ class TestImport(APIBaseTestCase):
                 imported_shopify_order = ImportedShopifyOrder.objects.filter(account_id=self.account.id)[0]
 
                 # test mapping
-                mapped_data = ShopifyStore.map_data(imported_shopify_order)
+                mapped_data = self.account.map_data(imported_shopify_order)
+                SHOPIFY_MAPPED_DATA['user_id'] = self.user.id
                 self.assertEqual(mapped_data, SHOPIFY_MAPPED_DATA)
 
                 # test if signal was called

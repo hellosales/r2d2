@@ -47,9 +47,9 @@ class ShopifyStore(AbstractDataProvider):
     def _store_url(self):
         return "%s.myshopify.com" % self.name
 
-    @classmethod
-    def map_data(cls, imported_shopify_order):
+    def map_data(self, imported_shopify_order):
         mapped_data = {
+            'user_id': self.user_id,
             'transaction_id': imported_shopify_order.shopify_id,
             'date': imported_shopify_order.created_at,
             'total_price': Decimal(imported_shopify_order.total_line_items_price),

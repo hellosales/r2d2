@@ -57,7 +57,8 @@ class TestImport(APIBaseTestCase):
                 self.assertNotEqual(isp.id.generation_time.date(), date(2014, 8, 25))
 
                 # test mapping
-                mapped_data = SquareupAccount.map_data(isp)
+                mapped_data = self.account.map_data(isp)
+                SQUAREUP_MAPPED_DATA['user_id'] = self.user.id
                 self.assertEqual(mapped_data, SQUAREUP_MAPPED_DATA)
 
                 self.assertEqual(CommonTransaction.objects.count(), 3)
