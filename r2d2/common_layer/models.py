@@ -32,10 +32,11 @@ class CommonTransaction(document.Document):
 
 
 def object_imported_handler(**kwargs):
-    importer_class = kwargs['importer_class']
+    importer_account = kwargs['importer_account']
     mapped_data = kwargs['mapped_data']
-    transaction_id = map_id(importer_class, mapped_data.pop('transaction_id'))
+    transaction_id = map_id(importer_account, mapped_data.pop('transaction_id'))
     CommonTransaction.objects.filter(transaction_id=transaction_id).delete()
-    CommonTransaction.objects.create(transaction_id=transaction_id, source=importer_class.__name__, **mapped_data)
+    CommonTransaction.objects.create(transaction_id=transaction_id, source=importer_account.__class__.__name__,
+                                     **mapped_data)
 
 object_imported.connect(object_imported_handler)

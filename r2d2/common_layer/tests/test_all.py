@@ -36,6 +36,9 @@ class TestBase(APIBaseTestCase):
 
     def setUp(self):
         self._create_user()
+        self.shopify_account = ShopifyStore.objects.create(user=self.user, access_token='token', name='name')
+        self.etsy_account = EtsyAccount.objects.create(user=self.user,
+                                                       access_token='oauth_token=x&oauth_token_secret=y', name='name')
 
     def tearDown(self):
         CommonTransaction.objects.all().delete()
@@ -51,12 +54,12 @@ class TestBase(APIBaseTestCase):
         # test creating object on signal
         self.assertEqual(CommonTransaction.objects.count(), 0)
         sample_object = self._get_sample_transaction(1, now)
-        object_imported.send(sender=None, importer_class=ShopifyStore, mapped_data=sample_object)
+        object_imported.send(sender=None, importer_account=self.shopify_account, mapped_data=sample_object)
         self.assertEqual(CommonTransaction.objects.count(), 1)
 
         # test updating object on signal
         sample_object = self._get_sample_transaction(1, now + timedelta(days=1))
-        object_imported.send(sender=None, importer_class=ShopifyStore, mapped_data=sample_object)
+        object_imported.send(sender=None, importer_account=self.shopify_account, mapped_data=sample_object)
         self.assertEqual(CommonTransaction.objects.count(), 1)
         common_transaction = CommonTransaction.objects.all()[0]
         self.assertEqual(common_transaction.date, now + timedelta(days=1))
@@ -64,10 +67,10 @@ class TestBase(APIBaseTestCase):
 
         # test if there is no collision for objects with same ID but different sources
         sample_object = self._get_sample_transaction(1, now)
-        object_imported.send(sender=None, importer_class=EtsyAccount, mapped_data=sample_object)
+        object_imported.send(sender=None, importer_account=self.etsy_account, mapped_data=sample_object)
         self.assertEqual(CommonTransaction.objects.count(), 2)
 
         # sanity check
         sample_object = self._get_sample_transaction(2, now)
-        object_imported.send(sender=None, importer_class=ShopifyStore, mapped_data=sample_object)
+        object_imported.send(sender=None, importer_account=self.shopify_account, mapped_data=sample_object)
         self.assertEqual(CommonTransaction.objects.count(), 3)

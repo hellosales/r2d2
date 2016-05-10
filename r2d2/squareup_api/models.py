@@ -148,7 +148,7 @@ class SquareupAccount(AbstractDataProvider):
 
                 # mapping data & sending it out
                 mapped_data = self.map_data(imported_squareup_payment)
-                object_imported.send(sender=None, importer_class=SquareupAccount, mapped_data=mapped_data)
+                object_imported.send(sender=None, importer_account=self, mapped_data=mapped_data)
 
             if len(payments) == self.MAX_REQUEST_LIMIT:
                 start_time = parse_date(payments[-1]['created_at'])

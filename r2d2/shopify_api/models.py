@@ -106,7 +106,7 @@ class ShopifyStore(AbstractDataProvider):
 
             # mapping data & sending it out
             mapped_data = self.map_data(imported_shopify_order)
-            object_imported.send(sender=None, importer_class=ShopifyStore, mapped_data=mapped_data)
+            object_imported.send(sender=None, importer_account=self, mapped_data=mapped_data)
         return len(orders) == self.MAX_REQUEST_LIMIT, max_updated_at, max_id
 
     def _fetch_data_inner(self):

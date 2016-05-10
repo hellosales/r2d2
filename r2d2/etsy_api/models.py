@@ -184,7 +184,7 @@ class EtsyAccount(AbstractDataProvider):
             for receipt in receipts:
                 transactions = ImportedEtsyTransaction.objects.filter(receipt_id=receipt.receipt_id)
                 mapped_data = self.map_data(receipt, transactions)
-                object_imported.send(sender=None, importer_class=EtsyAccount, mapped_data=mapped_data)
+                object_imported.send(sender=None, importer_account=self, mapped_data=mapped_data)
 
             # ## it is reduntant, but if Matt decide he wants us to import it:
             # for receipt_id in recepit_ids:
