@@ -220,6 +220,9 @@ class ImportedEtsyReceipt(StorageDynamicDocument):
     account_model = EtsyAccount
     prefix = ETSY_PREFIX
 
+    @property
+    def last_modified(self):
+        return datetime.fromtimestamp(self.creation_tsz)
 
 # class ImportedEtsyPayment(StorageDynamicDocument):
 #     account_model = EtsyAccount

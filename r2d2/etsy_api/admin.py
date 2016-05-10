@@ -29,7 +29,7 @@ class ImportedEtsyTransactionAdmin(StorageDocumentAdmin):
     pass
 
 
-@dynamic_fields_list_display('receipt_id', 'last_modified_tsz')
+@dynamic_fields_list_display('receipt_id', 'last_modified_tsz', 'last_modified')
 class ImportedEtsyReceiptAdmin(StorageDocumentAdmin):
     pass
 
