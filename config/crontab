@@ -12,4 +12,5 @@ DIR = 'www/'
 
 0 5 * * *   cd $DIR && $PYTHON_DIR manage.py clearsessions
 10 0 * * *  cd $DIR && $PYTHON_DIR manage.py update_rates yesterday > /dev/null
+30 0 * * *  cd $DIR && $PYTHON_DIR manage.py squareup_refresh_tokens yesterday > /dev/null
 * * * * *   cd $DIR && $PYTHON_DIR manage.py schedule_fetching_data > /dev/null
