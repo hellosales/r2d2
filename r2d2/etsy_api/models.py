@@ -95,7 +95,7 @@ class EtsyAccount(AbstractDataProvider):
         shops_ids = []
         for shop in self._call_fetch_shops(user_id=user_id, limit=100):
             shops_ids.append(shop['shop_id'])
-            ImportedEtsyShop.objects.filter(shop_id=shop['shop_id']).delete()
+            ImportedEtsyShop.objects.filter(shop_id=shop['shop_id'], account_id=self.id).delete()
             ImportedEtsyShop.create_from_json(self, shop)
         return shops_ids
 
@@ -109,7 +109,8 @@ class EtsyAccount(AbstractDataProvider):
         while True:
             transactions = self._call_fetch_transactions(**kwargs)
             for transaction in transactions:
-                ImportedEtsyTransaction.objects.filter(transaction_id=transaction['transaction_id']).delete()
+                ImportedEtsyTransaction.objects.filter(transaction_id=transaction['transaction_id'],
+                                                       account_id=self.id).delete()
                 ImportedEtsyTransaction.create_from_json(self, transaction)
 
             if len(transactions) < self.MAX_REQUEST_LIMIT:
@@ -131,7 +132,7 @@ class EtsyAccount(AbstractDataProvider):
             receipts = self._call_fetch_receipts(**kwargs)
 
             for receipt in receipts:
-                ImportedEtsyReceipt.objects.filter(receipt_id=receipt['receipt_id']).delete()
+                ImportedEtsyReceipt.objects.filter(receipt_id=receipt['receipt_id'], account_id=self.id).delete()
                 imported_receipts.append(ImportedEtsyReceipt.create_from_json(self, receipt))
 
                 if ('receipt' not in self.last_api_items_dates or

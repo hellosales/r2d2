@@ -143,7 +143,7 @@ class SquareupAccount(AbstractDataProvider):
             payments = self._call_payments_api('me', begin_time=start_time.isoformat(), end_time=end_time.isoformat(),
                                                limit=self.MAX_REQUEST_LIMIT)
             for payment in payments:
-                ImportedSquareupPayment.objects.filter(squareup_id=payment['id']).delete()
+                ImportedSquareupPayment.objects.filter(squareup_id=payment['id'], account_id=self.id).delete()
                 imported_squareup_payment = ImportedSquareupPayment.create_from_json(self, payment)
 
                 # mapping data & sending it out
