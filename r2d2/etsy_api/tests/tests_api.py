@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """ tests for etsy """
 import mock
-import requests_mock
 
 from copy import copy
 from oauth2 import Token
