@@ -4,6 +4,7 @@
     - runs data importing on registered models """
 from datetime import timedelta
 from django.utils.timezone import now
+from random import randint
 
 from r2d2.data_importer.serializers import DataImporterAccountSerializer
 from r2d2.data_importer.tasks import fetch_data_task
@@ -42,7 +43,7 @@ class DataImporter(object):
     def create_import_task(cls, model, pk):
         """ create celery task for data importer """
         model.objects.filter(pk=pk).update(fetch_status=model.FETCH_SCHEDULED, fetch_scheduled_at=now())
-        fetch_data_task.apply_async(args=[model, pk], countdown=60)
+        fetch_data_task.apply_async(args=[model, pk], countdown=60 + randint(1, 200))
 
     @classmethod
     def run_fetching_data(cls):

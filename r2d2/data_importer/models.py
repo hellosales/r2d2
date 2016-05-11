@@ -64,7 +64,8 @@ class AbstractDataProvider(models.Model):
         success = self.fetch_status == self.FETCH_SUCCESS
         fetched_from_all = True
         for importer_class in DataImporter.get_registered_models():
-            if importer_class.objects.filter(user__id=self.user_id, fetch_status=self.FETCH_SCHEDULED).exists():
+            if importer_class.objects.filter(user__id=self.user_id,
+                                             fetch_status__in=(self.FETCH_SCHEDULED, self.FETCH_IN_PROGRESS)).exists():
                 fetched_from_all = False
         data_fetched.send(sender=None, account=self, success=success, fetched_from_all=fetched_from_all)
 
