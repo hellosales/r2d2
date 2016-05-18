@@ -10,6 +10,9 @@ class DataImporterAdmin(admin.ModelAdmin):
     readonly_fields = ('authorization_date', 'last_successfull_call', 'last_error', 'last_api_items_dates',
                        'fetch_scheduled_at', 'access_token', 'user')
 
+    def has_add_permission(self, request):
+        return False
+
     def force_fetching_action(self, request, queryset):
         for item in queryset:
             if item.is_authorized:
