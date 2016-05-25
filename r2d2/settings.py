@@ -51,6 +51,7 @@ PAGE_TEMPLATES = (
     ('pages/email-user.html', 'email-user'),
     ('pages/email-user-second.html', 'email-user-second'),
     ('pages/email-admin.html', 'email-admin'),
+    ('pages/landing.html', 'landing'),
 )
 
 PAGE_USE_SITE_ID = True
@@ -431,4 +432,3 @@ PEP8_RCFILE = 'pep8.rc'
 if TESTING:
     from test_settings import *
     update_settings_for_tests(locals())
-
