@@ -1,0 +1,19 @@
+{% extends 'base.html'%}
+{% load i18n pages_tags %}
+
+{# placeholders #}
+
+    {% placeholder section_1_header with TextInput as section_1_header %}
+    {% placeholder section_1_text with TextInput as section_1_text %}
+
+    {% placeholder section_2_header with TextInput as section_2_header %}
+    {% placeholder section_2_text with TextInput as section_2_text %}
+
+{# /placeholder #}
+
+{% block body_content %}
+    <h1>blank cms page</h1>
+    {% block Placeholders %}
+        {% placeholder Body with TinyMCE %}
+    {% endblock %}
+{% endblock body_content %}

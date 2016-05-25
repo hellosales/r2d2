@@ -23,6 +23,7 @@ DATABASES = {
         'PASSWORD': 'TeldakAfHorpoffyiphbitextiekGockTyhutJenreyltajiar',
         'HOST': 'yddevdb.ydtech.co',
         'PORT': '3306',
+        'ATOMIC_REQUESTS': True
     },
 }
 

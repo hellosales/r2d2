@@ -51,6 +51,7 @@ PAGE_TEMPLATES = (
     ('pages/email-user.html', 'email-user'),
     ('pages/email-user-second.html', 'email-user-second'),
     ('pages/email-admin.html', 'email-admin'),
+    ('pages/landing.html', 'landing'),
 )
 
 PAGE_USE_SITE_ID = True
@@ -149,9 +150,11 @@ TEMPLATE_CONTEXT_PROCESSORS = [
 
 PROJECT_APPS = (
     'r2d2.accounts',
+    'r2d2.common_layer',
     'r2d2.data_importer',
     'r2d2.emails',
     'r2d2.etsy_api',
+    'r2d2.insights',
     'r2d2.notifications',
     'r2d2.shopify_api',
     'r2d2.squareup_api',
@@ -192,6 +195,7 @@ INSTALLED_APPS = (
     'templateaddons',
     'corsheaders',
     'sorl.thumbnail',
+    'django_extensions'
 ) + PROJECT_APPS
 
 
@@ -315,7 +319,8 @@ USE_THOUSAND_SEPARATOR = True
 
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
     }
 }
 
@@ -352,7 +357,7 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.QueryParameterVersioning',
     'DEFAULT_VERSION': 1,
-    'PAGE_SIZE': 10,
+    'PAGE_SIZE': 20,
     'TEST_REQUEST_DEFAULT_FORMAT': 'json'
 }
 BROKER_URL = ""
@@ -382,8 +387,11 @@ SHOPIFY_SCOPES = ['read_content', 'read_themes', 'read_products', 'read_customer
 # other possible scopes:
 # write_themes, write_products, write_customers, write_orders, write_script_tags, write_fulfillments, write_shipping
 
-ETSY_API_KEY = 'a4elzoo928uftgjb8vgk3ej0'
-ETSY_API_SECRET = 'hifylh7a8o'
+# matt's keys
+ETSY_API_KEY = "7gw45bcpljnujp2wlfe6398b"
+ETSY_API_SECRET = "zpruv2b1cs"
+# ETSY_API_KEY = 'a4elzoo928uftgjb8vgk3ej0'
+# ETSY_API_SECRET = 'hifylh7a8o'
 ETSY_SCOPE = ['email_r', 'listings_r', 'transactions_r', 'billing_r', 'profile_r', 'address_r']
 # other possible scopes:
 # 'listings_w', 'listings_d', 'transactions_w', 'profile_w', 'address_w', 'favorites_rw', 'shops_rw', 'cart_rw',
@@ -424,4 +432,3 @@ PEP8_RCFILE = 'pep8.rc'
 if TESTING:
     from test_settings import *
     update_settings_for_tests(locals())
-

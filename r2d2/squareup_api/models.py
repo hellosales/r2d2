@@ -6,10 +6,12 @@ from datetime import datetime
 from datetime import timedelta
 
 from dateutil.parser import parse as parse_date
+from decimal import Decimal
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
+from r2d2.common_layer.signals import object_imported
 from r2d2.data_importer.api import DataImporter
 from r2d2.data_importer.models import AbstractDataProvider
 from r2d2.utils.documents import StorageDynamicDocument
@@ -71,9 +73,9 @@ class SquareupAccount(AbstractDataProvider):
     def get_access_token(self, authorization_code):
         """ obtain access_token using authorization code """
         request_data = {
-          'client_id': settings.SQUAREUP_API_KEY,
-          'client_secret': settings.SQUAREUP_API_SECRET,
-          'code': authorization_code
+            'client_id': settings.SQUAREUP_API_KEY,
+            'client_secret': settings.SQUAREUP_API_SECRET,
+            'code': authorization_code
         }
 
         response = requests.post(settings.SQUAREUP_ACCESS_TOKEN_ENDPOINT, request_data)
@@ -100,6 +102,36 @@ class SquareupAccount(AbstractDataProvider):
         else:
             raise Exception('call returned status code %d' % response.status_code)
 
+    def map_data(self, imported_squareup_payment):
+        mapped_data = {
+            'user_id': self.user_id,
+            'transaction_id': imported_squareup_payment.squareup_id,
+            'date': imported_squareup_payment.created_at,
+            'total_price': Decimal(imported_squareup_payment.net_sales_money['amount']),
+            'total_tax': Decimal(imported_squareup_payment.tax_money['amount']),
+            'total_discount': Decimal(imported_squareup_payment.discount_money['amount']),
+            'total_total': 0,
+            'products': []
+        }
+        mapped_data['total_total'] = (mapped_data['total_price'] + mapped_data['total_tax'] -
+                                      mapped_data['total_discount'])
+
+        for item in imported_squareup_payment.itemizations:
+            mapped_product = {
+                'name': item['name'],
+                'sku': item['item_detail']['sku'],
+                'quantity': Decimal(item['quantity']),
+                'price': Decimal(item['gross_sales_money']['amount']),
+                'tax': Decimal(0),
+                'discount': Decimal(item['discount_money']['amount']),
+                'total': Decimal(item['total_money']['amount'])
+            }
+            for tax in item['taxes']:
+                mapped_product['tax'] += Decimal(tax['applied_money']['amount'])
+            mapped_data['products'].append(mapped_product)
+
+        return mapped_data
+
     def _fetch_data_inner(self):
         start_time = self.MIN_TIME
         now = datetime.now()
@@ -111,8 +143,12 @@ class SquareupAccount(AbstractDataProvider):
             payments = self._call_payments_api('me', begin_time=start_time.isoformat(), end_time=end_time.isoformat(),
                                                limit=self.MAX_REQUEST_LIMIT)
             for payment in payments:
-                ImportedSquareupPayment.objects.filter(squareup_id=payment['id']).delete()
-                ImportedSquareupPayment.create_from_json(self, payment)
+                ImportedSquareupPayment.objects.filter(squareup_id=payment['id'], account_id=self.id).delete()
+                imported_squareup_payment = ImportedSquareupPayment.create_from_json(self, payment)
+
+                # mapping data & sending it out
+                mapped_data = self.map_data(imported_squareup_payment)
+                object_imported.send(sender=None, importer_account=self, mapped_data=mapped_data)
 
             if len(payments) == self.MAX_REQUEST_LIMIT:
                 start_time = parse_date(payments[-1]['created_at'])

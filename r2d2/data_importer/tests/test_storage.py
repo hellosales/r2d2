@@ -1,3 +1,4 @@
+from r2d2.common_layer.models import CommonTransaction
 from r2d2.shopify_api.models import ImportedShopifyOrder
 from r2d2.shopify_api.models import ShopifyStore
 from r2d2.shopify_api.tests.sample_data import SHOPIFY_ORDERS
@@ -13,6 +14,7 @@ class TestStorage(APIBaseTestCase):
 
     def tearDown(self):
         ImportedShopifyOrder.objects.filter(account_id=self.account.id).delete()
+        CommonTransaction.objects.all().delete()
 
     def test_storage(self):
         """ test generic storage - based on shopify order
