@@ -135,3 +135,36 @@ class AccountApiTestCase(APIBaseTestCase):
         self.assertIn('last_name', response.data)
         self.assertIn('id', response.data)
         self.assertIn('email', response.data)
+
+    def test_password_change(self):
+        self._create_user()
+
+        data = {}
+        response = self.client.put(reverse('change_password_api'), data=data)
+        self.assertEqual(response.status_code, 401)
+
+        self._login()
+        response = self.client.put(reverse('change_password_api'), data=data)
+        self.assertIn('old_password', response.data)
+        self.assertIn('new_password', response.data)
+        self.assertIn('confirm_password', response.data)
+        self.assertEqual(response.status_code, 400)
+
+        data = {
+            'old_password': '123456',
+            'new_password': '123456',
+            'confirm_password': '12345'
+        }
+        response = self.client.put(reverse('change_password_api'), data=data)
+        self.assertIn('old_password', response.data)
+        self.assertIn('new_password', response.data)
+        self.assertIn('confirm_password', response.data)
+        self.assertEqual(response.status_code, 400)
+
+        data = {
+            'old_password': 'dump-password',
+            'new_password': 'd1234567',
+            'confirm_password': 'd1234567'
+        }
+        response = self.client.put(reverse('change_password_api'), data=data)
+        self.assertEqual(response.status_code, 200)

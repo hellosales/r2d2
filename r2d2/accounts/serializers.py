@@ -5,6 +5,9 @@ from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth import authenticate
+from django.core.exceptions import ValidationError
+from passwords.validators import validate_length, complexity
+
 
 from r2d2.accounts.models import (
     Account
@@ -80,6 +83,42 @@ class ResetPasswordConfirmSerializer(serializers.Serializer):
             self.user = user
             return data
         raise serializers.ValidationError(_("Token is not valid"))
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(allow_blank=False)
+    new_password = serializers.CharField(allow_blank=False)
+    confirm_password = serializers.CharField(allow_blank=False)
+
+    def validate(self, validated_data):
+        errors = {}
+        user = self.context['user']
+
+        old_password = validated_data.get('old_password')
+        new_password = validated_data.get('new_password')
+        confirm_password = validated_data.get('confirm_password')
+
+        if not user.check_password(old_password):
+            errors['old_password'] = _('Incorrect password')
+
+        for v in [validate_length, complexity]:
+            try:
+                v(new_password)
+            except ValidationError:
+                errors['new_password'] = _('Passwords must contain at least 8 digits and a number')
+                break
+
+        if new_password != confirm_password:
+            errors['confirm_password'] = _('Password should match')
+
+        if errors:
+            raise serializers.ValidationError(errors)
+
+        return validated_data
+
+    def update(self, instance, validated_data):
+        instance.set_password(validated_data['new_password'])
+        return instance
 
 
 class RegisterSerializer(serializers.ModelSerializer):

@@ -5,7 +5,7 @@ from passwords.validators import validate_length, complexity
 
 
 class PasswordValidator(object):
-    message = _('Passwords must contain at least 8 digits and a number')
+    message = _('Passwords must contain at least 8 digits and at least one letter and one number')
     code = "complexity"
 
     def __init__(self, min_length=None, max_length=None):
