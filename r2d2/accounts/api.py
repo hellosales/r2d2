@@ -62,9 +62,9 @@ class ResetPasswordAPI(CreateAPIView):
     authentication_classes = ()
 
     def perform_create(self, serializer):
-        unknown_user_error = mark_safe(_(
+        unknown_user_error = [mark_safe(_(
             'There is no account with that email address.'
-        ))
+        ))]
 
         email = serializer.validated_data['email'].lower()
         try:
