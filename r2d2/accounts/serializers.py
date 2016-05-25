@@ -1,22 +1,54 @@
+# -*- coding: utf-8 -*-
 from rest_framework import serializers
 
-from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth import authenticate
+from django.contrib.auth.tokens import default_token_generator
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
-from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth import authenticate
-from django.core.exceptions import ValidationError
-from passwords.validators import validate_length, complexity
+from django.utils.translation import ugettext_lazy as _
+from passwords.validators import complexity
+from passwords.validators import validate_length
 
 
-from r2d2.accounts.models import (
-    Account
-)
+from r2d2.accounts.models import Account
 from r2d2.accounts.validators import password_validator
+from r2d2.utils.serializers import R2D2ModelSerializer
+from r2d2.utils.serializers import R2D2Serializer
 
 
-class AccountSerializer(serializers.ModelSerializer):
+class AccountSerializer(R2D2ModelSerializer):
+    EMAIL_ERROR = _('Your user name needs to be an email address. You will receive insights about your data and other '
+                    'information at this address.')
     merchant_name = serializers.CharField(required=True)
+    first_name = serializers.CharField(required=True)
+    last_name = serializers.CharField(required=True)
+    email = serializers.CharField(required=False)
+
+    def validate_email(self, value):
+        return value
+
+    def validate(self, validated_data):
+        errors = {}
+        user = self.context['user']
+
+        email = validated_data.get('email')
+        if not email:
+            errors['email'] = self.EMAIL_ERROR
+        else:
+            try:
+                validate_email(email)
+            except ValidationError:
+                errors['email'] = self.EMAIL_ERROR
+
+            if Account.objects.exclude(id=user.id).filter(email=email).exists():
+                errors['email'] = _('This email is already in user')
+
+        if errors:
+            raise serializers.ValidationError(errors)
+
+        return validated_data
 
     class Meta:
         model = Account
@@ -85,10 +117,10 @@ class ResetPasswordConfirmSerializer(serializers.Serializer):
         raise serializers.ValidationError(_("Token is not valid"))
 
 
-class ChangePasswordSerializer(serializers.Serializer):
+class ChangePasswordSerializer(R2D2Serializer):
     old_password = serializers.CharField(allow_blank=False)
     new_password = serializers.CharField(allow_blank=False)
-    confirm_password = serializers.CharField(allow_blank=False)
+    confirm_password = serializers.CharField(allow_blank=True)
 
     def validate(self, validated_data):
         errors = {}
@@ -99,17 +131,18 @@ class ChangePasswordSerializer(serializers.Serializer):
         confirm_password = validated_data.get('confirm_password')
 
         if not user.check_password(old_password):
-            errors['old_password'] = _('Incorrect password')
+            errors['old_password'] = _('This password doesn’t match our records')
 
         for v in [validate_length, complexity]:
             try:
                 v(new_password)
             except ValidationError:
-                errors['new_password'] = _('Passwords must contain at least 8 digits and a number')
+                errors['new_password'] = \
+                    _('Your password must be 8 characters long and contain at least 1 number and 1 letter')
                 break
 
         if new_password != confirm_password:
-            errors['confirm_password'] = _('Password should match')
+            errors['confirm_password'] = _('Make sure this field is not blank and matches your password exactly')
 
         if errors:
             raise serializers.ValidationError(errors)

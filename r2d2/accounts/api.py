@@ -153,3 +153,11 @@ class UserAPI(GenericAPIView):
         response = Response(self.serializer_class(request.user, many=False, context={'request': request}).data)
         response['Cache-Control'] = 'no-cache'
         return response
+
+    def put(self, request):
+        serializer = self.serializer_class(data=request.data, instance=request.user, context={'user': request.user})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

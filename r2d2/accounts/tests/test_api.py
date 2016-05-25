@@ -135,6 +135,47 @@ class AccountApiTestCase(APIBaseTestCase):
         self.assertIn('last_name', response.data)
         self.assertIn('id', response.data)
         self.assertIn('email', response.data)
+        self.assertIn('merchant_name', response.data)
+
+        data = {
+            'first_name': 'First',
+            'last_name': 'Last',
+            'merchant_name': 'MU',
+            'email': 'test@test.com'
+        }
+        response = self.client.put(reverse('user_api'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['first_name'], data['first_name'])
+        self.assertEqual(response.data['last_name'], data['last_name'])
+        self.assertEqual(response.data['email'], data['email'])
+        self.assertEqual(response.data['merchant_name'], data['merchant_name'])
+
+        response = self.client.put(reverse('user_api'), data={})
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data['first_name'][0], 'Fill in this field.')
+        self.assertEqual(response.data['last_name'][0], 'Fill in this field.')
+        self.assertEqual(response.data['merchant_name'][0], 'Fill in this field.')
+
+        data = {
+            'first_name': 'First',
+            'last_name': 'Last',
+            'merchant_name': 'MU',
+        }
+        response = self.client.put(reverse('user_api'), data=data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data['email'][0], ('Your user name needs to be an email address. You will receive '
+                                                     'insights about your data and other information at this address.'))
+
+        data = {
+            'first_name': 'First',
+            'last_name': 'Last',
+            'merchant_name': 'MU',
+            'email': 'not an email'
+        }
+        response = self.client.put(reverse('user_api'), data=data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data['email'][0], ('Your user name needs to be an email address. You will receive '
+                                                     'insights about your data and other information at this address.'))
 
     def test_password_change(self):
         self._create_user()
