@@ -3,6 +3,7 @@ import mock
 from datetime import date
 from freezegun import freeze_time
 
+from r2d2.accounts.models import Account
 from r2d2.data_importer.api import DataImporter
 from r2d2.shopify_api.models import ShopifyStore
 from r2d2.utils.test_utils import APIBaseTestCase
@@ -26,6 +27,8 @@ class DataImporterApiTestCase(APIBaseTestCase):
             - changing status after fetching data
             - rescheduling already completed tasks """
         self._create_user()
+        self.user.approval_status = Account.APPROVED
+        self.user.save()
         account = ShopifyStore.objects.create(user=self.user, access_token='token', name='name')
         not_authorized_account = ShopifyStore.objects.create(user=self.user, name='other-name')
 
@@ -86,6 +89,27 @@ class DataImporterApiTestCase(APIBaseTestCase):
             account = ShopifyStore.objects.get(id=account.id)
             self.assertEqual(account.fetch_status, ShopifyStore.FETCH_FAILED)
             self.assertEqual(account.last_error, 'failed')
+
+    def test_importer_user_not_approved_flow(self):
+        """ not approved flow """
+        self._create_user()
+        account = ShopifyStore.objects.create(user=self.user, access_token='token', name='name')
+        not_authorized_account = ShopifyStore.objects.create(user=self.user, name='other-name')
+
+        with mock.patch('r2d2.data_importer.tasks.fetch_data_task.apply_async') as mocked_fetch_data:
+            mocked_fetch_data.return_value = None
+
+            # run importer
+            with freeze_time('2014-12-14'):
+                DataImporter.run_fetching_data()
+
+                # check status #1
+                store = ShopifyStore.objects.get(id=account.id)
+                self.assertEqual(store.fetch_status, ShopifyStore.FETCH_IDLE)
+
+                # check status #2
+                store = ShopifyStore.objects.get(id=not_authorized_account.id)
+                self.assertEqual(store.fetch_status, ShopifyStore.FETCH_IDLE)
 
 
 class DataImporterAccountsApiTestCase(APIBaseTestCase):
