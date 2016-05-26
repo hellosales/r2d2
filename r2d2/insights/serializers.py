@@ -2,6 +2,7 @@
 """ insights serializers """
 import math
 
+from django.utils.dateformat import DateFormat
 from rest_framework import serializers
 
 from r2d2.insights.models import Insight
@@ -13,6 +14,11 @@ from r2d2.common_layer.models import CommonTransaction
 
 class InsightSerializer(serializers.ModelSerializer):
     """ serializer for insights """
+    created = serializers.SerializerMethodField()
+
+    def get_created(self, obj):
+        return DateFormat(obj.created).format('N j').replace('.', '')
+
     class Meta:
         model = Insight
         read_only_fields = fields = ['pk', 'created', 'text']

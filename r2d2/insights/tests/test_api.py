@@ -12,6 +12,7 @@ from r2d2.shopify_api.models import ShopifyStore
 from r2d2.squareup_api.models import SquareupAccount
 from r2d2.utils.test_utils import APIBaseTestCase
 from r2d2.insights.serializers import HeaderDataSerializer
+from freezegun import freeze_time
 
 
 class InsightsAPITestCase(APIBaseTestCase):
@@ -47,7 +48,8 @@ class InsightsAPITestCase(APIBaseTestCase):
         self.account = SquareupAccount.objects.create(user=self.user, name='name')
 
         for i in range(0, 30):
-            Insight.objects.create(user=user, text="insight %d" % i, generator_class="FakeGenerator")
+            with freeze_time('2015-%d-%d' % (i % 12 + 1, i / 2 + 1)):
+                Insight.objects.create(user=user, text="insight %d" % i, generator_class="FakeGenerator")
 
         for i in range(0, 5):
             self._add_transaction(user)
@@ -70,6 +72,8 @@ class InsightsAPITestCase(APIBaseTestCase):
         self.assertEqual(len(response.data['results']), 20)
         self.assertEqual(response.data['results'][0]['text'], 'insight 29')
         self.assertEqual(response.data['results'][19]['text'], 'insight 10')
+        self.assertEqual(response.data['results'][0]['created'], 'June 15')
+        self.assertEqual(response.data['results'][19]['created'], 'Nov 6')
 
         response = self.client.get(response.data['next'])
         self.assertEqual(response.status_code, 200)
