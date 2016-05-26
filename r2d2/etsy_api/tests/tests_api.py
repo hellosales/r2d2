@@ -6,6 +6,7 @@ from copy import copy
 from oauth2 import Token
 from rest_framework.reverse import reverse
 
+from r2d2.accounts.models import Account
 from r2d2.etsy_api.models import EtsyAccount
 from r2d2.utils.test_utils import APIBaseTestCase
 
@@ -49,6 +50,7 @@ class EtsyApiTestCase(APIBaseTestCase):
             account_pk = response.data['pk']
             etsy_account = EtsyAccount.objects.get(pk=account_pk)
             self.assertIsNotNone(etsy_account.request_token)
+            self.assertEqual(self.user.approval_status, Account.NOT_APPROVED)
 
             # let's pretend we have called authorization_url and now we have the callback:
             with mock.patch('etsy.oauth.EtsyOAuthClient.get_access_token') as get_access_token:
@@ -62,6 +64,10 @@ class EtsyApiTestCase(APIBaseTestCase):
             self.assertEqual(len(response.data['results']), 1)
             self.assertTrue(response.data['results'][0]["is_authorized"])
             self.assertIsNone(response.data['results'][0]['authorization_url'])
+
+            # make sure account was mark as approved
+            user = Account.objects.get(id=self.user.id)
+            self.assertEqual(user.approval_status, Account.APPROVED)
 
     def test_retrieve_update_delete_account(self):
         """ test plan:

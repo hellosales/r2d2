@@ -67,6 +67,8 @@ class SquareupAccount(AbstractDataProvider):
                 self.token_expiration = parse_date(data['expires_at'])
             self.authorization_date = timezone.now()
             self.save()
+
+            self.user.data_importer_account_authorized()
             return True
         return False
 

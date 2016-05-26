@@ -47,12 +47,22 @@ class Account(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateTimeField(_('date joined'), auto_now_add=True)
     is_staff = models.BooleanField('staff status', default=False,
                                    help_text='Designates whether the user can log into this admin site.')
-    is_active = models.BooleanField('active', default=False,
+    is_active = models.BooleanField('active', default=True,
                                     help_text='Designates whether this user should be treated as '
                                               'active. Unselect this instead of deleting accounts.')
     first_name = models.CharField(_('first name'), max_length=255, blank=True)
     last_name = models.CharField(_('last name'), max_length=255, blank=True)
     merchant_name = models.CharField(max_length=255, null=True, blank=True)
+
+    NOT_APPROVED = "not approved"
+    APPROVED = "approved"
+    APPROVAL_REVOKED = "approval revoked"
+    APPROVAL_CHOICES = (
+        (NOT_APPROVED, "Not Approved"),
+        (APPROVED, "Approved"),
+        (APPROVAL_REVOKED, "Approval Revoked")
+    )
+    approval_status = models.CharField(max_length=50, choices=APPROVAL_CHOICES, default=NOT_APPROVED)
 
     USERNAME_FIELD = 'email'
 
@@ -75,6 +85,11 @@ class Account(AbstractBaseUser, PermissionsMixin):
 
     def get_username(self):
         return self.email
+
+    def data_importer_account_authorized(self):
+        if self.approval_status == self.NOT_APPROVED:
+            self.approval_status = self.APPROVED
+            self.save()
 
     def __unicode__(self):
         return self.email.split('@')[0]

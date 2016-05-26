@@ -119,12 +119,13 @@ class AccountApiTestCase(APIBaseTestCase):
 
             accounts = Account.objects.all()
             self.assertEqual(accounts.count(), 1)
-            self.assertFalse(accounts[0].is_active)
+            self.assertTrue(accounts[0].is_active)
+            self.assertEqual(accounts[0].approval_status, Account.NOT_APPROVED)
             self.assertFalse(accounts[0].is_staff)
             self.assertTrue(accounts[0].check_password('123456'))
             self.assertEqual(accounts[0].date_joined.date(), date(2016, 3, 17))
 
-            self.assertEqual(len(mail.outbox), 2)  # one mail for newly registered user, one for admin
+            self.assertEqual(len(mail.outbox), 0)
 
     def test_user_api(self):
         self._create_user()

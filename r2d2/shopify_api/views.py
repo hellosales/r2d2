@@ -43,4 +43,6 @@ class ShopifyCallbackAPI(GenericAPIView):
         store.authorization_date = timezone.now()
         store.save()
 
+        store.user.data_importer_account_authorized()
+
         return Response(status=status.HTTP_200_OK)
