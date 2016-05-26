@@ -119,6 +119,7 @@ class DataImporterAccountsApiTestCase(APIBaseTestCase):
 
     def test_accounts_api(self):
         self._login()
+        # test creating accounts
         response = self.client.post(reverse('data-importer-accounts'),
                                     {"name": "other name", "class": "SquareupAccount"})
         self.assertEqual(response.status_code, 201)
@@ -132,24 +133,48 @@ class DataImporterAccountsApiTestCase(APIBaseTestCase):
                                     {"name": "same-name", "access_token": "token", "class": "ShopifyStore"})
         self.assertEqual(response.status_code, 201)
 
+        # test getting accounts list
         response = self.client.get(reverse('data-importer-accounts'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 4)
         self.assertEqual(response.data[0]['class'], 'SquareupAccount')
         self.assertEqual(response.data[0]['name'], 'other name')
+        square_account = response.data[0]
         self.assertEqual(response.data[1]['class'], 'ShopifyStore')
         self.assertEqual(response.data[1]['name'], 'other-name')
+        shopify_account = response.data[1]
         self.assertEqual(response.data[2]['class'], 'EtsyAccount')
         self.assertEqual(response.data[2]['name'], 'same-name')
+        etsy_account = response.data[2]
         self.assertEqual(response.data[3]['class'], 'ShopifyStore')
         self.assertEqual(response.data[3]['name'], 'same-name')
 
-        account = response.data[0]
+        # test getting single account
+        account = response.data[3]
         response = self.client.get(reverse('data-importer-accounts'), {'class': account['class'], 'pk': account['pk']})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['class'], 'SquareupAccount')
-        self.assertEqual(response.data['name'], 'other name')
+        self.assertEqual(response.data['class'], 'ShopifyStore')
+        self.assertEqual(response.data['name'], 'same-name')
 
+        # test unauthorizing account
         account['access_token'] = None
         response = self.client.put(reverse('data-importer-accounts'), account)
         self.assertEqual(response.status_code, 200)
+
+        # test editing name - squareup
+        square_account['name'] = 'new name'
+        response = self.client.put(reverse('data-importer-accounts'), square_account)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['name'], 'new name')
+
+        # test editing name - etsy
+        etsy_account['name'] = 'new name'
+        response = self.client.put(reverse('data-importer-accounts'), etsy_account)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['name'], 'new name')
+
+        # test editing name - shopify - error
+        shopify_account['name'] = 'new name'
+        response = self.client.put(reverse('data-importer-accounts'), shopify_account)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('name', response.data)

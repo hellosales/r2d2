@@ -19,6 +19,8 @@ class ShopifyStoreSerializer(serializers.ModelSerializer):
         name = validated_data.get('name')
         query = ShopifyStore.objects.filter(name=name, user=self.context['request'].user)
         if self.instance:
+            if self.instance.name != name:
+                raise serializers.ValidationError({'name': _('Shopify store name cannot be changed.')})
             query = query.exclude(pk=self.instance.pk)
         if query.exists():
             raise serializers.ValidationError({'name': _('Name must be uniqe')})
