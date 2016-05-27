@@ -3,6 +3,7 @@
 from django.contrib import admin
 
 from r2d2.data_importer.api import DataImporter
+from r2d2.data_importer.models import SourceSuggestion
 
 
 class DataImporterAdmin(admin.ModelAdmin):
@@ -20,3 +21,11 @@ class DataImporterAdmin(admin.ModelAdmin):
     force_fetching_action.short_description = "force fetching data"
 
     actions = ['force_fetching_action']
+
+
+class SourceSuggestionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'text')
+    readonly_fields = ('user', 'text')
+
+
+admin.site.register(SourceSuggestion, SourceSuggestionAdmin)

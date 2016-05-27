@@ -4,7 +4,6 @@ from django.db import models
 from django.utils.timezone import now
 
 from r2d2.accounts.models import Account
-from r2d2.data_importer.api import DataImporter
 from r2d2.insights.signals import data_fetched
 from r2d2.utils.fields import JSONField
 
@@ -46,6 +45,8 @@ class AbstractDataProvider(models.Model):
         raise NotImplementedError
 
     def fetch_data(self):
+        from r2d2.data_importer.api import DataImporter
+
         if self.fetch_status != self.FETCH_SCHEDULED:
             return
         self.fetch_status = self.FETCH_IN_PROGRESS
@@ -73,3 +74,8 @@ class AbstractDataProvider(models.Model):
     def is_authorized(self):
         """ if token is set we assume account is authorized """
         return bool(self.access_token)
+
+
+class SourceSuggestion(models.Model):
+    user = models.ForeignKey(Account)
+    text = models.TextField()
