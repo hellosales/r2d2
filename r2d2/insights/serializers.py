@@ -5,23 +5,31 @@ import math
 from django.utils.dateformat import DateFormat
 from rest_framework import serializers
 
-from r2d2.insights.models import Insight
+from r2d2.common_layer.models import CommonTransaction
 from r2d2.etsy_api.models import EtsyAccount
+from r2d2.insights.models import Insight
+from r2d2.insights.models import InsightAttachment
 from r2d2.shopify_api.models import ShopifyStore
 from r2d2.squareup_api.models import SquareupAccount
-from r2d2.common_layer.models import CommonTransaction
+
+
+class InsightAttachmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InsightAttachment
+        fields = ['pk', 'file']
 
 
 class InsightSerializer(serializers.ModelSerializer):
     """ serializer for insights """
     created = serializers.SerializerMethodField()
+    attachments = InsightAttachmentSerializer(many=True)
 
     def get_created(self, obj):
         return DateFormat(obj.created).format('N j').replace('.', '')
 
     class Meta:
         model = Insight
-        read_only_fields = fields = ['pk', 'created', 'text']
+        read_only_fields = fields = ['pk', 'created', 'text', 'attachments']
 
 
 class HeaderDataSerializer(serializers.Serializer):
