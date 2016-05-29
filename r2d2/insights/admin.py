@@ -14,5 +14,10 @@ class InsightAdmin(admin.ModelAdmin):
     list_display = ('user', 'created', 'text', 'generator_class')
     inlines = [InsightAttachmentAdmin]
 
+    def save_model(self, request, obj, form, change):
+        if not obj.generator_class:
+            obj.generator_class = "Manual"
+        obj.save()
+
 
 admin.site.register(Insight, InsightAdmin)

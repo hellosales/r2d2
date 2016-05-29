@@ -10,6 +10,7 @@ from r2d2.common_layer.models import CommonTransaction
 
 class BaseGenerator(object):
     """ Base generator class """
+    EMAIL_NOTIFICATION = True
 
     @classmethod
     def should_be_triggered(cls, account, success, fetched_from_all):
@@ -35,6 +36,7 @@ class BaseGenerator(object):
 class DataImportedInsight(BaseGenerator):
     """ Simple insight that generates - "Transactions data was imported" insight after the first data import
         and "Transactions data was updated" insight after each consecutive import, but not more than once every 12h """
+    EMAIL_NOTIFICATION = False
 
     @classmethod
     def should_be_triggered(cls, account, success, fetched_from_all):
