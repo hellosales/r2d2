@@ -119,12 +119,13 @@ class AccountApiTestCase(APIBaseTestCase):
 
             accounts = Account.objects.all()
             self.assertEqual(accounts.count(), 1)
-            self.assertFalse(accounts[0].is_active)
+            self.assertTrue(accounts[0].is_active)
+            self.assertEqual(accounts[0].approval_status, Account.NOT_APPROVED)
             self.assertFalse(accounts[0].is_staff)
             self.assertTrue(accounts[0].check_password('123456'))
             self.assertEqual(accounts[0].date_joined.date(), date(2016, 3, 17))
 
-            self.assertEqual(len(mail.outbox), 2)  # one mail for newly registered user, one for admin
+            self.assertEqual(len(mail.outbox), 0)
 
     def test_user_api(self):
         self._create_user()
@@ -135,3 +136,77 @@ class AccountApiTestCase(APIBaseTestCase):
         self.assertIn('last_name', response.data)
         self.assertIn('id', response.data)
         self.assertIn('email', response.data)
+        self.assertIn('merchant_name', response.data)
+
+        data = {
+            'first_name': 'First',
+            'last_name': 'Last',
+            'merchant_name': 'MU',
+            'email': 'test@test.com'
+        }
+        response = self.client.put(reverse('user_api'), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['first_name'], data['first_name'])
+        self.assertEqual(response.data['last_name'], data['last_name'])
+        self.assertEqual(response.data['email'], data['email'])
+        self.assertEqual(response.data['merchant_name'], data['merchant_name'])
+
+        response = self.client.put(reverse('user_api'), data={})
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data['first_name'][0], 'Fill in this field.')
+        self.assertEqual(response.data['last_name'][0], 'Fill in this field.')
+        self.assertEqual(response.data['merchant_name'][0], 'Fill in this field.')
+
+        data = {
+            'first_name': 'First',
+            'last_name': 'Last',
+            'merchant_name': 'MU',
+        }
+        response = self.client.put(reverse('user_api'), data=data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data['email'][0], ('Your user name needs to be an email address. You will receive '
+                                                     'insights about your data and other information at this address.'))
+
+        data = {
+            'first_name': 'First',
+            'last_name': 'Last',
+            'merchant_name': 'MU',
+            'email': 'not an email'
+        }
+        response = self.client.put(reverse('user_api'), data=data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data['email'][0], ('Your user name needs to be an email address. You will receive '
+                                                     'insights about your data and other information at this address.'))
+
+    def test_password_change(self):
+        self._create_user()
+
+        data = {}
+        response = self.client.put(reverse('change_password_api'), data=data)
+        self.assertEqual(response.status_code, 401)
+
+        self._login()
+        response = self.client.put(reverse('change_password_api'), data=data)
+        self.assertIn('old_password', response.data)
+        self.assertIn('new_password', response.data)
+        self.assertIn('confirm_password', response.data)
+        self.assertEqual(response.status_code, 400)
+
+        data = {
+            'old_password': '123456',
+            'new_password': '123456',
+            'confirm_password': '12345'
+        }
+        response = self.client.put(reverse('change_password_api'), data=data)
+        self.assertIn('old_password', response.data)
+        self.assertIn('new_password', response.data)
+        self.assertIn('confirm_password', response.data)
+        self.assertEqual(response.status_code, 400)
+
+        data = {
+            'old_password': 'dump-password',
+            'new_password': 'd1234567',
+            'confirm_password': 'd1234567'
+        }
+        response = self.client.put(reverse('change_password_api'), data=data)
+        self.assertEqual(response.status_code, 200)

@@ -15,7 +15,8 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny
 
 from r2d2.accounts.serializers import (
-    AccountSerializer, AuthSerializer, ResetPasswordSerializer, ResetPasswordConfirmSerializer, RegisterSerializer
+    AccountSerializer, AuthSerializer, ResetPasswordSerializer, ResetPasswordConfirmSerializer, RegisterSerializer,
+    ChangePasswordSerializer
 )
 from r2d2.accounts.models import Account
 from r2d2.utils.api import BadRequestException
@@ -111,6 +112,19 @@ class ResetPasswordConfirmAPI(CreateAPIView):
         serializer.user.save()
 
 
+class ChangePasswordAPI(GenericAPIView):
+    """ change password API """
+    serializer_class = ChangePasswordSerializer
+
+    def put(self, request):
+        serializer = self.serializer_class(data=request.data, instance=request.user, context={'user': request.user})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class RegisterAPI(CreateAPIView):
     """
         Register a new account
@@ -139,3 +153,11 @@ class UserAPI(GenericAPIView):
         response = Response(self.serializer_class(request.user, many=False, context={'request': request}).data)
         response['Cache-Control'] = 'no-cache'
         return response
+
+    def put(self, request):
+        serializer = self.serializer_class(data=request.data, instance=request.user, context={'user': request.user})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

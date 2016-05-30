@@ -9,6 +9,22 @@ class EmptySerializer(serializers.Serializer):
     pass
 
 
+class R2D2Serializer(serializers.Serializer):
+    text = 'Fill in this field.'
+
+    def __init__(self, *args, **kwargs):
+        super(R2D2Serializer, self).__init__(*args, **kwargs)
+        self.change_required_message()
+
+    def change_required_message(self, *args, **kwargs):
+        def get_field_name(key, field):
+            return field.label if field.label else key.title()
+
+        for key, field in self.fields.iteritems():
+            if hasattr(field, 'error_messages'):
+                field.error_messages['required'] = _(self.text)
+
+
 class YDSerializer(serializers.Serializer):
     text = '{fieldname} is required'
 
@@ -26,6 +42,10 @@ class YDSerializer(serializers.Serializer):
 
 
 class YDModelSerializer(YDSerializer, serializers.ModelSerializer):
+    pass
+
+
+class R2D2ModelSerializer(R2D2Serializer, serializers.ModelSerializer):
     pass
 
 

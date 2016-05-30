@@ -7,6 +7,7 @@ from rest_framework.reverse import reverse
 
 from django.conf import settings
 
+from r2d2.accounts.models import Account
 from r2d2.squareup_api.models import SquareupAccount
 from r2d2.utils.test_utils import APIBaseTestCase
 
@@ -46,6 +47,7 @@ class SquareupApiTestCase(APIBaseTestCase):
         self.assertFalse(response.data['is_authorized'])
         self.assertTrue(response.data['in_authorization'])
         self.assertIn('authorization_url', response.data)
+        self.assertEqual(self.user.approval_status, Account.NOT_APPROVED)
 
         # creating second acount - and checking if 'in authorization' flag for the first account was set to false
         response = self.client.post(reverse('squareup-accounts'), {'name': ACCOUNT_NAME2})
@@ -81,6 +83,10 @@ class SquareupApiTestCase(APIBaseTestCase):
                 self.assertFalse(result['is_authorized'])
             elif result['name'] == ACCOUNT_NAME2:
                 self.assertTrue(result['is_authorized'])
+
+        # make sure account was mark as approved
+        user = Account.objects.get(id=self.user.id)
+        self.assertEqual(user.approval_status, Account.APPROVED)
 
         # test refreshing token
         account_query = SquareupAccount.objects.filter(access_token__isnull=False)

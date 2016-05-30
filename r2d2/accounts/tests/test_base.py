@@ -37,7 +37,7 @@ class AccountsTests(TestCase):
         self.user = Account.objects.create(
             email='joe@doe.com',
             is_active=False)
-        self.assertEqual(len(mail.outbox), 2)
+        self.assertEqual(len(mail.outbox), 0)
         self.user.is_active = True
         self.user.save()
-        self.assertEqual(len(mail.outbox), 3)
+        self.assertEqual(len(mail.outbox), 0)

@@ -64,6 +64,8 @@ class EtsyAccount(AbstractDataProvider):
         self.access_token = token.to_string()
         self.authorization_date = timezone.now()
         self.save()
+
+        self.user.data_importer_account_authorized()
         return True
 
     def _prepare_api(self):

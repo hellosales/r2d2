@@ -5,6 +5,7 @@ import mock
 from copy import copy
 from rest_framework.reverse import reverse
 
+from r2d2.accounts.models import Account
 from r2d2.shopify_api.models import ShopifyStore
 from r2d2.utils.test_utils import APIBaseTestCase
 
@@ -41,6 +42,7 @@ class ShopifyApiTestCase(APIBaseTestCase):
         self.assertEqual(response.data['name'], STORE_NAME)
         self.assertFalse(response.data['is_authorized'])
         self.assertIn('authorization_url', response.data)
+        self.assertEqual(self.user.approval_status, Account.NOT_APPROVED)
 
         # let's pretend we have called authorization_url and now we have the callback:
         with mock.patch('shopify.session.Session.request_token') as request_token:
@@ -53,6 +55,10 @@ class ShopifyApiTestCase(APIBaseTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
         self.assertTrue(response.data['results'][0]["is_authorized"])
+
+        # make sure account was mark as approved
+        user = Account.objects.get(id=self.user.id)
+        self.assertEqual(user.approval_status, Account.APPROVED)
 
     def test_retrieve_update_delete_account(self):
         """ test plan:

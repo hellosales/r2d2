@@ -3,14 +3,20 @@
     - registers data provider models
     - runs data importing on registered models """
 from datetime import timedelta
-from django.utils.timezone import now
 from random import randint
 
-from r2d2.data_importer.serializers import DataImporterAccountSerializer
-from r2d2.data_importer.tasks import fetch_data_task
+from django.utils.timezone import now
 from rest_framework import status
+from rest_framework.generics import CreateAPIView
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
+
+from r2d2.accounts.models import Account
+from r2d2.data_importer.models import SourceSuggestion
+from r2d2.data_importer.serializers import DataImporterAccountSerializer
+from r2d2.data_importer.serializers import SourceSuggestionSerializer
+from r2d2.data_importer.tasks import fetch_data_task
+from r2d2.utils.rest_api_helpers import UserFilteredMixin
 
 
 class DataImporter(object):
@@ -50,7 +56,8 @@ class DataImporter(object):
         """ creates tasks to import data """
         time_limit = now() - timedelta(days=1)
         for model in cls.__registered_models:
-            query = model.objects.filter(fetch_status__in=(model.FETCH_IDLE, model.FETCH_SUCCESS),
+            query = model.objects.filter(user__approval_status=Account.APPROVED,
+                                         fetch_status__in=(model.FETCH_IDLE, model.FETCH_SUCCESS),
                                          access_token__isnull=False).exclude(fetch_scheduled_at__gt=time_limit)
             pks = query.values_list('pk', flat=True)
             for pk in pks:
@@ -116,3 +123,9 @@ class DataImporterAccountsAPI(GenericAPIView):
             except model_class.DoesNotExist:
                 raise
         return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class SuggestionCreateAPI(UserFilteredMixin, CreateAPIView):
+    """ API for creating source suggestions """
+    serializer_class = SourceSuggestionSerializer
+    queryset = SourceSuggestion.objects.all()
