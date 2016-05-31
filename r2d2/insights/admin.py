@@ -8,6 +8,7 @@ from r2d2.insights.models import InsightAttachment
 class InsightAttachmentAdmin(admin.StackedInline):
     model = InsightAttachment
     extra = 1
+    readonly_fields = ('content_type', )
 
 
 class InsightAdmin(admin.ModelAdmin):

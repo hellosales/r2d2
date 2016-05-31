@@ -45,7 +45,14 @@ def validate_file_extension(value):
 class InsightAttachment(models.Model):
     """ attachment for insight """
     insight = models.ForeignKey(Insight, related_name='attachments')
+    content_type = models.CharField(max_length=50, null=True, editable=True)
     file = models.FileField(upload_to='insights_attachments', validators=[validate_file_extension])
+
+    def save(self, *args, **kwargs):
+        if self.file and self.file.file and hasattr(self.file.file, 'content_type'):
+            self.content_type = self.file.file.content_type
+        return super(InsightAttachment, self).save(*args, **kwargs)
+
 
 post_save.connect(insight_post_save, sender=Insight)
 

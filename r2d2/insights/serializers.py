@@ -16,7 +16,7 @@ from r2d2.squareup_api.models import SquareupAccount
 class InsightAttachmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = InsightAttachment
-        fields = ['pk', 'file']
+        fields = ['pk', 'content_type', 'file']
 
 
 class InsightSerializer(serializers.ModelSerializer):
