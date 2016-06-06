@@ -57,6 +57,7 @@ class DataImporter(object):
         time_limit = now() - timedelta(days=1)
         for model in cls.__registered_models:
             query = model.objects.filter(user__approval_status=Account.APPROVED,
+                                         is_active=True,
                                          fetch_status__in=(model.FETCH_IDLE, model.FETCH_SUCCESS),
                                          access_token__isnull=False).exclude(fetch_scheduled_at__gt=time_limit)
             pks = query.values_list('pk', flat=True)

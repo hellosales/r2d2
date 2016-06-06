@@ -53,6 +53,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(_('first name'), max_length=255, blank=True)
     last_name = models.CharField(_('last name'), max_length=255, blank=True)
     merchant_name = models.CharField(max_length=255, null=True, blank=True)
+    last_fetched_all = models.DateTimeField(null=True, blank=True)
 
     NOT_APPROVED = "not approved"
     APPROVED = "approved"

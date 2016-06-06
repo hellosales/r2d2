@@ -1,7 +1,10 @@
 import mock
 
 from datetime import date
+from datetime import timedelta
 from freezegun import freeze_time
+
+from django.utils import timezone
 
 from r2d2.accounts.models import Account
 from r2d2.data_importer.api import DataImporter
@@ -111,6 +114,83 @@ class DataImporterApiTestCase(APIBaseTestCase):
                 store = ShopifyStore.objects.get(id=not_authorized_account.id)
                 self.assertEqual(store.fetch_status, ShopifyStore.FETCH_IDLE)
 
+    def test_importer_not_active_accounts(self):
+        """ dezactivated flow """
+        self._create_user()
+        self.user.approval_status = Account.APPROVED
+        self.user.save()
+        account = ShopifyStore.objects.create(user=self.user, access_token='token', name='name', is_active=False)
+        not_authorized_account = ShopifyStore.objects.create(user=self.user, name='other-name', is_active=False)
+
+        with mock.patch('r2d2.data_importer.tasks.fetch_data_task.apply_async') as mocked_fetch_data:
+            mocked_fetch_data.return_value = None
+
+            # run importer
+            with freeze_time('2014-12-14'):
+                DataImporter.run_fetching_data()
+
+                # check status #1
+                store = ShopifyStore.objects.get(id=account.id)
+                self.assertEqual(store.fetch_status, ShopifyStore.FETCH_IDLE)
+
+                # check status #2
+                store = ShopifyStore.objects.get(id=not_authorized_account.id)
+                self.assertEqual(store.fetch_status, ShopifyStore.FETCH_IDLE)
+
+    def test_sending_signal_to_generators(self):
+        self._create_user()
+        self.user.approval_status = Account.APPROVED
+        self.user.save()
+        account = ShopifyStore.objects.create(user=self.user, access_token='token', name='name')
+
+        with mock.patch('r2d2.data_importer.tasks.fetch_data_task.apply_async') as mocked_fetch_data:
+            mocked_fetch_data.return_value = None
+
+            with mock.patch('r2d2.shopify_api.models.ShopifyStore._fetch_data_inner') as mocked_fetch_data_inner:
+                mocked_fetch_data_inner.return_value = None
+
+                with mock.patch('r2d2.insights.signals.data_fetched.send') as mocked_data_fetched:
+                    with freeze_time('2014-12-14 1:00'):
+                        DataImporter.run_fetching_data()
+                        account = ShopifyStore.objects.get(id=account.id)
+                        account.fetch_data()
+                        self.assertEqual(account.fetch_status, ShopifyStore.FETCH_SUCCESS)
+                        self.assertIsNotNone(account.last_successfull_call)
+                        mocked_fetch_data_inner.assert_any_call()
+                        mocked_data_fetched.assert_called_with(sender=None, account=account, fetched_from_all=True,
+                                                               success=True)
+
+                    with freeze_time('2014-12-14 2:00'):
+                        account2 = ShopifyStore.objects.create(user=self.user, access_token='token', name='name2')
+                        DataImporter.run_fetching_data()
+                        account2 = ShopifyStore.objects.get(id=account2.id)
+                        account2.fetch_data()
+                        self.assertEqual(account2.fetch_status, ShopifyStore.FETCH_SUCCESS)
+                        self.assertIsNotNone(account2.last_successfull_call)
+                        mocked_fetch_data_inner.assert_any_call()
+                        mocked_data_fetched.assert_called_with(sender=None, account=account2, fetched_from_all=False,
+                                                               success=True)
+
+                    with freeze_time('2014-12-15 1:00'):
+                        DataImporter.run_fetching_data()
+                        account = ShopifyStore.objects.get(id=account.id)
+                        account.fetch_data()
+                        self.assertEqual(account.fetch_status, ShopifyStore.FETCH_SUCCESS)
+                        self.assertIsNotNone(account.last_successfull_call)
+                        mocked_fetch_data_inner.assert_any_call()
+                        mocked_data_fetched.assert_called_with(sender=None, account=account, fetched_from_all=False,
+                                                               success=True)
+
+                    with freeze_time('2014-12-15 2:00'):
+                        DataImporter.run_fetching_data()
+                        account2 = ShopifyStore.objects.get(id=account2.id)
+                        account2.fetch_data()
+                        self.assertEqual(account2.fetch_status, ShopifyStore.FETCH_SUCCESS)
+                        self.assertIsNotNone(account2.last_successfull_call)
+                        mocked_fetch_data_inner.assert_any_call()
+                        mocked_data_fetched.assert_called_with(sender=None, account=account2, fetched_from_all=True,
+                                                               success=True)
+
 
 class DataImporterAccountsApiTestCase(APIBaseTestCase):
     """ tests creating & listing accounts through API """
@@ -178,3 +258,59 @@ class DataImporterAccountsApiTestCase(APIBaseTestCase):
         response = self.client.put(reverse('data-importer-accounts'), shopify_account)
         self.assertEqual(response.status_code, 400)
         self.assertIn('name', response.data)
+
+    @freeze_time('2014-12-15 01:00')
+    def test_dates_serializing(self):
+        """ test serializing is_active / next_sync / last_updated """
+
+        # fresh account, not scheduled yet
+        account = ShopifyStore.objects.create(user=self.user, access_token='token', name='name')
+        self._login()
+        response = self.client.get(reverse('data-importer-accounts'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['is_active'], True)
+        self.assertEqual(response.data[0]['next_sync'], 'today @ 1:05 AM')
+        self.assertEqual(response.data[0]['last_updated'], '')
+
+        # inactive account
+        account.is_active = False
+        account.save()
+        response = self.client.get(reverse('data-importer-accounts'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['is_active'], False)
+        self.assertEqual(response.data[0]['next_sync'], '')
+        self.assertEqual(response.data[0]['last_updated'], '')
+
+        # account currently fetching data
+        account.is_active = True
+        account.fetch_status = account.FETCH_IN_PROGRESS
+        account.save()
+        response = self.client.get(reverse('data-importer-accounts'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['is_active'], True)
+        self.assertEqual(response.data[0]['next_sync'], 'now')
+        self.assertEqual(response.data[0]['last_updated'], '')
+
+        # account with past fetch data & successful call
+        account.fetch_status = account.FETCH_SUCCESS
+        account.last_successfull_call = account.fetch_scheduled_at = timezone.now() - timedelta(hours=12)
+        account.save()
+        response = self.client.get(reverse('data-importer-accounts'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['is_active'], True)
+        self.assertEqual(response.data[0]['next_sync'], 'today @ 1:00 PM')
+        self.assertEqual(response.data[0]['last_updated'], '12/14/2014 @ 1:00 PM')
+
+        # account with past successful call & future fetch data
+        account.fetch_scheduled_at = timezone.now() + timedelta(hours=24)
+        account.save()
+        response = self.client.get(reverse('data-importer-accounts'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['is_active'], True)
+        self.assertEqual(response.data[0]['next_sync'], 'tomorrow @ 1:00 AM')
+        self.assertEqual(response.data[0]['last_updated'], '12/14/2014 @ 1:00 PM')
