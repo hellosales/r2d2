@@ -52,6 +52,7 @@ PAGE_TEMPLATES = (
     ('pages/email-user-second.html', 'email-user-second'),
     ('pages/email-admin.html', 'email-admin'),
     ('pages/landing.html', 'landing'),
+    ('pages/email-insight.html', 'email-insight'),
 )
 
 PAGE_USE_SITE_ID = True
@@ -428,6 +429,10 @@ import sys
 TESTING = ('test' in sys.argv or 'jenkins' in sys.argv)
 TEST_CHARSET = 'utf8'
 PEP8_RCFILE = 'pep8.rc'
+
+FAKE_EMAIL_TO = 'michals@arabel.la'
+
+CELERY_ALWAYS_EAGER=True
 
 if TESTING:
     from test_settings import *

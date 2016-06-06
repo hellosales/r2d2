@@ -1,0 +1,105 @@
+{% load compress %}{% load static l10n i18n %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width">
+    <style>
+      #outlook a {
+        padding: 0; }
+
+      body {
+        width: 100% !important;
+        min-width: 100%;
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+        margin: 0;
+        Margin: 0;
+        padding: 0;
+        -moz-box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        background: #cbd4df;
+    }
+
+    img {
+        display: block;
+        margin: 0;
+        padding: 0;
+    }
+
+    .content {
+        background: #fff;
+        overflow: hidden;
+        padding: 0 50px;
+        color: #474b51;
+    }
+
+    .content a {
+        color: #474b51;
+        text-decoration: underline;
+    }
+
+    .content p {
+        margin-bottom: 20px;
+    }
+
+    .body {
+        background: #cbd4df;
+        width: 100%;
+        min-width: 100%;
+        font-family: Arial;
+    }
+
+    .logo {
+        padding: 50px 50px 30px 30px;
+    }
+
+    .logo-right_text {
+        padding: 50px 0 30px 0;
+        font-size: 16px;
+        color: #474b51;
+        font-weight: 200;
+    }
+
+    .logo-right_text a {
+        color: #474b51;
+        text-decoration: underline;
+    }
+
+    .bottom_text {
+        text-align: center;
+        padding-top: 30px;
+        font-size: 16px;
+        color: #474b51;
+        font-weight: 200;
+        padding-bottom: 30px;
+    }
+
+    .maincol {
+        padding: 0 10px;
+    }
+
+    @media only screen and (max-width: 596px) {
+        .logo {
+            padding: 50px 20px 30px 0px;
+        }
+    }
+
+    </style>
+  <body>
+    <!-- <style> -->
+    <table class="body" cellpadding="0" cellspacing="0">
+      <tr>
+        <td align="center" valign="top" class="maincol">
+          <center>
+            {% block body_content %}
+            {% endblock body_content %}
+          </center>
+        </td>
+      </tr>
+    </table>
+  </body>
+
+</html>

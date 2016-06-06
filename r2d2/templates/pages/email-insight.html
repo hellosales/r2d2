@@ -1,0 +1,45 @@
+{% extends 'email-redesign.html'%}
+{% load i18n pages_tags %}
+
+{% block body_content %}
+{# placeholders #}
+
+    {% imageplaceholder logo as logo %}
+    {% imageplaceholder tabletop as tabletop %}
+    {% imageplaceholder tablebottom as tablebottom %}
+
+{# /placeholder #}
+    <table class="container text-center" width="760">
+      <tbody>
+        <tr>
+            <td>
+                <table cellpadding="0" cellspacing="0" class="header">
+                    <tr>
+                        <td class="logo"><img src="{{ MEDIA_URL }}{{ logo }}" alt=""></td>
+                        <td class="logo-right_text">We’ve taken a look at your sales activity and have a new insight ready for you.  Take a look below.  You can also view it directly in the <a href="#">Hello Sales Dashboard</a>.</td>
+                    </tr>
+                </table>
+                <table cellpadding="0" cellspacing="0">
+                    <tr><td><img src="{{ MEDIA_URL }}{{ tabletop }}" alt=""></td></tr>
+                    <tr>
+                        <td class="content">
+                            <p>Other merchants charging 23% more for water bottles with comparable sales.   Analysis based on Product with SKU 123456 from Channel Shopify.</p>
+                            <p>
+                                <a href="#">Excel_Data.xsl</a><br>
+                                <a href="#">Research_Sources.txt</a>
+                            </p>
+                            <img src="{{STATIC_URL}}images/example-insight.jpg" alt="">
+                        </td>
+                    </tr>
+                    <tr><td><img src="{{ MEDIA_URL }}{{ tablebottom }}" alt=""></td></tr>
+                </table>
+                <table cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                        <td class="bottom_text">This is an automated message - please do not reply to this email.</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+      </tbody>
+    </table>
+{% endblock body_content %}
