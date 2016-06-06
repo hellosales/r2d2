@@ -1,3 +1,4 @@
+from constance import config
 from django.contrib.auth import logout, login
 from django.utils.translation import ugettext_lazy as _
 from django.utils.safestring import mark_safe
@@ -88,6 +89,7 @@ class ResetPasswordAPI(CreateAPIView):
                 'site': current_site,
                 'email': user.email,
                 'domain': domain,
+                'client_domain': config.CLIENT_DOMAIN,
                 'site_name': site_name,
                 'uid': urlsafe_base64_encode(str(user.id)),
                 'user': user,
@@ -96,7 +98,7 @@ class ResetPasswordAPI(CreateAPIView):
             }
             subject = loader.render_to_string('emails/resetPassword/subject.txt', c)
             subject = ''.join(subject.splitlines())
-            send_email('reset_password', user.email, subject, c, cms=True)
+            send_email('reset_password', user.email, subject, c, cms=False)
 
 
 class ResetPasswordConfirmAPI(CreateAPIView):
