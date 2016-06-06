@@ -23,7 +23,7 @@ class ShopifyCallbackAPI(GenericAPIView):
         try:
             store = ShopifyStore.objects.get(name=shop, user=request.user)
         except ShopifyStore.DoesNotExist:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={'error': ShopifyStore.OAUTH_ERROR}, status=status.HTTP_400_BAD_REQUEST)
 
         params = {
             'shop': request.GET.get('shop', ''),
@@ -37,7 +37,7 @@ class ShopifyCallbackAPI(GenericAPIView):
         try:
             token = session.request_token(params)
         except:  # shopify can throw here general exception
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={'error': ShopifyStore.OAUTH_ERROR}, status=status.HTTP_400_BAD_REQUEST)
 
         store.access_token = token
         store.authorization_date = timezone.now()

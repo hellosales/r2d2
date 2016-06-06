@@ -37,6 +37,8 @@ class AbstractDataProvider(models.Model):
     last_api_items_dates = JSONField(default={}, blank=True, help_text='used for querying API only for updates')
     is_active = models.BooleanField(default=True)
 
+    OAUTH_ERROR = "There was a problem authorizing this channel. Please try again or contact Hello Sales."
+
     class Meta:
         abstract = True
         unique_together = ('user', 'name')
@@ -62,9 +64,15 @@ class AbstractDataProvider(models.Model):
             self._fetch_data_inner()
             self.fetch_status = self.FETCH_SUCCESS
             self.last_successfull_call = now
-        except Exception, e:
-            self.fetch_status = self.FETCH_FAILED
-            self.last_error = unicode(e)
+        except:
+            # "try twice"
+            try:
+                self._fetch_data_inner()
+                self.fetch_status = self.FETCH_SUCCESS
+                self.last_successfull_call = now
+            except Exception, e:
+                self.fetch_status = self.FETCH_FAILED
+                self.last_error = unicode(e)
         self.save()
 
         # send out signal
@@ -82,7 +90,7 @@ class AbstractDataProvider(models.Model):
                     fetched_from_all = False
         data_fetched.send(sender=None, account=self, success=success, fetched_from_all=fetched_from_all)
 
-        if fetched_from_all:
+        if fetched_from_all and success:
             self.user.last_fetched_all = now
             self.user.save()
 

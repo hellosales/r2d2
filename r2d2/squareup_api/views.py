@@ -23,4 +23,4 @@ class SquareupCallbackAPI(GenericAPIView):
         if authorization_code and squareup_account and squareup_account.get_access_token(authorization_code):
             return Response(status=status.HTTP_200_OK)
 
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response(data={'error': SquareupAccount.OAUTH_ERROR}, status=status.HTTP_400_BAD_REQUEST)

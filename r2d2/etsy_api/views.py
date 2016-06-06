@@ -15,9 +15,9 @@ class EtsyCallbackAPI(GenericAPIView):
         try:
             etsy_account = EtsyAccount.objects.get(id=request.GET.get('id', ''), user=request.user)
         except EtsyAccount.DoesNotExist:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={'error': EtsyAccount.OAUTH_ERROR}, status=status.HTTP_400_BAD_REQUEST)
 
         if not etsy_account.get_access_token(request.GET.get('oauth_verifier')):
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={'error': EtsyAccount.OAUTH_ERROR}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(status=status.HTTP_200_OK)

@@ -58,7 +58,7 @@ class DataImporter(object):
         for model in cls.__registered_models:
             query = model.objects.filter(user__approval_status=Account.APPROVED,
                                          is_active=True,
-                                         fetch_status__in=(model.FETCH_IDLE, model.FETCH_SUCCESS),
+                                         fetch_status__in=(model.FETCH_IDLE, model.FETCH_SUCCESS, model.FETCH_FAILED),
                                          access_token__isnull=False).exclude(fetch_scheduled_at__gt=time_limit)
             pks = query.values_list('pk', flat=True)
             for pk in pks:

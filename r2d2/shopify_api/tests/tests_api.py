@@ -14,6 +14,9 @@ STORE_NAME = 'arabel-la-store'
 AUTH_RESPONSE = ("http://localhost:8000/shopify/auth/callback?code=a0d0223aaa75d7c3019e4f01e2dfadee"
                  "&hmac=f6d46746192848df6ee711199e33eb4ee8fc3d615a3d49e0e8353a8006fda72f"
                  "&shop=arabel-la-store.myshopify.com&signature=25e6b31fa09d8c0cb92410731a096b35&timestamp=1456992047")
+WRONG_AUTH_RESPONSE = ("http://localhost:8000/shopify/auth/callback?code=a0d0223aaa75d7c3019e4f01e2dfadee"
+                       "&hmac=f6d46746192848df6ee711199e33eb4ee8fc3d615a3d49e0e8353a8006fda72f"
+                       "&shop=wrong.myshopify.com&signature=25e6b31fa09d8c0cb92410731a096b35&timestamp=1456992047")
 TOKEN = 'some access token'
 
 
@@ -43,6 +46,13 @@ class ShopifyApiTestCase(APIBaseTestCase):
         self.assertFalse(response.data['is_authorized'])
         self.assertIn('authorization_url', response.data)
         self.assertEqual(self.user.approval_status, Account.NOT_APPROVED)
+
+        # let's try to pass incorrect callback
+        with mock.patch('shopify.session.Session.request_token') as request_token:
+            request_token.return_value = '096f2fac29f779a334349aa69538c056'
+            response = self.client.get(WRONG_AUTH_RESPONSE)
+            self.assertEqual(response.status_code, 400)
+            self.assertIn("error", response.data)
 
         # let's pretend we have called authorization_url and now we have the callback:
         with mock.patch('shopify.session.Session.request_token') as request_token:
