@@ -1,0 +1,37 @@
+{% extends "emails/email_redesign_base.html" %}
+{% load i18n pages_tags %}
+{% block body_content %}
+    <table class="container text-center" width="760">
+      <tbody>
+        <tr>
+            <td>
+                <table cellpadding="0" cellspacing="0" class="header">
+                    <tr>
+                        <td class="logo"><img src="https://r2d2-dev-arabella.s3.amazonaws.com/upload/page_5/logo-1465212086.0-r2logo2.jpg" alt=""></td>
+                        <td class="logo-right_text">We’ve taken a look at your sales activity and have a new insight ready for you.  Take a look below.  You can also view it directly in the <a href="#">Hello Sales Dashboard</a>.</td>
+                    </tr>
+                </table>
+                <table cellpadding="0" cellspacing="0">
+                    <tr><td><img src="https://r2d2-dev-arabella.s3.amazonaws.com/upload/page_5/tabletop-1465212087.39-table-top.jpg" alt=""></td></tr>
+                    <tr>
+                        <td class="content">
+                            <p>Other merchants charging 23% more for water bottles with comparable sales.   Analysis based on Product with SKU 123456 from Channel Shopify.</p>
+                            <p>
+                                <a href="#">Excel_Data.xsl</a><br>
+                                <a href="#">Research_Sources.txt</a>
+                            </p>
+                            <img src="{{STATIC_URL}}images/example-insight.jpg" alt="">
+                        </td>
+                    </tr>
+                    <tr><td><img src="https://r2d2-dev-arabella.s3.amazonaws.com/upload/page_5/tablebottom-1465212087.87-table-bottom.jpg" alt=""></td></tr>
+                </table>
+                <table cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                        <td class="bottom_text">This is an automated message - please do not reply to this email.</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+      </tbody>
+    </table>
+{% endblock body_content %}
