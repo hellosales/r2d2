@@ -109,9 +109,10 @@ class ResetPasswordConfirmSerializer(serializers.Serializer):
             uid = force_text(urlsafe_base64_decode(data.get('user_id')))
             user = model._default_manager.get(pk=uid)
         except (TypeError, ValueError, OverflowError, model.DoesNotExist):
+            # except (model.DoesNotExist):
             user = None
 
-        if user is not None and default_token_generator.check_token(user, data.get('token')):
+        if user is not None and default_token_generator.check_token(user, urlsafe_base64_decode(data.get('token'))):
             self.user = user
             return data
         raise serializers.ValidationError(_("Token is not valid"))

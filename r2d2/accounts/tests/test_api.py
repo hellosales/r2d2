@@ -67,7 +67,7 @@ class AccountApiTestCase(APIBaseTestCase):
         self.assertIn('user_id', response.data)
 
         data['user_id'] = urlsafe_base64_encode(str(self.user.id))
-        data['token'] = default_token_generator.make_token(self.user)
+        data['token'] = urlsafe_base64_encode(default_token_generator.make_token(self.user))
 
         # not valid password
         data['new_password'] = 'foo'

@@ -85,7 +85,6 @@ class ResetPasswordAPI(CreateAPIView):
             domain = current_site.domain
             c = {
                 'STATIC_URL': settings.STATIC_URL,
-                'user': user,
                 'site': current_site,
                 'email': user.email,
                 'domain': domain,
@@ -93,7 +92,7 @@ class ResetPasswordAPI(CreateAPIView):
                 'site_name': site_name,
                 'uid': urlsafe_base64_encode(str(user.id)),
                 'user': user,
-                'token': default_token_generator.make_token(user),
+                'token': urlsafe_base64_encode(str(default_token_generator.make_token(user))),
                 'protocol': self.request.is_secure() and 'https' or 'http',
             }
             subject = loader.render_to_string('emails/resetPassword/subject.txt', c)
