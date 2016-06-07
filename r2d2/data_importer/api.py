@@ -89,7 +89,7 @@ class DataImporterAccountsAPI(GenericAPIView):
                 accounts += list(model.objects.filter(user=request.user))
 
             # sort them by name
-            accounts.sort(key=lambda x: (x.name, x.__class__.__name__))
+            accounts.sort(key=lambda x: (x.created, x.name, x.__class__.__name__), reverse=True)
 
             serializer = DataImporterAccountSerializer(accounts, many=True)
             return Response(serializer.data)

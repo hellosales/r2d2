@@ -217,20 +217,20 @@ class DataImporterAccountsApiTestCase(APIBaseTestCase):
         response = self.client.get(reverse('data-importer-accounts'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 4)
-        self.assertEqual(response.data[0]['class'], 'SquareupAccount')
-        self.assertEqual(response.data[0]['name'], 'other name')
-        square_account = response.data[0]
-        self.assertEqual(response.data[1]['class'], 'ShopifyStore')
-        self.assertEqual(response.data[1]['name'], 'other-name')
-        shopify_account = response.data[1]
-        self.assertEqual(response.data[2]['class'], 'EtsyAccount')
-        self.assertEqual(response.data[2]['name'], 'same-name')
-        etsy_account = response.data[2]
-        self.assertEqual(response.data[3]['class'], 'ShopifyStore')
-        self.assertEqual(response.data[3]['name'], 'same-name')
+        self.assertEqual(response.data[3]['class'], 'SquareupAccount')
+        self.assertEqual(response.data[3]['name'], 'other name')
+        square_account = response.data[3]
+        self.assertEqual(response.data[2]['class'], 'ShopifyStore')
+        self.assertEqual(response.data[2]['name'], 'other-name')
+        shopify_account = response.data[2]
+        self.assertEqual(response.data[1]['class'], 'EtsyAccount')
+        self.assertEqual(response.data[1]['name'], 'same-name')
+        etsy_account = response.data[1]
+        self.assertEqual(response.data[0]['class'], 'ShopifyStore')
+        self.assertEqual(response.data[0]['name'], 'same-name')
 
         # test getting single account
-        account = response.data[3]
+        account = response.data[0]
         response = self.client.get(reverse('data-importer-accounts'), {'class': account['class'], 'pk': account['pk']})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['class'], 'ShopifyStore')

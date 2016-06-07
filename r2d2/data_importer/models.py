@@ -18,6 +18,7 @@ class AbstractDataProvider(models.Model):
     access_token = models.CharField(max_length=255, null=True, blank=True)
     authorization_date = models.DateTimeField(null=True, blank=True)
     last_successfull_call = models.DateTimeField(null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
 
     FETCH_IDLE = "idle"
     FETCH_SCHEDULED = "scheduled"

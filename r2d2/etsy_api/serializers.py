@@ -12,9 +12,9 @@ class EtsyAccountSerializer(serializers.ModelSerializer):
         model = EtsyAccount
 
         fields = ['pk', 'name', 'access_token', 'authorization_date', 'last_successfull_call', 'is_authorized',
-                  'authorization_url', 'is_active', 'next_sync', 'last_updated', 'fetch_status']
+                  'authorization_url', 'is_active', 'next_sync', 'last_updated', 'fetch_status', 'created']
         read_only_fields = ['pk', 'authorization_date', 'last_successfull_call', 'is_authorized', 'authorization_url',
-                            'next_sync', 'last_updated', 'fetch_status']
+                            'next_sync', 'last_updated', 'fetch_status', 'created']
 
     def validate(self, validated_data):
         name = validated_data.get('name')
