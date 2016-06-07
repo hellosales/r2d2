@@ -100,7 +100,7 @@ class ResetPasswordAPI(CreateAPIView):
             send_email('reset_password', user.email, subject, c, cms=False)
 
 
-class ResetPasswordConfirmAPI(CreateAPIView):
+class ResetPasswordConfirmAPI(GenericAPIView):
     """
         Set new password with token from reset password
     """
@@ -108,9 +108,13 @@ class ResetPasswordConfirmAPI(CreateAPIView):
     permission_classes = (AllowAny,)
     authentication_classes = ()
 
-    def perform_create(self, serializer):
-        serializer.user.set_password(serializer.validated_data['new_password'])
-        serializer.user.save()
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            user = serializer.user
+            user.set_password(serializer.validated_data['re_new_password'])
+            user.save()
+        return Response(AccountSerializer(user, context={'request': request}).data)
 
 
 class ChangePasswordAPI(GenericAPIView):

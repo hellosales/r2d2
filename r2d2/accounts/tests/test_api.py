@@ -83,7 +83,7 @@ class AccountApiTestCase(APIBaseTestCase):
 
         data['re_new_password'] = data['new_password']
         response = self.client.post(reverse('reset_password_confirm_api'), data=data)
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 200)
 
         user = Account.objects.get(id=self.user.id)
         self.assertTrue(user.check_password(data['new_password']))
