@@ -43,7 +43,7 @@ class AccountSerializer(R2D2ModelSerializer):
                 errors['email'] = self.EMAIL_ERROR
 
             if Account.objects.exclude(id=user.id).filter(email=email).exists():
-                errors['email'] = _('This email is already in user')
+                errors['email'] = _('This email is already in use')
 
         if errors:
             raise serializers.ValidationError(errors)
