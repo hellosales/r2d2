@@ -12,9 +12,9 @@ class ShopifyStoreSerializer(serializers.ModelSerializer):
         model = ShopifyStore
 
         fields = ['pk', 'name', 'access_token', 'authorization_date', 'last_successfull_call', 'is_authorized',
-                  'authorization_url', 'is_active', 'next_sync', 'last_updated']
+                  'authorization_url', 'is_active', 'next_sync', 'last_updated', 'fetch_status']
         read_only_fields = ['pk', 'authorization_date', 'last_successfull_call', 'is_authorized', 'authorization_url',
-                            'next_sync', 'last_updated']
+                            'next_sync', 'last_updated', 'fetch_status']
 
     def validate(self, validated_data):
         name = validated_data.get('name')
