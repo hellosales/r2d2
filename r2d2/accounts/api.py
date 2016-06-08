@@ -85,7 +85,6 @@ class ResetPasswordAPI(CreateAPIView):
             domain = current_site.domain
             c = {
                 'STATIC_URL': settings.STATIC_URL,
-                'user': user,
                 'site': current_site,
                 'email': user.email,
                 'domain': domain,
@@ -93,7 +92,7 @@ class ResetPasswordAPI(CreateAPIView):
                 'site_name': site_name,
                 'uid': urlsafe_base64_encode(str(user.id)),
                 'user': user,
-                'token': default_token_generator.make_token(user),
+                'token': urlsafe_base64_encode(str(default_token_generator.make_token(user))),
                 'protocol': self.request.is_secure() and 'https' or 'http',
             }
             subject = loader.render_to_string('emails/resetPassword/subject.txt', c)
@@ -101,7 +100,7 @@ class ResetPasswordAPI(CreateAPIView):
             send_email('reset_password', user.email, subject, c, cms=False)
 
 
-class ResetPasswordConfirmAPI(CreateAPIView):
+class ResetPasswordConfirmAPI(GenericAPIView):
     """
         Set new password with token from reset password
     """
@@ -109,9 +108,13 @@ class ResetPasswordConfirmAPI(CreateAPIView):
     permission_classes = (AllowAny,)
     authentication_classes = ()
 
-    def perform_create(self, serializer):
-        serializer.user.set_password(serializer.validated_data['new_password'])
-        serializer.user.save()
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            user = serializer.user
+            user.set_password(serializer.validated_data['re_new_password'])
+            user.save()
+        return Response(AccountSerializer(user, context={'request': request}).data)
 
 
 class ChangePasswordAPI(GenericAPIView):
