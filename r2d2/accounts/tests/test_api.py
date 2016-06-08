@@ -130,6 +130,7 @@ class AccountApiTestCase(APIBaseTestCase):
     def test_user_api(self):
         self._create_user()
         self._login()
+
         response = self.client.get(reverse('user_api'))
         self.assertEqual(response.status_code, 200)
         self.assertIn('first_name', response.data)
@@ -156,6 +157,8 @@ class AccountApiTestCase(APIBaseTestCase):
         self.assertEqual(response.data['first_name'][0], 'Fill in this field.')
         self.assertEqual(response.data['last_name'][0], 'Fill in this field.')
         self.assertEqual(response.data['merchant_name'][0], 'Fill in this field.')
+        self.assertEqual(response.data['email'][0], ('Your user name needs to be an email address. You will receive '
+                                                     'insights about your data and other information at this address.'))
 
         data = {
             'first_name': 'First',
