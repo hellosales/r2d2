@@ -35,15 +35,15 @@ class AccountSerializer(R2D2ModelSerializer):
 
         email = validated_data.get('email')
         if not email:
-            errors['email'] = self.EMAIL_ERROR
+            errors['email'] = [self.EMAIL_ERROR]
         else:
             try:
                 validate_email(email)
             except ValidationError:
-                errors['email'] = self.EMAIL_ERROR
+                errors['email'] = [self.EMAIL_ERROR]
 
             if Account.objects.exclude(id=user.id).filter(email=email).exists():
-                errors['email'] = _('This email is already in use')
+                errors['email'] = [_('This email is already in use')]
 
         if errors:
             raise serializers.ValidationError(errors)
@@ -134,7 +134,7 @@ class ChangePasswordSerializer(R2D2Serializer):
         confirm_password = validated_data.get('confirm_password')
 
         if old_password and not user.check_password(old_password):
-            errors['old_password'] = _('This password doesn’t match our records')
+            errors['old_password'] = [_('This password doesn’t match our records')]
 
         if new_password:
             for v in [validate_length, complexity]:
@@ -142,11 +142,11 @@ class ChangePasswordSerializer(R2D2Serializer):
                     v(new_password)
                 except ValidationError:
                     errors['new_password'] = \
-                        _('Your password must be 8 characters long and contain at least 1 number and 1 letter')
+                        [_('Your password must be 8 characters long and contain at least 1 number and 1 letter')]
                     break
 
         if new_password != confirm_password:
-            errors['confirm_password'] = _('Make sure this field is not blank and matches your password exactly')
+            errors['confirm_password'] = [_('Make sure this field is not blank and matches your password exactly')]
 
         if errors:
             raise serializers.ValidationError(errors)

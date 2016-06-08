@@ -23,6 +23,6 @@ class EtsyAccountSerializer(R2D2ModelSerializer):
         if self.instance:
             query = query.exclude(pk=self.instance.pk)
         if query.exists():
-            raise serializers.ValidationError({'name': _('Name must be uniqe')})
+            raise serializers.ValidationError({'name': [_('Name must be uniqe')]})
 
         return validated_data

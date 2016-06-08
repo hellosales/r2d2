@@ -8,8 +8,6 @@ from django.utils.translation import ugettext_lazy as _
 
 from rest_framework.authtoken.models import Token
 
-from r2d2.accounts.signals import account_post_save
-
 
 class AccountManager(BaseUserManager):
     def create_user(self, email=None, password=None, **extra_fields):
@@ -94,6 +92,3 @@ class Account(AbstractBaseUser, PermissionsMixin):
 
     def __unicode__(self):
         return self.email.split('@')[0]
-
-
-post_save.connect(account_post_save, sender=Account)
