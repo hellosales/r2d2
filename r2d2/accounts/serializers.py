@@ -58,7 +58,9 @@ class AccountSerializer(R2D2ModelSerializer):
             'last_name',
             'email',
             'token',
-            'merchant_name'
+            'merchant_name',
+            'date_joined',
+            'last_login'
         ]
         read_only_fields = ['id']
 
