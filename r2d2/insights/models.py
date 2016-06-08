@@ -39,7 +39,8 @@ def validate_file_extension(value):
         return
 
     if value.file.content_type not in ALLOWED_CONTENT_TYPES:
-        raise ValidationError(u'Files allowed: word, excel, csv, text and jpg')
+        raise ValidationError(u'Files allowed: word, excel, csv, text and jpg. Current file detected as %s' %
+                              value.file.content_type)
 
 
 class InsightAttachment(models.Model):
