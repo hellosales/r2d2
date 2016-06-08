@@ -4,9 +4,10 @@ from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
 from r2d2.squareup_api.models import SquareupAccount
+from r2d2.utils.serializers import R2D2ModelSerializer
 
 
-class SquareupAccountSerializer(serializers.ModelSerializer):
+class SquareupAccountSerializer(R2D2ModelSerializer):
     """ serializer for squareup store """
     class Meta:
         model = SquareupAccount

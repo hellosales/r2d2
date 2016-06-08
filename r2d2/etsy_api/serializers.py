@@ -4,9 +4,10 @@ from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
 from r2d2.etsy_api.models import EtsyAccount
+from r2d2.utils.serializers import R2D2ModelSerializer
 
 
-class EtsyAccountSerializer(serializers.ModelSerializer):
+class EtsyAccountSerializer(R2D2ModelSerializer):
     """ serializer for etsy account """
     class Meta:
         model = EtsyAccount

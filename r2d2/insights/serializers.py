@@ -11,9 +11,11 @@ from r2d2.insights.models import Insight
 from r2d2.insights.models import InsightAttachment
 from r2d2.shopify_api.models import ShopifyStore
 from r2d2.squareup_api.models import SquareupAccount
+from r2d2.utils.serializers import R2D2ModelSerializer
+from r2d2.utils.serializers import R2D2Serializer
 
 
-class InsightAttachmentSerializer(serializers.ModelSerializer):
+class InsightAttachmentSerializer(R2D2ModelSerializer):
     file_name = serializers.SerializerMethodField()
 
     def get_file_name(self, obj):
@@ -26,7 +28,7 @@ class InsightAttachmentSerializer(serializers.ModelSerializer):
         fields = ['pk', 'content_type', 'file', 'file_name']
 
 
-class InsightSerializer(serializers.ModelSerializer):
+class InsightSerializer(R2D2ModelSerializer):
     """ serializer for insights """
     created = serializers.SerializerMethodField()
     attachments = InsightAttachmentSerializer(many=True)
@@ -39,7 +41,7 @@ class InsightSerializer(serializers.ModelSerializer):
         read_only_fields = fields = ['pk', 'created', 'text', 'attachments']
 
 
-class HeaderDataSerializer(serializers.Serializer):
+class HeaderDataSerializer(R2D2Serializer):
     """ serializer for header data """
     channels_number = serializers.SerializerMethodField()
     insights_number = serializers.SerializerMethodField()

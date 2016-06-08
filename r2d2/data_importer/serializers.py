@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-from rest_framework import serializers
-
 from r2d2.data_importer.models import SourceSuggestion
+from r2d2.utils.serializers import R2D2ModelSerializer
+from r2d2.utils.serializers import R2D2Serializer
 
 
-class DataImporterAccountSerializer(serializers.Serializer):
+class DataImporterAccountSerializer(R2D2Serializer):
     """ generic data importer serializer - proxy for data importer subclass serializers """
 
     def to_representation(self, obj):
@@ -15,7 +15,7 @@ class DataImporterAccountSerializer(serializers.Serializer):
         return representation
 
 
-class SourceSuggestionSerializer(serializers.ModelSerializer):
+class SourceSuggestionSerializer(R2D2ModelSerializer):
     """ serializer for source suggestion """
 
     class Meta:

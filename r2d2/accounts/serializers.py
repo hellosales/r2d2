@@ -63,7 +63,7 @@ class AccountSerializer(R2D2ModelSerializer):
         read_only_fields = ['id']
 
 
-class AuthSerializer(serializers.Serializer):
+class AuthSerializer(R2D2Serializer):
     email = serializers.CharField()
     password = serializers.CharField()
 
@@ -89,11 +89,11 @@ class AuthSerializer(serializers.Serializer):
         return attrs
 
 
-class ResetPasswordSerializer(serializers.Serializer):
+class ResetPasswordSerializer(R2D2Serializer):
     email = serializers.EmailField()
 
 
-class ResetPasswordConfirmSerializer(serializers.Serializer):
+class ResetPasswordConfirmSerializer(R2D2Serializer):
     user_id = serializers.CharField()
     token = serializers.CharField()
     new_password = serializers.CharField(validators=[password_validator])
@@ -156,7 +156,7 @@ class ChangePasswordSerializer(R2D2Serializer):
         return instance
 
 
-class RegisterSerializer(serializers.ModelSerializer):
+class RegisterSerializer(R2D2ModelSerializer):
     merchant_name = serializers.CharField(required=True)
     first_name = serializers.CharField(required=True)
     last_name = serializers.CharField(required=True)

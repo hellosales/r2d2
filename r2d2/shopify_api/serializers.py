@@ -4,9 +4,10 @@ from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
 from r2d2.shopify_api.models import ShopifyStore
+from r2d2.utils.serializers import R2D2ModelSerializer
 
 
-class ShopifyStoreSerializer(serializers.ModelSerializer):
+class ShopifyStoreSerializer(R2D2ModelSerializer):
     """ serializer for shopify store """
     class Meta:
         model = ShopifyStore

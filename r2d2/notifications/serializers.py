@@ -6,14 +6,14 @@ from r2d2.notifications.models import (
     Notification
 )
 
-from r2d2.utils.serializers import YDModelSerializer
+from r2d2.utils.serializers import R2D2ModelSerializer
 
 NOTIIFICATIONS_LIST_FIELDS = ['id', 'created', 'subject', 'category']
 
 NOTIFICATIONS_FIELDS = NOTIIFICATIONS_LIST_FIELDS + ['content', 'url']
 
 
-class NotificationsListSerializer(YDModelSerializer):
+class NotificationsListSerializer(R2D2ModelSerializer):
     category = serializers.StringRelatedField()
     created = serializers.DateField(format=settings.DEFAULT_DATE_FORMAT)
 
