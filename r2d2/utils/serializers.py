@@ -102,6 +102,7 @@ class R2D2Serializer(OneStepValidationSerializer):
         for key, field in self.fields.iteritems():
             if hasattr(field, 'error_messages'):
                 field.error_messages['required'] = _(self.text)
+                field.error_messages['blank'] = _(self.text)
 
 
 class YDSerializer(serializers.Serializer):
@@ -118,6 +119,7 @@ class YDSerializer(serializers.Serializer):
         for key, field in self.fields.iteritems():
             if hasattr(field, 'error_messages'):
                 field.error_messages['required'] = _(self.text.format(fieldname=unicode(get_field_name(key, field))))
+                field.error_messages['blank'] = _(self.text.format(fieldname=unicode(get_field_name(key, field))))
 
 
 class YDModelSerializer(YDSerializer, serializers.ModelSerializer):

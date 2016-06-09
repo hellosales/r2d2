@@ -24,7 +24,7 @@ class AccountSerializer(R2D2ModelSerializer):
     merchant_name = serializers.CharField(required=True)
     first_name = serializers.CharField(required=True)
     last_name = serializers.CharField(required=True)
-    email = serializers.CharField(required=False)
+    email = serializers.CharField(required=False, allow_blank=True)
 
     def validate_email(self, value):
         return value

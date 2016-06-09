@@ -162,6 +162,15 @@ class AccountApiTestCase(APIBaseTestCase):
         self.assertEqual(response.data['email'][0], ('Your user name needs to be an email address. You will receive '
                                                      'insights about your data and other information at this address.'))
 
+        response = self.client.put(reverse('user_api'), data={'first_name': '', 'last_name': '', 'email': '',
+                                                              'merchant_name': ''})
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data['first_name'][0], 'Fill in this field.')
+        self.assertEqual(response.data['last_name'][0], 'Fill in this field.')
+        self.assertEqual(response.data['merchant_name'][0], 'Fill in this field.')
+        self.assertEqual(response.data['email'][0], ('Your user name needs to be an email address. You will receive '
+                                                     'insights about your data and other information at this address.'))
+
         data = {
             'first_name': 'First',
             'last_name': 'Last',
