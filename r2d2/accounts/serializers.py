@@ -93,7 +93,30 @@ class AuthSerializer(R2D2Serializer):
 
 
 class ResetPasswordSerializer(R2D2Serializer):
-    email = serializers.EmailField()
+    EMAIL_ERROR = "Email address not valid"
+    email = serializers.CharField(required=False)
+
+    def validate(self, validated_data):
+        errors = {}
+        email = validated_data.get('email')
+
+        if not email:
+            errors['email'] = [self.EMAIL_ERROR]
+        else:
+            try:
+                validate_email(email)
+            except ValidationError:
+                errors['email'] = [self.EMAIL_ERROR]
+
+            try:
+                Account.objects.get(email=email)
+            except Account.DoesNotExist:
+                errors['email'] = [self.EMAIL_ERROR]
+
+        if errors:
+            raise serializers.ValidationError(errors)
+
+        return validated_data
 
 
 class ResetPasswordConfirmSerializer(R2D2Serializer):
