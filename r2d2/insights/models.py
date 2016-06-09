@@ -12,6 +12,11 @@ from r2d2.insights.signals import data_fetched
 from r2d2.insights.signals import insight_post_save
 
 
+IMAGE_CONTENT_TYPES = set([
+    'image/pjpeg',
+    'image/jpeg'
+])
+
 ALLOWED_CONTENT_TYPES = set([
     'application/vnd.ms-excel',
     'application/excel',
@@ -20,9 +25,7 @@ ALLOWED_CONTENT_TYPES = set([
     'application/msword',
     'text/plain',
     'text/csv',
-    'image/pjpeg',
-    'image/jpeg'
-])
+]) | IMAGE_CONTENT_TYPES
 
 
 class Insight(models.Model):
@@ -48,6 +51,16 @@ class InsightAttachment(models.Model):
     insight = models.ForeignKey(Insight, related_name='attachments')
     content_type = models.CharField(max_length=50, null=True, editable=True)
     file = models.FileField(upload_to='insights_attachments', validators=[validate_file_extension])
+
+    @property
+    def is_image(self):
+        return self.content_type in IMAGE_CONTENT_TYPES
+
+    @property
+    def file_name(self):
+        if not self.file or not self.file.name:
+            return ''
+        return self.file.name.rsplit('/')[1]
 
     def save(self, *args, **kwargs):
         if self.file and self.file.file and hasattr(self.file.file, 'content_type'):

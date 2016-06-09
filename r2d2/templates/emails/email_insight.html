@@ -15,12 +15,15 @@
                     <tr><td><img src="https://r2d2-dev-arabella.s3.amazonaws.com/upload/page_5/tabletop-1465212087.39-table-top.jpg" alt=""></td></tr>
                     <tr>
                         <td class="content">
-                            <p>Other merchants charging 23% more for water bottles with comparable sales.   Analysis based on Product with SKU 123456 from Channel Shopify.</p>
+                            <p>{{ insight.text }}</p>
                             <p>
-                                <a href="#">Excel_Data.xsl</a><br>
-                                <a href="#">Research_Sources.txt</a>
+                                {% for attachment in insight.attachments.all %}
+                                    <a href="{{ attachment.file.url }}">{{ attachment.file_name }}</a><br>
+                                {% endfor %}
                             </p>
-                            <img src="{{STATIC_URL}}images/example-insight.jpg" alt="">
+                            {% for attachment in insight.attachments.all %}
+                                <img src="{{ attachment.file.url }}" alt="{{ attachment.file_name }}"/>
+                            {% endfor %}
                         </td>
                     </tr>
                     <tr><td><img src="https://r2d2-dev-arabella.s3.amazonaws.com/upload/page_5/tablebottom-1465212087.87-table-bottom.jpg" alt=""></td></tr>

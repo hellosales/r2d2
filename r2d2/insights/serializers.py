@@ -16,13 +16,6 @@ from r2d2.utils.serializers import R2D2Serializer
 
 
 class InsightAttachmentSerializer(R2D2ModelSerializer):
-    file_name = serializers.SerializerMethodField()
-
-    def get_file_name(self, obj):
-        if not obj.file or not obj.file.name:
-            return ''
-        return obj.file.name.rsplit('/')[1]
-
     class Meta:
         model = InsightAttachment
         fields = ['pk', 'content_type', 'file', 'file_name']
