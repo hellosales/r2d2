@@ -21,5 +21,5 @@ def insight_post_save(sender, instance, created, **kwargs):
     if send_notification:
         client_domain = config.CLIENT_DOMAIN
 
-        send_email('new_insight', "%s <%s>" % (instance.user.get_full_name(), instance.user.email), 'New Insight!',
+        send_email('insight', "%s <%s>" % (instance.user.get_full_name(), instance.user.email), 'New Insight!',
                    {'domain': client_domain, 'insight': instance})
