@@ -122,9 +122,9 @@ class ResetPasswordConfirmSerializer(R2D2Serializer):
 
 
 class ChangePasswordSerializer(R2D2Serializer):
-    old_password = serializers.CharField(allow_blank=False)
-    new_password = serializers.CharField(allow_blank=False)
-    confirm_password = serializers.CharField(allow_blank=True)
+    old_password = serializers.CharField(required=False)
+    new_password = serializers.CharField(required=False)
+    confirm_password = serializers.CharField(required=False)
 
     def validate(self, validated_data):
         errors = {}
@@ -134,7 +134,7 @@ class ChangePasswordSerializer(R2D2Serializer):
         new_password = validated_data.get('new_password')
         confirm_password = validated_data.get('confirm_password')
 
-        if old_password and not user.check_password(old_password):
+        if not old_password or not user.check_password(old_password):
             errors['old_password'] = [_('This password doesn’t match our records')]
 
         if new_password:
@@ -145,8 +145,11 @@ class ChangePasswordSerializer(R2D2Serializer):
                     errors['new_password'] = \
                         [_('Your password must be 8 characters long and contain at least 1 number and 1 letter')]
                     break
+        else:
+            errors['new_password'] = \
+                [_('Your password must be 8 characters long and contain at least 1 number and 1 letter')]
 
-        if new_password != confirm_password:
+        if new_password != confirm_password or not confirm_password:
             errors['confirm_password'] = [_('Make sure this field is not blank and matches your password exactly')]
 
         if errors:
