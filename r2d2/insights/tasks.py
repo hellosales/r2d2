@@ -13,6 +13,6 @@ def send_insight_task(pk):
         client_domain = config.CLIENT_DOMAIN
 
         send_email('insight', "%s <%s>" % (insight.user.get_full_name(), insight.user.email), 'New Insight!',
-                   {'domain': client_domain, 'insight': insight})
+                   {'client_domain': client_domain, 'insight': insight})
     except Insight.DoesNotExist:
         pass
