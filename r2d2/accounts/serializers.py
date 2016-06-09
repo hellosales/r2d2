@@ -43,7 +43,8 @@ class AccountSerializer(R2D2ModelSerializer):
                 errors['email'] = [self.EMAIL_ERROR]
 
             if Account.objects.exclude(id=user.id).filter(email=email).exists():
-                errors['email'] = [_('This email is already in use')]
+                errors['email'] = [_('This email address belongs to an existing account.'
+                                     ' Try logging in if you already have an account.')]
 
         if errors:
             raise serializers.ValidationError(errors)
@@ -62,7 +63,7 @@ class AccountSerializer(R2D2ModelSerializer):
             'date_joined',
             'last_login'
         ]
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'date_joined', 'last_login', 'token']
 
 
 class AuthSerializer(R2D2Serializer):
@@ -158,22 +159,32 @@ class ChangePasswordSerializer(R2D2Serializer):
         return instance
 
 
-class RegisterSerializer(R2D2ModelSerializer):
-    merchant_name = serializers.CharField(required=True)
-    first_name = serializers.CharField(required=True)
-    last_name = serializers.CharField(required=True)
+class RegisterSerializer(AccountSerializer):
     confirm_password = serializers.CharField(allow_blank=False, write_only=True)
 
     class Meta:
         model = Account
         fields = ('first_name', 'last_name', 'email', 'password', 'merchant_name', 'confirm_password')
-        write_only_fields = ('password',)
+        write_only_fields = ('password', 'confirm_password')
 
     def validate(self, validated_data):
         errors = {}
 
         password = validated_data.get('password')
         confirm_password = validated_data.get('confirm_password')
+
+        email = validated_data.get('email')
+        if not email:
+            errors['email'] = [self.EMAIL_ERROR]
+        else:
+            try:
+                validate_email(email)
+            except ValidationError:
+                errors['email'] = [self.EMAIL_ERROR]
+
+            if Account.objects.filter(email=email).exists():
+                errors['email'] = [_('This email address belongs to an existing account.'
+                                     ' Try logging in if you already have an account.')]
 
         if password:
             for v in [validate_length, complexity]:
