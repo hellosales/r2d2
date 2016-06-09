@@ -78,7 +78,7 @@ class AuthSerializer(R2D2Serializer):
             user = authenticate(email=email, password=password)
 
             if user and not user.is_active:
-                msg = _('User is not active.')
+                msg = _('This account has been disabled. Please contact the system administrator to re-enable it.')
                 raise serializers.ValidationError(msg)
             if user:
                 attrs['user'] = user
