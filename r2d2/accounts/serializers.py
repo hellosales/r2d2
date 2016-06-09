@@ -196,7 +196,7 @@ class RegisterSerializer(AccountSerializer):
                     break
 
         if password != confirm_password:
-            errors['confirm_password'] = [_('Password should match')]
+            errors['confirm_password'] = [_('Passwords must match to confirm')]
 
         if errors:
             raise serializers.ValidationError(errors)
