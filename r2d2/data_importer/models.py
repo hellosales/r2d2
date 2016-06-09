@@ -39,6 +39,7 @@ class AbstractDataProvider(models.Model):
     is_active = models.BooleanField(default=True)
 
     OAUTH_ERROR = "There was a problem authorizing this channel. Please try again or contact Hello Sales."
+    NAME_NOT_UNIQUE_ERROR = "Sorry, that Channel Name already exists. Please choose a different name for this Channel."
 
     class Meta:
         abstract = True

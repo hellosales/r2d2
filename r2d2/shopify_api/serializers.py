@@ -25,6 +25,6 @@ class ShopifyStoreSerializer(R2D2ModelSerializer):
                 raise serializers.ValidationError({'name': _('Shopify store name cannot be changed.')})
             query = query.exclude(pk=self.instance.pk)
         if query.exists():
-            raise serializers.ValidationError({'name': _('Name must be uniqe')})
+            raise serializers.ValidationError({'name': [_(ShopifyStore.NAME_NOT_UNIQUE_ERROR)]})
 
         return validated_data
