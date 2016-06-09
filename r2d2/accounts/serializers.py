@@ -170,10 +170,25 @@ class RegisterSerializer(R2D2ModelSerializer):
         write_only_fields = ('password',)
 
     def validate(self, validated_data):
+        errors = {}
+
         password = validated_data.get('password')
         confirm_password = validated_data.get('confirm_password')
+
+        if password:
+            for v in [validate_length, complexity]:
+                try:
+                    v(password)
+                except ValidationError:
+                    errors['password'] = \
+                        [_('Your password must be 8 characters long and contain at least 1 number and 1 letter')]
+                    break
+
         if password != confirm_password:
-            raise serializers.ValidationError({'confirm_password': _('Password should match')})
+            errors['confirm_password'] = [_('Password should match')]
+
+        if errors:
+            raise serializers.ValidationError(errors)
 
         return validated_data
 
