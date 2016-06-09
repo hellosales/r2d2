@@ -84,7 +84,7 @@ class AuthSerializer(R2D2Serializer):
                 attrs['user'] = user
                 return attrs
             else:
-                msg = _('Unable to log in with provided credentials.')
+                msg = _('Incorrect user name or password.')
                 raise serializers.ValidationError(msg)
         else:
             msg = _('Must include "username" and "password"')
