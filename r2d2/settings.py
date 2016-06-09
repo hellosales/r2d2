@@ -432,8 +432,6 @@ PEP8_RCFILE = 'pep8.rc'
 
 FAKE_EMAIL_TO = 'michals@arabel.la'
 
-CELERY_ALWAYS_EAGER=True
-
 if TESTING:
     from test_settings import *
     update_settings_for_tests(locals())

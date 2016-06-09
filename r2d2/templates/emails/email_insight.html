@@ -18,11 +18,15 @@
                             <p>{{ insight.text }}</p>
                             <p>
                                 {% for attachment in insight.attachments.all %}
-                                    <a href="{{ attachment.file.url }}">{{ attachment.file_name }}</a><br>
+                                    {% if not attachment.is_image %}
+                                        <a href="{{ attachment.file.url }}">{{ attachment.file_name }}</a><br>
+                                    {% endif %}
                                 {% endfor %}
                             </p>
                             {% for attachment in insight.attachments.all %}
-                                <img src="{{ attachment.file.url }}" alt="{{ attachment.file_name }}"/>
+                                {% if attachment.is_image %}
+                                    <img src="{{ attachment.file.url }}" alt="{{ attachment.file_name }}"/>
+                                {% endif %}
                             {% endfor %}
                         </td>
                     </tr>
