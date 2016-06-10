@@ -22,7 +22,12 @@ ALLOWED_CONTENT_TYPES = set([
     'application/excel',
     'application/x-msexcel',
     'application/x-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',  # .xlsx
+    'application/vnd.ms-excel.sheet.macroEnabled.12',  # .xlsm
+    'application/vnd.ms-excel.sheet.binary.macroEnabled.12',  # .xlsb
     'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',  # .docx
+    'application/vnd.ms-word.document.macroEnabled.12',  # .docm
     'text/plain',
     'text/csv',
 ]) | IMAGE_CONTENT_TYPES
