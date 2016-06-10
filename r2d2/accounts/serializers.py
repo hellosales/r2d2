@@ -122,20 +122,37 @@ class ResetPasswordSerializer(R2D2Serializer):
 class ResetPasswordConfirmSerializer(R2D2Serializer):
     user_id = serializers.CharField()
     token = serializers.CharField()
-    new_password = serializers.CharField(validators=[password_validator])
-    re_new_password = serializers.CharField(validators=[password_validator])
+    new_password = serializers.CharField(required=False, allow_blank=True)
+    re_new_password = serializers.CharField(required=False, allow_blank=True)
 
     def validate(self, data):
-        if data.get('new_password') != data.get('re_new_password'):
-            raise serializers.ValidationError(_("Passwords do not match"))
+        errors = {}
+        new_password = data.get('new_password')
+        confirm_password = data.get('re_new_password')
 
-        model = Account
+        if new_password:
+            for v in [validate_length, complexity]:
+                try:
+                    v(new_password)
+                except ValidationError:
+                    errors['new_password'] = \
+                        [_('Your password must be 8 characters long and contain at least 1 number and 1 letter')]
+                    break
+        else:
+            errors['new_password'] = \
+                [_('Your password must be 8 characters long and contain at least 1 number and 1 letter')]
+
+        if new_password != confirm_password or not confirm_password:
+            errors['re_new_password'] = [_('Make sure this field is not blank and matches your password exactly')]
+
+        if errors:
+            raise serializers.ValidationError(errors)
+
         try:
             # urlsafe_base64_decode() decodes to bytestring on Python 3
             uid = force_text(urlsafe_base64_decode(data.get('user_id')))
-            user = model._default_manager.get(pk=uid)
-        except (TypeError, ValueError, OverflowError, model.DoesNotExist):
-            # except (model.DoesNotExist):
+            user = Account._default_manager.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, Account.DoesNotExist):
             user = None
 
         if user is not None and default_token_generator.check_token(user, urlsafe_base64_decode(data.get('token'))):
