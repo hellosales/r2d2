@@ -1,12 +1,62 @@
 # -*- coding: utf-8 -*-
+import binascii
+import os
+
+from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
-from django.db.models.signals import post_save
 from django.utils.translation import ugettext_lazy as _
 
 from rest_framework.authtoken.models import Token
+
+
+AUTH_USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', 'auth.User')
+
+
+class OneTimeTokenQueryset(models.query.QuerySet):
+    def get_or_create(self, defaults=None, **kwargs):
+        obj, created = super(self.__class__, self).get_or_create(defaults, **kwargs)
+        if created:
+            return (obj, created)
+        else:
+            obj.delete()  # delete old token
+            obj, created = super(self.__class__, self).get_or_create(defaults, **kwargs)
+            return (obj, created)
+
+
+class OneTimeToken(models.Model):
+    """
+    Copy of DRF auth token because model inheritance sucks
+    """
+    objects = OneTimeTokenQueryset.as_manager()
+
+    key = models.CharField(_("Key"), max_length=40, primary_key=True)
+    user = models.OneToOneField(AUTH_USER_MODEL, related_name='one_time_auth_token',
+                                on_delete=models.CASCADE, verbose_name=_("User"))
+    created = models.DateTimeField(_("Created"), auto_now_add=True)
+
+    class Meta:
+        # Work around for a bug in Django:
+        # https://code.djangoproject.com/ticket/19422
+        #
+        # Also see corresponding ticket:
+        # https://github.com/tomchristie/django-rest-framework/issues/705
+        verbose_name = _("One Time Token")
+        verbose_name_plural = _("One Time Tokens")
+        app_label = 'accounts'
+
+    def save(self, *args, **kwargs):
+        if not self.key:
+            self.key = self.generate_key()
+        return super(OneTimeToken, self).save(*args, **kwargs)
+
+    def generate_key(self):
+        return binascii.hexlify(os.urandom(20)).decode()
+
+    def __str__(self):
+        return self.key
 
 
 class AccountManager(BaseUserManager):
@@ -89,6 +139,10 @@ class Account(AbstractBaseUser, PermissionsMixin):
         if self.approval_status == self.NOT_APPROVED:
             self.approval_status = self.APPROVED
             self.save()
+
+    def get_one_time_auth_token(self):
+        token, created = OneTimeToken.objects.get_or_create(user=self)
+        return str(token)
 
     def __unicode__(self):
         return self.email.split('@')[0]

@@ -1,14 +1,17 @@
 # -*- coding: utf-8 -*-
 import urlparse
 
-from django.views.generic import TemplateView, RedirectView
-from django.contrib.auth import login as auth_login, logout as auth_logout
-from django.http import HttpResponseRedirect
+from constance import config
+
 from django.conf import settings
+from django.contrib.auth import login as auth_login
+from django.contrib.auth import logout as auth_logout
 from django.core.urlresolvers import reverse_lazy
+from django.http import HttpResponseRedirect
+from django.views.generic import RedirectView
+from django.views.generic import TemplateView
 
 from r2d2.accounts.forms import AuthenticationForm
-
 
 class LogoutView(RedirectView):
     url = reverse_lazy(settings.LOGOUT_REDIRECT_URLNAME)
@@ -69,4 +72,15 @@ class AccountAuthView(TemplateView):
             context['form'] = form
 
         self.request.session.set_test_cookie()
+        return self.render_to_response(context)
+
+
+class LoginAsView(TemplateView):
+    template_name = 'login_admin.html'
+
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data(*args, **kwargs)
+        protocol = 'https://' if getattr(settings, 'IS_SECURE', False) else 'http://'
+        context['client_domain'] = protocol + config.CLIENT_DOMAIN
+        context['user'] = request.user
         return self.render_to_response(context)

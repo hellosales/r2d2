@@ -1,0 +1,25 @@
+{% load compress pages_tags %}{% load static l10n i18n assign %}<!doctype html>
+<!--[if IE 9]><html class="lt-ie10" lang="en" > <![endif]-->
+<html class="no-js" lang="en" data-no-django="true">
+    <head data-user='{[{jiraCaptureUser}]}'>
+        <meta name="viewport" content="initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="chrome=1">
+        <title>{% block title %}{% trans "Hello Sales" %}{% endblock %}</title>
+    </head>
+    <body>
+    {% if user.is_authenticated %}
+        {% trans "Logging in..." %}
+        <script>
+            url_prefix = "{{ client_domain }}"
+            user="{{ settings.BASIC_AUTH_USER }}"
+            password="{{ settings.BASIC_AUTH_PASS }}"
+            url_postfix = "/#/sign-in-token/{{user.get_one_time_auth_token}}"
+            url = url_prefix + url_postfix
+            window.location.href = url
+        </script>
+        ffs
+    {% else %}
+        {% trans "Not logged in!" %}
+    {% endif %}
+    </body>
+</html>

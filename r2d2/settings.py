@@ -303,7 +303,7 @@ LOGIN_URL = "/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGIN_REDIRECT_URLNAME = "index"
 LOGOUT_REDIRECT_URLNAME = "login"
-SU_LOGIN_REDIRECT_URL = LOGIN_REDIRECT_URL
+SU_LOGIN_REDIRECT_URL = '/login-admin/'
 SU_LOGOUT_REDIRECT_URL = '/'
 
 ADMIN_MEDIA_ROOT = location(os.path.join("static", "admin"))

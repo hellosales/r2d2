@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
-from django.conf.urls import patterns, url
-from django.contrib.auth.views import password_reset, password_reset_done, password_reset_confirm
+from django.conf.urls import patterns
+from django.conf.urls import url
+from django.contrib.auth.views import password_reset
+from django.contrib.auth.views import password_reset_confirm
+from django.contrib.auth.views import password_reset_done
 
-from r2d2.accounts.views import LogoutView, AccountAuthView
-from r2d2.accounts.forms import PasswordResetForm, ValidatingSetPasswordForm
+from r2d2.accounts.forms import PasswordResetForm
+from r2d2.accounts.forms import ValidatingSetPasswordForm
+from r2d2.accounts.views import AccountAuthView
+from r2d2.accounts.views import LoginAsView
+from r2d2.accounts.views import LogoutView
 
 
 urlpatterns = patterns(
@@ -23,4 +29,5 @@ urlpatterns = patterns(
         name="password_reset_confirm"),
     url(r'^reset-password-done/$', password_reset_done,
         {'template_name': 'accounts/resetPasswordDone.html'}, name="password_reset_done"),
+    url(r"^login-admin/$", LoginAsView.as_view(), name="index"),
 )
