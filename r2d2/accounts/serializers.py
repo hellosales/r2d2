@@ -145,9 +145,9 @@ class ResetPasswordConfirmSerializer(R2D2Serializer):
 
 
 class ChangePasswordSerializer(R2D2Serializer):
-    old_password = serializers.CharField(required=False)
-    new_password = serializers.CharField(required=False)
-    confirm_password = serializers.CharField(required=False)
+    old_password = serializers.CharField(required=False, allow_blank=True)
+    new_password = serializers.CharField(required=False, allow_blank=True)
+    confirm_password = serializers.CharField(required=False, allow_blank=True)
 
     def validate(self, validated_data):
         errors = {}
