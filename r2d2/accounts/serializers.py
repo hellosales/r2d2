@@ -182,6 +182,7 @@ class ChangePasswordSerializer(R2D2Serializer):
 
     def update(self, instance, validated_data):
         instance.set_password(validated_data['new_password'])
+        instance.save()
         return instance
 
 
