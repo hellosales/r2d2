@@ -65,4 +65,17 @@ class BaseTestCase(TestCase):
 
 
 class APIBaseTestCase(BaseTestCase, APITestCase):
-    pass
+    def _login(self):
+        email = 'joe+1@doe.com'
+        user = Account.objects.get(email=email)
+        token = user.token
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token)
+        return self.client.login(email=email, password=self.password)
+
+    def login(self, email, password=None):
+        if not password:
+            password = self.password
+        user = Account.objects.get(email=email)
+        token = user.token
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token)
+        return self.client.login(email=email, password=password)

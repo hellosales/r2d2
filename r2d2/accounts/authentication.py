@@ -6,15 +6,21 @@ from rest_framework.authentication import TokenAuthentication as BaseTokenAuthen
 
 
 class TokenAuthentication(BaseTokenAuthentication):
-
     def authenticate_credentials(self, key):
+        from r2d2.accounts.models import OneTimeToken  # there are some problems if it's outside
+        self.model = self.get_model()
         try:
             token = self.model.objects.get(key=key)
-            # user = token.user
-            # publish_unread_notifications(user)
         except self.model.DoesNotExist:
-            raise exceptions.AuthenticationFailed('Invalid token')
-
+            try:
+                one_time_token = OneTimeToken.objects.get(key=key)
+                # it's creazy, but deleting one time token causes issues, so I am breaking all references
+                token = one_time_token.user.token
+                token = str(token)
+                token = self.model.objects.get(key=token)
+                one_time_token.delete()
+            except OneTimeToken.DoesNotExist:
+                raise exceptions.AuthenticationFailed('Invalid token')
         return (token.user, token)
 
 

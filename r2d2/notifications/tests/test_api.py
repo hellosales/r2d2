@@ -60,7 +60,7 @@ class NotificationApiTestCase(APIBaseTestCase):
         self.assertFalse(notification.is_read)
 
         # access not owned notification
-        self.client.login(email=self.second_user.email, password=self.password)
+        self.login(email=self.second_user.email, password=self.password)
         response = self.client.get(reverse('notifications_api', args=[notification.pk]))
         self.assertEqual(response.status_code, 403)
 

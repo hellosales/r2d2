@@ -348,7 +348,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'r2d2.accounts.authentication.TokenAuthentication',
-        'r2d2.accounts.authentication.SessionAuthentication',
+        # 'r2d2.accounts.authentication.SessionAuthentication',
     ),
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
     'TEST_REQUEST_RENDERER_CLASSES': (
