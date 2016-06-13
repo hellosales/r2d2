@@ -97,7 +97,8 @@ class DataImporterAccountsAPI(GenericAPIView):
     def post(self, request):
         """ Creates a new account.
             class -- required, account class
-            name -- required, account name """
+            name -- required, account name
+            oauth_callback_data - required, custom for each account type (see dedicated serializers) """
         model_class = DataImporter.get_model_by_name(request.data.get('class', None))
         if model_class:
             serializer = model_class.get_serializer()(data=request.data, context=self.get_serializer_context())
@@ -108,9 +109,10 @@ class DataImporterAccountsAPI(GenericAPIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request):
-        """ Updates an account. In order to deactivate account, simply set access_token to null.
+        """ Updates an account..
             class -- required, account class
-            pk -- required, account pk """
+            pk -- required, account pk
+            oauth_callback_data - custom for each account type, only required if authorization is changed """
         model_class = DataImporter.get_model_by_name(request.data.get('class', None))
         if model_class:
             try:
@@ -123,6 +125,20 @@ class DataImporterAccountsAPI(GenericAPIView):
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             except model_class.DoesNotExist:
                 raise
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class DataImporterGenerateOauthUrl(GenericAPIView):
+
+    def post(self, request):
+        """ Generates an oauth url for a given data importer class
+            class -- required, account class
+            shop_slug - shop slug, required only for shopify and only if authorization is changed """
+        model_class = DataImporter.get_model_by_name(request.data.get('class', None))
+        if model_class:
+            serializer = model_class.get_oauth_url_serializer()(data=request.data)
+            if serializer.is_valid():
+                return Response(serializer.data)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 

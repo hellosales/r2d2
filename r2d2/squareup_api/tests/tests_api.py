@@ -14,7 +14,7 @@ from r2d2.utils.test_utils import APIBaseTestCase
 
 ACCOUNT_NAME = 'some name'
 ACCOUNT_NAME2 = 'other name'
-AUTH_RESPONSE = "http://localhost:8000/squareup/auth/callback?code=nG6OZZZ4TH-ajn82dMG3mg&response_type=code#="
+AUTH_CODE = "nG6OZZZ4TH-ajn82dMG3mg"
 TOKEN_JSON_MOCK = {'access_token': 'SVYHS6Gk2apDw8ScRLkwag', 'token_type': 'bearer', 'merchant_id': '0GDD85Z6AAFCQ',
                    'expires_at': '2016-04-03T13:06:21Z'}
 RENEW_TOKEN_JSON_MOCK = {'access_token': 'Gc7t0eNwUxSDTBMQE7VMVQ', 'token_type': 'bearer',
@@ -41,52 +41,43 @@ class SquareupApiTestCase(APIBaseTestCase):
         self.assertEqual(len(response.data['results']), 0)
 
         # creating a new account
-        response = self.client.post(reverse('squareup-accounts'), {'name': ACCOUNT_NAME})
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.data['name'], ACCOUNT_NAME)
-        self.assertFalse(response.data['is_authorized'])
-        self.assertTrue(response.data['in_authorization'])
-        self.assertIn('authorization_url', response.data)
-        self.assertEqual(self.user.approval_status, Account.NOT_APPROVED)
-
-        # creating second acount - and checking if 'in authorization' flag for the first account was set to false
-        response = self.client.post(reverse('squareup-accounts'), {'name': ACCOUNT_NAME2})
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.data['name'], ACCOUNT_NAME2)
-        self.assertFalse(response.data['is_authorized'])
-        self.assertTrue(response.data['in_authorization'])
-        self.assertIn('authorization_url', response.data)
-
-        response = self.client.get(reverse('squareup-accounts'))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data['results']), 2)
-        for result in response.data['results']:
-            if result['name'] == ACCOUNT_NAME:
-                self.assertFalse(result['in_authorization'])
-                self.assertIsNotNone(result['authorization_url'])
-            elif result['name'] == ACCOUNT_NAME2:
-                self.assertTrue(result['in_authorization'])
-                self.assertIsNotNone(result['authorization_url'])
-
-        # # let's pretend we have called authorization_url and now we have the callback:
         with requests_mock.mock() as m:
             m.post('https://connect.squareup.com/oauth2/token', json=TOKEN_JSON_MOCK)
-            response = self.client.get(AUTH_RESPONSE)
+
+            # first get oauth url [use both proxy and standard]
+            response = self.client.post(reverse('data-importer-generate-oauth-url'), {'class': 'SquareupAccount'})
             self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.data['oauth_url'],
+                             settings.SQUAREUP_AUTHORIZATION_ENDPOINT % settings.SQUAREUP_API_KEY)
 
-        # check if token was updated
-        response = self.client.get(reverse('squareup-accounts'))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data['results']), 2)
-        for result in response.data['results']:
-            if result['name'] == ACCOUNT_NAME:
-                self.assertFalse(result['is_authorized'])
-            elif result['name'] == ACCOUNT_NAME2:
-                self.assertTrue(result['is_authorized'])
+            # then post account with account name, but without code - should return error
+            response = self.client.post(reverse('squareup-accounts'), {'name': ACCOUNT_NAME})
+            self.assertEqual(response.status_code, 400)
+            self.assertIn('code', response.data)
 
-        # make sure account was mark as approved
-        user = Account.objects.get(id=self.user.id)
-        self.assertEqual(user.approval_status, Account.APPROVED)
+            # post account with name and code - should pass
+            response = self.client.post(reverse('squareup-accounts'), {'name': ACCOUNT_NAME, 'code': AUTH_CODE})
+            self.assertEqual(response.status_code, 201)
+            self.assertEqual(response.data['name'], ACCOUNT_NAME)
+            account = SquareupAccount.objects.first()
+            self.assertEqual(account.access_token, TOKEN_JSON_MOCK['access_token'])
+            print '---------- WORKED???'
+            print response
+            print '---------- WORKED???'
+
+            # make sure account was mark as approved
+            user = Account.objects.get(id=self.user.id)
+            self.assertEqual(user.approval_status, Account.APPROVED)
+
+            # post second account with the same name - should fail
+            response = self.client.post(reverse('squareup-accounts'), {'name': ACCOUNT_NAME, 'code': AUTH_CODE})
+            self.assertEqual(response.status_code, 400)
+            self.assertIn('name', response.data)
+
+            # create second account - using proxy
+            response = self.client.post(reverse('data-importer-accounts'), {'name': ACCOUNT_NAME2, 'code': AUTH_CODE})
+            self.assertEqual(response.status_code, 201)
+            self.assertEqual(response.data['name'], ACCOUNT_NAME2)
 
         # test refreshing token
         account_query = SquareupAccount.objects.filter(access_token__isnull=False)
@@ -113,7 +104,7 @@ class SquareupApiTestCase(APIBaseTestCase):
         self.assertEqual(SquareupAccount.objects.count(), 0)
 
         account = SquareupAccount.objects.create(user=self.user, name=ACCOUNT_NAME,
-                                                 access_token=TOKEN_JSON_MOCK['access_token'])
+                                                 access_token='some token')
         self.assertEqual(SquareupAccount.objects.count(), 1)
 
         # get account
@@ -123,15 +114,22 @@ class SquareupApiTestCase(APIBaseTestCase):
         self._login()
         response = self.client.get(reverse('squareup-accounts', kwargs={'pk': account.pk}))
         self.assertEqual(response.status_code, 200)
-        self.assertIsNone(response.data['authorization_url'])
-        self.assertTrue(response.data['is_authorized'])
 
-        # remove access_token - this is the way to re-authorize the account
+        # update name
         put_data = copy(response.data)
-        put_data['access_token'] = ''
+        put_data['name'] = ACCOUNT_NAME2
         response = self.client.put(reverse('squareup-accounts', kwargs={'pk': account.pk}), put_data)
-        self.assertIsNotNone(response.data['authorization_url'])
-        self.assertFalse(response.data['is_authorized'])
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['name'], ACCOUNT_NAME2)
+
+        # update access_token
+        with requests_mock.mock() as m:
+            m.post('https://connect.squareup.com/oauth2/token', json=TOKEN_JSON_MOCK)
+            put_data = copy(response.data)
+            put_data['code'] = AUTH_CODE
+            response = self.client.put(reverse('squareup-accounts', kwargs={'pk': account.pk}), put_data)
+            account = SquareupAccount.objects.first()
+            self.assertEqual(account.access_token, TOKEN_JSON_MOCK['access_token'])
 
         # delete account
         response = self.client.delete(reverse('squareup-accounts', kwargs={'pk': account.pk}))

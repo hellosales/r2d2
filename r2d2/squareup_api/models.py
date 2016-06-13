@@ -19,20 +19,10 @@ from r2d2.utils.documents import StorageDynamicDocument
 
 class SquareupAccount(AbstractDataProvider):
     """ model for storing connection between squareup account and user,
-        each user may be connected with many accounts,
-
-        Since squareup does not allow custom callback & there is no other identification
-        of the request, we need to mark model that is in authroization, so we can retrive it
-        on callback. This is the reason for 'in_authrization' flag. Setting this flag unsettle
-        it for any other SquareupAccount for given user.
-
-        Trying to authorize two account simultaneously for one user will end up a mess.
-
-        This model keeps also token if the user authorized our app to use this account"""
+        each user may be connected with many accounts """
     MAX_REQUEST_LIMIT = 200
     MIN_TIME = datetime(year=2013, month=1, day=1)
 
-    in_authorization = models.BooleanField(default=True)  # on creation we assume authroization
     token_expiration = models.DateTimeField(null=True, blank=True, db_index=True)
     merchant_id = models.CharField(max_length=255, null=True, blank=True)
 
@@ -41,38 +31,23 @@ class SquareupAccount(AbstractDataProvider):
         from r2d2.squareup_api.serializers import SquareupAccountSerializer
         return SquareupAccountSerializer
 
+    @classmethod
+    def get_oauth_url_serializer(cls):
+        from r2d2.squareup_api.serializers import SquareupOauthUrlSerializer
+        return SquareupOauthUrlSerializer
+
     def save(self, *args, **kwargs):
         super(SquareupAccount, self).save(*args, **kwargs)
-        if self.in_authorization:
-            SquareupAccount.objects.filter(user=self.user).exclude(pk=self.pk).update(in_authorization=False)
+        # it is no longer possible to save unauthorized account
+        self.user.data_importer_account_authorized()
 
-    @property
-    def authorization_url(self):
+    @classmethod
+    def authorization_url(cls):
         """ getting authorization url for the account """
-        if self.is_authorized:
-            return None
+        return settings.SQUAREUP_AUTHORIZATION_ENDPOINT % settings.SQUAREUP_API_KEY
 
-        if not hasattr(self, '_authorization_url'):
-            self._authorization_url = settings.SQUAREUP_AUTHORIZATION_ENDPOINT % settings.SQUAREUP_API_KEY
-
-        return self._authorization_url
-
-    def _save_token(self, data):
-        """ save token from json data """
-        if 'access_token' in data and data['access_token']:
-            self.access_token = data['access_token']
-            self.in_authorization = False
-            self.merchant_id = data.get('merchant_id', '')
-            if 'expires_at' in data and data['expires_at']:
-                self.token_expiration = parse_date(data['expires_at'])
-            self.authorization_date = timezone.now()
-            self.save()
-
-            self.user.data_importer_account_authorized()
-            return True
-        return False
-
-    def get_access_token(self, authorization_code):
+    @classmethod
+    def get_access_token(cls, authorization_code):
         """ obtain access_token using authorization code """
         request_data = {
             'client_id': settings.SQUAREUP_API_KEY,
@@ -82,7 +57,28 @@ class SquareupAccount(AbstractDataProvider):
 
         response = requests.post(settings.SQUAREUP_ACCESS_TOKEN_ENDPOINT, request_data)
         if response.status_code == 200:
-            return self._save_token(response.json())
+            data = response.json()
+            if 'access_token' in data and data['access_token']:
+                access_token = data['access_token']
+                merchant_id = data.get('merchant_id', '')
+                if 'expires_at' in data and data['expires_at']:
+                    token_expiration = parse_date(data['expires_at'])
+                else:
+                    token_expiration = None
+                return access_token, merchant_id, token_expiration
+        return None, None, None
+
+    def _save_token(self, data):
+        """ save token from json data """
+        if 'access_token' in data and data['access_token']:
+            self.access_token = data['access_token']
+            if 'expires_at' in data and data['expires_at']:
+                self.token_expiration = parse_date(data['expires_at'])
+            self.authorization_date = timezone.now()
+            self.save()
+
+            self.user.data_importer_account_authorized()
+            return True
         return False
 
     def refresh_token(self):

@@ -15,8 +15,8 @@ from r2d2.utils.fields import JSONField
 class AbstractDataProvider(models.Model):
     user = models.ForeignKey(Account)
     name = models.CharField(max_length=255, db_index=True)
-    access_token = models.CharField(max_length=255, null=True, blank=True)
-    authorization_date = models.DateTimeField(null=True, blank=True)
+    access_token = models.CharField(max_length=255)
+    authorization_date = models.DateTimeField()
     last_successfull_call = models.DateTimeField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
 
@@ -95,11 +95,6 @@ class AbstractDataProvider(models.Model):
         if fetched_from_all and success:
             self.user.last_fetched_all = now
             self.user.save()
-
-    @property
-    def is_authorized(self):
-        """ if token is set we assume account is authorized """
-        return bool(self.access_token)
 
     @property
     def next_sync(self):

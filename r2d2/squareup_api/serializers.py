@@ -1,29 +1,59 @@
 # -*- coding: utf-8 -*-
 """ squareup serializers """
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
 from r2d2.squareup_api.models import SquareupAccount
 from r2d2.utils.serializers import R2D2ModelSerializer
+from r2d2.utils.serializers import R2D2Serializer
 
 
 class SquareupAccountSerializer(R2D2ModelSerializer):
     """ serializer for squareup store """
+    code = serializers.CharField(required=False, write_only=True)
+
     class Meta:
         model = SquareupAccount
 
-        fields = ['pk', 'name', 'access_token', 'authorization_date', 'last_successfull_call', 'is_authorized',
-                  'in_authorization', 'authorization_url', 'is_active', 'next_sync', 'last_updated', 'fetch_status',
-                  'created']
-        read_only_fields = ['pk', 'authorization_date', 'last_successfull_call', 'is_authorized',
-                            'authorization_url', 'next_sync', 'last_updated', 'fetch_status', 'created']
+        fields = ['pk', 'name', 'authorization_date', 'last_successfull_call', 'is_active', 'next_sync', 'last_updated',
+                  'fetch_status', 'created', 'code']
+        read_only_fields = ['pk', 'authorization_date', 'last_successfull_call', 'next_sync', 'last_updated',
+                            'fetch_status', 'created']
 
     def validate(self, validated_data):
+        errors = {}
         name = validated_data.get('name')
+        code = validated_data.pop('code', None)
+
+        # check name
         query = SquareupAccount.objects.filter(name=name, user=self.context['request'].user)
         if self.instance:
             query = query.exclude(pk=self.instance.pk)
         if query.exists():
-            raise serializers.ValidationError({'name': [_(SquareupAccount.NAME_NOT_UNIQUE_ERROR)]})
+            errors['name'] = [_(SquareupAccount.NAME_NOT_UNIQUE_ERROR)]
+
+        # if code is present - get the access_token
+        if code:
+            access_token, merchant_id, token_expiration = SquareupAccount.get_access_token(code)
+            if access_token:
+                validated_data['access_token'] = access_token
+                validated_data['merchant_id'] = merchant_id
+                validated_data['token_expiration'] = token_expiration
+                validated_data['authorization_date'] = timezone.now()
+            else:
+                errors['code'] = [_(SquareupAccount.OAUTH_ERROR)]
+        elif self.context['request'].method == 'POST':
+            errors['code'] = [_('Fill in this field.')]
+
+        if errors:
+            raise serializers.ValidationError(errors)
 
         return validated_data
+
+
+class SquareupOauthUrlSerializer(R2D2Serializer):
+    def to_representation(self, obj):
+        return {
+            'oauth_url': SquareupAccount.authorization_url()
+        }
