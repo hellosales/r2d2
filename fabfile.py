@@ -51,7 +51,7 @@ def deploy(full=False, libs=False, migrate=False, local_git=False):
         local("git push")
     with cd(env.remote_path):
         sudo('git pull origin %s' % env.branch, user=env.remote_user)
-        _check_branch(env.environment, user=env.remote_user)
+        _check_branch(env.environment, user=env.remote_user, change=True)
         sudo('find . -name "*.pyc" -delete', user=env.remote_user)
         if full or libs:
             sudo(env.pip + ' install -r requirements.txt', user=env.remote_user)
