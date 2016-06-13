@@ -54,7 +54,7 @@ def deploy(full=False, libs=False, migrate=False, local_git=False):
         _check_branch(env.environment, user=env.remote_user, change=True)
         sudo('find . -name "*.pyc" -delete', user=env.remote_user)
         if full or libs:
-            sudo(env.pip + ' install -r requirements.txt', user=env.remote_user)
+            sudo(env.pip + ' install -r requirements.txt --no-cache-dir', user=env.remote_user)
             sudo('find /home/%s/Envs/%s/ -name "*.pyc" -delete' % (env.remote_user, env.app_dir), user=env.remote_user)
         if full or migrate:
             sudo(env.python + ' manage.py syncdb', user=env.remote_user)
