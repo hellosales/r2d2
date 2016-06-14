@@ -99,7 +99,7 @@ class AbstractDataProvider(models.Model):
     @property
     def next_sync(self):
         now = timezone.now()
-        if self.is_active and self.is_authorized:  # show only for active channels
+        if self.is_active:  # show only for active channels
             if self.fetch_status == self.FETCH_IN_PROGRESS:
                 return 'now'
             if self.fetch_scheduled_at:

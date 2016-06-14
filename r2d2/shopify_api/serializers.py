@@ -12,10 +12,10 @@ class ShopifyStoreSerializer(R2D2ModelSerializer):
     class Meta:
         model = ShopifyStore
 
-        fields = ['pk', 'name', 'access_token', 'authorization_date', 'last_successfull_call', 'is_authorized',
-                  'authorization_url', 'is_active', 'next_sync', 'last_updated', 'fetch_status', 'created']
-        read_only_fields = ['pk', 'authorization_date', 'last_successfull_call', 'is_authorized', 'authorization_url',
-                            'next_sync', 'last_updated', 'fetch_status', 'created']
+        fields = ['pk', 'name', 'authorization_date', 'last_successfull_call', 'is_active', 'next_sync', 'last_updated',
+                  'fetch_status', 'created']
+        read_only_fields = ['pk', 'authorization_date', 'last_successfull_call', 'next_sync', 'last_updated',
+                            'fetch_status', 'created']
 
     def validate(self, validated_data):
         name = validated_data.get('name')

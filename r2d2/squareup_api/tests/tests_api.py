@@ -3,9 +3,11 @@
 import requests_mock
 
 from copy import copy
+from freezegun import freeze_time
 from rest_framework.reverse import reverse
 
 from django.conf import settings
+from django.utils import timezone
 
 from r2d2.accounts.models import Account
 from r2d2.squareup_api.models import SquareupAccount
@@ -61,9 +63,6 @@ class SquareupApiTestCase(APIBaseTestCase):
             self.assertEqual(response.data['name'], ACCOUNT_NAME)
             account = SquareupAccount.objects.first()
             self.assertEqual(account.access_token, TOKEN_JSON_MOCK['access_token'])
-            print '---------- WORKED???'
-            print response
-            print '---------- WORKED???'
 
             # make sure account was mark as approved
             user = Account.objects.get(id=self.user.id)
@@ -75,13 +74,15 @@ class SquareupApiTestCase(APIBaseTestCase):
             self.assertIn('name', response.data)
 
             # create second account - using proxy
-            response = self.client.post(reverse('data-importer-accounts'), {'name': ACCOUNT_NAME2, 'code': AUTH_CODE})
+            response = self.client.post(reverse('data-importer-accounts'), {'class': 'SquareupAccount',
+                                                                            'name': ACCOUNT_NAME2,
+                                                                            'code': AUTH_CODE})
             self.assertEqual(response.status_code, 201)
             self.assertEqual(response.data['name'], ACCOUNT_NAME2)
 
         # test refreshing token
         account_query = SquareupAccount.objects.filter(access_token__isnull=False)
-        self.assertEqual(account_query.count(), 1)
+        self.assertEqual(account_query.count(), 2)
 
         account = account_query[0]
         account_to_renew = SquareupAccount.objects.get(pk=account.pk)
@@ -103,9 +104,11 @@ class SquareupApiTestCase(APIBaseTestCase):
             * delete account (by API) """
         self.assertEqual(SquareupAccount.objects.count(), 0)
 
-        account = SquareupAccount.objects.create(user=self.user, name=ACCOUNT_NAME,
-                                                 access_token='some token')
-        self.assertEqual(SquareupAccount.objects.count(), 1)
+        with freeze_time('2016-03-17'):
+            account = SquareupAccount.objects.create(user=self.user, name=ACCOUNT_NAME,
+                                                     access_token='some token',
+                                                     authorization_date=timezone.now())
+            self.assertEqual(SquareupAccount.objects.count(), 1)
 
         # get account
         response = self.client.get(reverse('squareup-accounts', kwargs={'pk': account.pk}))
@@ -123,13 +126,15 @@ class SquareupApiTestCase(APIBaseTestCase):
         self.assertEqual(response.data['name'], ACCOUNT_NAME2)
 
         # update access_token
-        with requests_mock.mock() as m:
-            m.post('https://connect.squareup.com/oauth2/token', json=TOKEN_JSON_MOCK)
-            put_data = copy(response.data)
-            put_data['code'] = AUTH_CODE
-            response = self.client.put(reverse('squareup-accounts', kwargs={'pk': account.pk}), put_data)
-            account = SquareupAccount.objects.first()
-            self.assertEqual(account.access_token, TOKEN_JSON_MOCK['access_token'])
+        with freeze_time('2016-03-18'):
+            with requests_mock.mock() as m:
+                m.post('https://connect.squareup.com/oauth2/token', json=TOKEN_JSON_MOCK)
+                put_data = copy(response.data)
+                put_data['code'] = AUTH_CODE
+                response = self.client.put(reverse('squareup-accounts', kwargs={'pk': account.pk}), put_data)
+                account = SquareupAccount.objects.first()
+                self.assertEqual(account.access_token, TOKEN_JSON_MOCK['access_token'])
+                self.assertEqual(account.authorization_date.day, 18)
 
         # delete account
         response = self.client.delete(reverse('squareup-accounts', kwargs={'pk': account.pk}))

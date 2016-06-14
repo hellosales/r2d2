@@ -43,9 +43,12 @@ class InsightsAPITestCase(APIBaseTestCase):
 
     def setUp(self):
         user = self._create_user()
-        self.account = EtsyAccount.objects.create(user=self.user, name='name')
-        self.account = ShopifyStore.objects.create(user=self.user, name='name')
-        self.account = SquareupAccount.objects.create(user=self.user, name='name')
+        self.account = EtsyAccount.objects.create(user=self.user, name='name', access_token='fake token',
+                                                  authorization_date=timezone.now())
+        self.account = ShopifyStore.objects.create(user=self.user, name='name', access_token='fake token',
+                                                   authorization_date=timezone.now())
+        self.account = SquareupAccount.objects.create(user=self.user, name='name', access_token='fake token',
+                                                      authorization_date=timezone.now())
 
         for i in range(0, 30):
             with freeze_time('2015-%d-%d' % (i % 12 + 1, i / 2 + 1)):

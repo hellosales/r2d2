@@ -5,6 +5,8 @@ from datetime import timedelta
 from decimal import Decimal
 from freezegun import freeze_time
 
+from django.utils import timezone
+
 from r2d2.common_layer.models import CommonTransaction
 from r2d2.insights.models import Insight
 from r2d2.insights.signals import data_fetched
@@ -44,7 +46,8 @@ class InsightsAPITestCase(APIBaseTestCase):
     @freeze_time('2016-04-29')
     def setUp(self):
         user = self._create_user()
-        self.account = ShopifyStore.objects.create(user=user, access_token='token', name='name')
+        self.account = ShopifyStore.objects.create(user=user, access_token='token', name='name',
+                                                   authorization_date=timezone.now())
         week_ago = datetime.now() - timedelta(days=7)
         hour_ago = datetime.now() - timedelta(hours=1)
 

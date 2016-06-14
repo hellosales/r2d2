@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 from r2d2.common_layer.models import CommonTransaction
 from r2d2.shopify_api.models import ImportedShopifyOrder
 from r2d2.shopify_api.models import ShopifyStore
@@ -10,7 +12,8 @@ class TestStorage(APIBaseTestCase):
 
     def setUp(self):
         self._create_user()
-        self.account = ShopifyStore.objects.create(user=self.user, access_token='token', name='name')
+        self.account = ShopifyStore.objects.create(user=self.user, access_token='token', name='name',
+                                                   authorization_date=timezone.now())
 
     def tearDown(self):
         ImportedShopifyOrder.objects.filter(account_id=self.account.id).delete()

@@ -8,7 +8,9 @@ from django.utils import timezone
 
 from r2d2.accounts.models import Account
 from r2d2.data_importer.api import DataImporter
+from r2d2.etsy_api.models import EtsyAccount
 from r2d2.shopify_api.models import ShopifyStore
+from r2d2.squareup_api.models import SquareupAccount
 from r2d2.utils.test_utils import APIBaseTestCase
 from rest_framework.reverse import reverse
 
@@ -32,8 +34,8 @@ class DataImporterApiTestCase(APIBaseTestCase):
         self._create_user()
         self.user.approval_status = Account.APPROVED
         self.user.save()
-        account = ShopifyStore.objects.create(user=self.user, access_token='token', name='name')
-        not_authorized_account = ShopifyStore.objects.create(user=self.user, name='other-name')
+        account = ShopifyStore.objects.create(user=self.user, access_token='token', name='name',
+                                              authorization_date=timezone.now())
 
         with mock.patch('r2d2.data_importer.tasks.fetch_data_task.apply_async') as mocked_fetch_data:
             mocked_fetch_data.return_value = None
@@ -42,14 +44,9 @@ class DataImporterApiTestCase(APIBaseTestCase):
             with freeze_time('2014-12-14'):
                 DataImporter.run_fetching_data()
 
-                # check status #1
                 store = ShopifyStore.objects.get(id=account.id)
                 self.assertEqual(store.fetch_status, ShopifyStore.FETCH_SCHEDULED)
                 self.assertEqual(store.fetch_scheduled_at.date(), date(year=2014, month=12, day=14))
-
-                # check status #2
-                self.assertEqual(ShopifyStore.objects.get(id=not_authorized_account.id).fetch_status,
-                                 ShopifyStore.FETCH_IDLE)
 
         with mock.patch('r2d2.shopify_api.models.ShopifyStore._fetch_data_inner') as mocked_fetch_data_inner:
             mocked_fetch_data_inner.return_value = None
@@ -59,14 +56,6 @@ class DataImporterApiTestCase(APIBaseTestCase):
             self.assertEqual(account.fetch_status, ShopifyStore.FETCH_SUCCESS)
             self.assertIsNotNone(account.last_successfull_call)
             mocked_fetch_data_inner.assert_any_call()
-
-        with mock.patch('r2d2.shopify_api.models.ShopifyStore._fetch_data_inner') as mocked_fetch_data_inner:
-            mocked_fetch_data_inner.return_value = None
-
-            not_authorized_account = ShopifyStore.objects.get(id=not_authorized_account.id)
-            not_authorized_account.fetch_data()
-            self.assertEqual(not_authorized_account.fetch_status, ShopifyStore.FETCH_IDLE)
-            mocked_fetch_data_inner.assert_not_called()
 
         # same check - but from different state
         with mock.patch('r2d2.data_importer.tasks.fetch_data_task.apply_async') as mocked_fetch_data:
@@ -96,8 +85,8 @@ class DataImporterApiTestCase(APIBaseTestCase):
     def test_importer_user_not_approved_flow(self):
         """ not approved flow """
         self._create_user()
-        account = ShopifyStore.objects.create(user=self.user, access_token='token', name='name')
-        not_authorized_account = ShopifyStore.objects.create(user=self.user, name='other-name')
+        account = ShopifyStore.objects.create(user=self.user, access_token='token', name='name',
+                                              authorization_date=timezone.now())
 
         with mock.patch('r2d2.data_importer.tasks.fetch_data_task.apply_async') as mocked_fetch_data:
             mocked_fetch_data.return_value = None
@@ -105,13 +94,7 @@ class DataImporterApiTestCase(APIBaseTestCase):
             # run importer
             with freeze_time('2014-12-14'):
                 DataImporter.run_fetching_data()
-
-                # check status #1
                 store = ShopifyStore.objects.get(id=account.id)
-                self.assertEqual(store.fetch_status, ShopifyStore.FETCH_IDLE)
-
-                # check status #2
-                store = ShopifyStore.objects.get(id=not_authorized_account.id)
                 self.assertEqual(store.fetch_status, ShopifyStore.FETCH_IDLE)
 
     def test_importer_not_active_accounts(self):
@@ -119,8 +102,8 @@ class DataImporterApiTestCase(APIBaseTestCase):
         self._create_user()
         self.user.approval_status = Account.APPROVED
         self.user.save()
-        account = ShopifyStore.objects.create(user=self.user, access_token='token', name='name', is_active=False)
-        not_authorized_account = ShopifyStore.objects.create(user=self.user, name='other-name', is_active=False)
+        account = ShopifyStore.objects.create(user=self.user, access_token='token', name='name', is_active=False,
+                                              authorization_date=timezone.now())
 
         with mock.patch('r2d2.data_importer.tasks.fetch_data_task.apply_async') as mocked_fetch_data:
             mocked_fetch_data.return_value = None
@@ -128,20 +111,15 @@ class DataImporterApiTestCase(APIBaseTestCase):
             # run importer
             with freeze_time('2014-12-14'):
                 DataImporter.run_fetching_data()
-
-                # check status #1
                 store = ShopifyStore.objects.get(id=account.id)
-                self.assertEqual(store.fetch_status, ShopifyStore.FETCH_IDLE)
-
-                # check status #2
-                store = ShopifyStore.objects.get(id=not_authorized_account.id)
                 self.assertEqual(store.fetch_status, ShopifyStore.FETCH_IDLE)
 
     def test_sending_signal_to_generators(self):
         self._create_user()
         self.user.approval_status = Account.APPROVED
         self.user.save()
-        account = ShopifyStore.objects.create(user=self.user, access_token='token', name='name')
+        account = ShopifyStore.objects.create(user=self.user, access_token='token', name='name',
+                                              authorization_date=timezone.now())
 
         with mock.patch('r2d2.data_importer.tasks.fetch_data_task.apply_async') as mocked_fetch_data:
             mocked_fetch_data.return_value = None
@@ -161,7 +139,8 @@ class DataImporterApiTestCase(APIBaseTestCase):
                                                                success=True)
 
                     with freeze_time('2014-12-14 2:00'):
-                        account2 = ShopifyStore.objects.create(user=self.user, access_token='token', name='name2')
+                        account2 = ShopifyStore.objects.create(user=self.user, access_token='token', name='name2',
+                                                               authorization_date=timezone.now())
                         DataImporter.run_fetching_data()
                         account2 = ShopifyStore.objects.get(id=account2.id)
                         account2.fetch_data()
@@ -200,18 +179,15 @@ class DataImporterAccountsApiTestCase(APIBaseTestCase):
     def test_accounts_api(self):
         self._login()
         # test creating accounts
-        response = self.client.post(reverse('data-importer-accounts'),
-                                    {"name": "other name", "class": "SquareupAccount"})
-        self.assertEqual(response.status_code, 201)
-        response = self.client.post(reverse('data-importer-accounts'),
-                                    {"name": "other-name", "access_token": "token", "class": "ShopifyStore"})
-        self.assertEqual(response.status_code, 201)
-        response = self.client.post(reverse('data-importer-accounts'),
-                                    {"name": "same-name", "access_token": "token", "class": "EtsyAccount"})
-        self.assertEqual(response.status_code, 201)
-        response = self.client.post(reverse('data-importer-accounts'),
-                                    {"name": "same-name", "access_token": "token", "class": "ShopifyStore"})
-        self.assertEqual(response.status_code, 201)
+        # moved to respective tests for each data importer (since now it requires oauth authorization)
+        SquareupAccount.objects.create(user=self.user, access_token='token', name='other name',
+                                       authorization_date=timezone.now())
+        ShopifyStore.objects.create(user=self.user, access_token='token', name='other-name',
+                                    authorization_date=timezone.now())
+        EtsyAccount.objects.create(user=self.user, access_token='token', name='same-name',
+                                   authorization_date=timezone.now())
+        ShopifyStore.objects.create(user=self.user, access_token='token', name='same-name',
+                                    authorization_date=timezone.now())
 
         # test getting accounts list
         response = self.client.get(reverse('data-importer-accounts'))
@@ -264,7 +240,8 @@ class DataImporterAccountsApiTestCase(APIBaseTestCase):
         """ test serializing is_active / next_sync / last_updated """
 
         # fresh account, not scheduled yet
-        account = ShopifyStore.objects.create(user=self.user, access_token='token', name='name')
+        account = ShopifyStore.objects.create(user=self.user, access_token='token', name='name',
+                                              authorization_date=timezone.now())
         self._login()
         response = self.client.get(reverse('data-importer-accounts'))
         self.assertEqual(response.status_code, 200)
