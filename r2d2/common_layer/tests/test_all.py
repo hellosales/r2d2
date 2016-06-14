@@ -4,6 +4,8 @@ from datetime import datetime
 from datetime import timedelta
 from freezegun import freeze_time
 
+from django.utils import timezone
+
 from r2d2.common_layer.models import CommonTransaction
 from r2d2.common_layer.signals import object_imported
 from r2d2.etsy_api.models import EtsyAccount
@@ -36,9 +38,11 @@ class TestBase(APIBaseTestCase):
 
     def setUp(self):
         self._create_user()
-        self.shopify_account = ShopifyStore.objects.create(user=self.user, access_token='token', name='name')
+        self.shopify_account = ShopifyStore.objects.create(user=self.user, access_token='token', name='name',
+                                                           authorization_date=timezone.now())
         self.etsy_account = EtsyAccount.objects.create(user=self.user,
-                                                       access_token='oauth_token=x&oauth_token_secret=y', name='name')
+                                                       access_token='oauth_token=x&oauth_token_secret=y', name='name',
+                                                       authorization_date=timezone.now())
 
     def tearDown(self):
         CommonTransaction.objects.all().delete()

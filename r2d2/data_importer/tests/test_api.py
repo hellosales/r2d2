@@ -87,6 +87,8 @@ class DataImporterApiTestCase(APIBaseTestCase):
         self._create_user()
         account = ShopifyStore.objects.create(user=self.user, access_token='token', name='name',
                                               authorization_date=timezone.now())
+        self.user.approval_status = Account.NOT_APPROVED
+        self.user.save()
 
         with mock.patch('r2d2.data_importer.tasks.fetch_data_task.apply_async') as mocked_fetch_data:
             mocked_fetch_data.return_value = None
@@ -100,8 +102,6 @@ class DataImporterApiTestCase(APIBaseTestCase):
     def test_importer_not_active_accounts(self):
         """ dezactivated flow """
         self._create_user()
-        self.user.approval_status = Account.APPROVED
-        self.user.save()
         account = ShopifyStore.objects.create(user=self.user, access_token='token', name='name', is_active=False,
                                               authorization_date=timezone.now())
 
@@ -116,8 +116,6 @@ class DataImporterApiTestCase(APIBaseTestCase):
 
     def test_sending_signal_to_generators(self):
         self._create_user()
-        self.user.approval_status = Account.APPROVED
-        self.user.save()
         account = ShopifyStore.objects.create(user=self.user, access_token='token', name='name',
                                               authorization_date=timezone.now())
 
@@ -232,7 +230,7 @@ class DataImporterAccountsApiTestCase(APIBaseTestCase):
         # test editing name - shopify - error
         shopify_account['name'] = 'new name'
         response = self.client.put(reverse('data-importer-accounts'), shopify_account)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 200)
         self.assertIn('name', response.data)
 
     @freeze_time('2014-12-15 01:00')

@@ -42,17 +42,17 @@ class SquareupApiTestCase(APIBaseTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 0)
 
+        # getting oauth url
+        response = self.client.post(reverse('data-importer-generate-oauth-url'), {'class': 'SquareupAccount'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['oauth_url'],
+                         settings.SQUAREUP_AUTHORIZATION_ENDPOINT % settings.SQUAREUP_API_KEY)
+
         # creating a new account
         with requests_mock.mock() as m:
             m.post('https://connect.squareup.com/oauth2/token', json=TOKEN_JSON_MOCK)
 
-            # first get oauth url [use both proxy and standard]
-            response = self.client.post(reverse('data-importer-generate-oauth-url'), {'class': 'SquareupAccount'})
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.data['oauth_url'],
-                             settings.SQUAREUP_AUTHORIZATION_ENDPOINT % settings.SQUAREUP_API_KEY)
-
-            # then post account with account name, but without code - should return error
+            # post account with account name, but without code - should return error
             response = self.client.post(reverse('squareup-accounts'), {'name': ACCOUNT_NAME})
             self.assertEqual(response.status_code, 400)
             self.assertIn('code', response.data)

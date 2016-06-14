@@ -139,6 +139,7 @@ class DataImporterGenerateOauthUrl(GenericAPIView):
             serializer = model_class.get_oauth_url_serializer()(data=request.data)
             if serializer.is_valid():
                 return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 

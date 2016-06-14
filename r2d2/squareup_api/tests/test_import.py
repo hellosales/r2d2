@@ -4,6 +4,8 @@ from datetime import date
 from decimal import Decimal
 from freezegun import freeze_time
 
+from django.utils import timezone
+
 from r2d2.common_layer.models import CommonTransaction
 from r2d2.squareup_api.models import ImportedSquareupPayment
 from r2d2.squareup_api.models import SquareupAccount
@@ -35,7 +37,8 @@ class TestImport(APIBaseTestCase):
 
     def setUp(self):
         self._create_user()
-        self.account = SquareupAccount.objects.create(user=self.user, access_token='token', name='name')
+        self.account = SquareupAccount.objects.create(user=self.user, access_token='token', name='name',
+                                                      authorization_date=timezone.now())
 
     def tearDown(self):
         ImportedSquareupPayment.objects.filter(account_id=self.account.id).delete()

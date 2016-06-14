@@ -4,8 +4,9 @@ import shopify
 
 from constance import config
 from decimal import Decimal
+
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.db import models
 
 from r2d2.common_layer.signals import object_imported
 from r2d2.data_importer.api import DataImporter
@@ -21,31 +22,47 @@ class ShopifyStore(AbstractDataProvider):
 
         this model keeps also token if the user authorized
         our app to use this account"""
+    store_url = models.URLField()
     MAX_REQUEST_LIMIT = 250
+
+    def save(self, *args, **kwargs):
+        super(ShopifyStore, self).save(*args, **kwargs)
+        # it is no longer possible to save unauthorized account
+        self.user.data_importer_account_authorized()
 
     @classmethod
     def get_serializer(cls):
         from r2d2.shopify_api.serializers import ShopifyStoreSerializer
         return ShopifyStoreSerializer
 
-    @property
-    def authorization_url(self):
+    @classmethod
+    def get_oauth_url_serializer(cls):
+        from r2d2.shopify_api.serializers import ShopifyOauthUrlSerializer
+        return ShopifyOauthUrlSerializer
+
+    @classmethod
+    def authorization_url(cls, store_slug):
         """ getting authorization url for the store """
-        if self.is_authorized:
+        callback_link = '%s://%s%s' % ('https' if getattr(settings, 'IS_SECURE', False) else 'http',
+                                       config.CLIENT_DOMAIN, settings.SHOPIFY_CALLBACK_ENDPOINT)
+        shopify.Session.setup(api_key=settings.SHOPIFY_API_KEY, secret=settings.SHOPIFY_API_SECRET)
+        session = shopify.Session(cls._store_url(store_slug))
+        return session.create_permission_url(settings.SHOPIFY_SCOPES, callback_link)
+
+    @classmethod
+    def get_access_token(cls, shop, code, timestamp, signature, hmac):
+        params = {'shop': shop, 'code': code, 'timestamp': timestamp, 'signature': signature, 'hmac': hmac}
+        shopify.Session.setup(api_key=settings.SHOPIFY_API_KEY, secret=settings.SHOPIFY_API_SECRET)
+        session = shopify.Session(shop)
+
+        try:
+            return session.request_token(params)
+        except:  # shopify can throw here general exception
             return None
 
-        if not hasattr(self, '_authorization_url'):
-            callback_link = '%s://%s%s' % ('https' if getattr(settings, 'IS_SECURE', False) else 'http',
-                                           config.CLIENT_DOMAIN, reverse('shopify-callback'))
-            shopify.Session.setup(api_key=settings.SHOPIFY_API_KEY, secret=settings.SHOPIFY_API_SECRET)
-            session = shopify.Session(self._store_url)
-            self._authorization_url = session.create_permission_url(settings.SHOPIFY_SCOPES, callback_link)
-
-        return self._authorization_url
-
-    @property
-    def _store_url(self):
-        return "%s.myshopify.com" % self.name
+    @classmethod
+    def _store_url(cls, store_slug):
+        return "%s.myshopify.com" % store_slug
 
     def map_data(self, imported_shopify_order):
         mapped_data = {
@@ -77,8 +94,7 @@ class ShopifyStore(AbstractDataProvider):
         return mapped_data
 
     def _activate_session(self):
-        assert self.is_authorized
-        session = shopify.Session(self._store_url, self.access_token)
+        session = shopify.Session(self.store_url, self.access_token)
         shopify.ShopifyResource.activate_session(session)
         return session
 

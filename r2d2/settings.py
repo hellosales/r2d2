@@ -385,6 +385,7 @@ SHOPIFY_API_KEY = '9701bcb247e85adcb062a0b210d5f1cb'
 SHOPIFY_API_SECRET = 'f8070f057e7bcc15a64a881d07d5b3f8'
 SHOPIFY_SCOPES = ['read_content', 'read_themes', 'read_products', 'read_customers', 'read_orders',
                   'read_script_tags', 'read_fulfillments', 'read_shipping']
+SHOPIFY_CALLBACK_ENDPOINT = '/api/shopify/auth/callback'
 # other possible scopes:
 # write_themes, write_products, write_customers, write_orders, write_script_tags, write_fulfillments, write_shipping
 
