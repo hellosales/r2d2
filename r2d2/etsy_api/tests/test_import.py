@@ -2,6 +2,8 @@ import mock
 
 from decimal import Decimal
 
+from django.utils import timezone
+
 from r2d2.common_layer.models import CommonTransaction
 from r2d2.etsy_api.models import EtsyAccount
 from r2d2.etsy_api.models import ImportedEtsyReceipt
@@ -44,7 +46,7 @@ class TestImport(APIBaseTestCase):
     def setUp(self):
         self._create_user()
         self.account = EtsyAccount.objects.create(user=self.user, access_token='oauth_token=x&oauth_token_secret=y',
-                                                  name='name')
+                                                  name='name', authorization_date=timezone.now())
 
     def tearDown(self):
         ImportedEtsyReceipt.objects.filter(account_id=self.account.id).delete()

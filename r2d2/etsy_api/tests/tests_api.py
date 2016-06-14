@@ -3,17 +3,21 @@
 import mock
 
 from copy import copy
+from freezegun import freeze_time
 from oauth2 import Token
 from rest_framework.reverse import reverse
 
+from django.utils import timezone
+
 from r2d2.accounts.models import Account
 from r2d2.etsy_api.models import EtsyAccount
+from r2d2.etsy_api.models import EtsyRequestToken
 from r2d2.utils.test_utils import APIBaseTestCase
 
 
 ACCOUNT_NAME = 'some name'
-AUTH_RESPONSE = ('http://localhost:8000/etsy/auth/callback?id=%d&oauth_token=ec59018efdd2a5625f305fadccb0c5'
-                 '&oauth_verifier=fb82e71d#_=_')
+ACCOUNT_NAME2 = 'other name'
+OAUTH_VERIFIER = 'fb82e71d#_=_'
 MOCK_TOKEN = Token.from_string('oauth_token=5f5f41deb2e7e6acae9933965dd99f&oauth_token_secret=dd9967f234')
 
 MOCKED_REQUEST_TOKEN = Token.from_string('oauth_token=a93ab1fd61b891bef654fe8ae7773b&oauth_token_secret=3189eae93c')
@@ -27,47 +31,64 @@ class EtsyApiTestCase(APIBaseTestCase):
     def test_setting_up_account(self):
         """ test if checking / setting up account conenction works fine """
         # get / post account info - should not work without user
+        response = self.client.get(reverse('etsy-accounts'))
+        self.assertEqual(response.status_code, 401)
+        response = self.client.post(reverse('etsy-accounts'), {'name': ACCOUNT_NAME})
+        self.assertEqual(response.status_code, 401)
+
+        # list should be empty
+        self._login()
+        response = self.client.get(reverse('etsy-accounts'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 0)
+
+        # getting oauth url
         with mock.patch('etsy.oauth.EtsyOAuthClient.get_request_token') as mocked_get_request_token:
             mocked_get_request_token.return_value = MOCKED_REQUEST_TOKEN
 
-            response = self.client.get(reverse('etsy-accounts'))
-            self.assertEqual(response.status_code, 401)
-            response = self.client.post(reverse('etsy-accounts'), {'name': ACCOUNT_NAME})
-            self.assertEqual(response.status_code, 401)
-
-            # list should be empty
-            self._login()
-            response = self.client.get(reverse('etsy-accounts'))
+            response = self.client.post(reverse('data-importer-generate-oauth-url'), {'class': 'EtsyAccount'})
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(len(response.data['results']), 0)
+            self.assertIsNotNone(response.data['oauth_url'])
+            self.assertEqual(EtsyRequestToken.objects.count(), 1)
+            self.assertEqual(EtsyRequestToken.objects.first().request_token, MOCKED_REQUEST_TOKEN.to_string())
 
-            # creating a new account
+        # creating a new account
+        with mock.patch('etsy.oauth.EtsyOAuthClient.get_access_token') as get_access_token:
+            get_access_token.return_value = MOCK_TOKEN
+
+            # post account with account name, but without oauth data - should return error
             response = self.client.post(reverse('etsy-accounts'), {'name': ACCOUNT_NAME})
+            self.assertEqual(response.status_code, 400)
+            self.assertIn('oauth_verifier', response.data)
+            self.assertIn('id', response.data)
+
+            # post account with name and code - should pass
+            data = {
+                'name': ACCOUNT_NAME,
+                'oauth_verifier': OAUTH_VERIFIER,
+                'id': EtsyRequestToken.objects.first().pk
+            }
+            response = self.client.post(reverse('etsy-accounts'), data)
             self.assertEqual(response.status_code, 201)
             self.assertEqual(response.data['name'], ACCOUNT_NAME)
-            self.assertFalse(response.data['is_authorized'])
-            self.assertIn('authorization_url', response.data)
-            account_pk = response.data['pk']
-            etsy_account = EtsyAccount.objects.get(pk=account_pk)
-            self.assertIsNotNone(etsy_account.request_token)
-            self.assertEqual(self.user.approval_status, Account.NOT_APPROVED)
-
-            # let's pretend we have called authorization_url and now we have the callback:
-            with mock.patch('etsy.oauth.EtsyOAuthClient.get_access_token') as get_access_token:
-                get_access_token.return_value = MOCK_TOKEN
-                response = self.client.get(AUTH_RESPONSE % account_pk)
-                self.assertEqual(response.status_code, 200)
-
-            # check if token was updated
-            response = self.client.get(reverse('etsy-accounts'))
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(len(response.data['results']), 1)
-            self.assertTrue(response.data['results'][0]["is_authorized"])
-            self.assertIsNone(response.data['results'][0]['authorization_url'])
+            account = EtsyAccount.objects.first()
+            self.assertEqual(account.access_token, MOCK_TOKEN.to_string())
 
             # make sure account was mark as approved
             user = Account.objects.get(id=self.user.id)
             self.assertEqual(user.approval_status, Account.APPROVED)
+
+            # post second account with the same name - should fail
+            response = self.client.post(reverse('etsy-accounts'), data)
+            self.assertEqual(response.status_code, 400)
+            self.assertIn('name', response.data)
+
+            # create second account - using proxy
+            data['name'] = ACCOUNT_NAME2
+            data['class'] = 'EtsyAccount'
+            response = self.client.post(reverse('data-importer-accounts'), data)
+            self.assertEqual(response.status_code, 201)
+            self.assertEqual(response.data['name'], ACCOUNT_NAME2)
 
     def test_retrieve_update_delete_account(self):
         """ test plan:
@@ -75,32 +96,52 @@ class EtsyApiTestCase(APIBaseTestCase):
             * retrieve it by pk by API [authorization url should not be present]
             * remove access_token (by API) - [authorization url should be present]
             * delete account (by API) """
+        self.assertEqual(EtsyAccount.objects.count(), 0)
+
+        with freeze_time('2016-03-17'):
+            account = EtsyAccount.objects.create(user=self.user, name=ACCOUNT_NAME,
+                                                 access_token='some token',
+                                                 authorization_date=timezone.now())
+            self.assertEqual(EtsyAccount.objects.count(), 1)
+
+        # get account
+        response = self.client.get(reverse('etsy-accounts', kwargs={'pk': account.pk}))
+        self.assertEqual(response.status_code, 401)
+
+        self._login()
+        response = self.client.get(reverse('etsy-accounts', kwargs={'pk': account.pk}))
+        self.assertEqual(response.status_code, 200)
+
+        # update name
+        put_data = copy(response.data)
+        put_data['name'] = ACCOUNT_NAME2
+        response = self.client.put(reverse('etsy-accounts', kwargs={'pk': account.pk}), put_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['name'], ACCOUNT_NAME2)
+
+        # getting oauth url
         with mock.patch('etsy.oauth.EtsyOAuthClient.get_request_token') as mocked_get_request_token:
             mocked_get_request_token.return_value = MOCKED_REQUEST_TOKEN
 
-            self.assertEqual(EtsyAccount.objects.count(), 0)
-
-            account = EtsyAccount.objects.create(user=self.user, name=ACCOUNT_NAME, access_token=MOCK_TOKEN.to_string())
-            self.assertEqual(EtsyAccount.objects.count(), 1)
-
-            # get account
-            response = self.client.get(reverse('etsy-accounts', kwargs={'pk': account.pk}))
-            self.assertEqual(response.status_code, 401)
-
-            self._login()
-            response = self.client.get(reverse('etsy-accounts', kwargs={'pk': account.pk}))
+            response = self.client.post(reverse('data-importer-generate-oauth-url'), {'class': 'EtsyAccount'})
             self.assertEqual(response.status_code, 200)
-            self.assertIsNone(response.data['authorization_url'])
-            self.assertTrue(response.data['is_authorized'])
+            self.assertIsNotNone(response.data['oauth_url'])
+            self.assertEqual(EtsyRequestToken.objects.count(), 1)
+            self.assertEqual(EtsyRequestToken.objects.first().request_token, MOCKED_REQUEST_TOKEN.to_string())
 
-            # remove access_token - this is the way to re-authorize the account
-            put_data = copy(response.data)
-            put_data['access_token'] = ''
-            response = self.client.put(reverse('etsy-accounts', kwargs={'pk': account.pk}), put_data)
-            self.assertIsNotNone(response.data['authorization_url'])
-            self.assertFalse(response.data['is_authorized'])
+        # update access_token
+        with freeze_time('2016-03-18'):
+            with mock.patch('etsy.oauth.EtsyOAuthClient.get_access_token') as get_access_token:
+                get_access_token.return_value = MOCK_TOKEN
 
-            # delete account
-            response = self.client.delete(reverse('etsy-accounts', kwargs={'pk': account.pk}))
-            self.assertEqual(response.status_code, 204)
-            self.assertEqual(EtsyAccount.objects.count(), 0)
+                put_data['oauth_verifier'] = OAUTH_VERIFIER
+                put_data['id'] = EtsyRequestToken.objects.first().pk
+                response = self.client.put(reverse('etsy-accounts', kwargs={'pk': account.pk}), put_data)
+                account = EtsyAccount.objects.first()
+                self.assertEqual(account.access_token, MOCK_TOKEN.to_string())
+                self.assertEqual(account.authorization_date.day, 18)
+
+        # delete account
+        response = self.client.delete(reverse('etsy-accounts', kwargs={'pk': account.pk}))
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(EtsyAccount.objects.count(), 0)

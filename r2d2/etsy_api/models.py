@@ -9,8 +9,6 @@ from etsy.oauth import EtsyOAuthClient
 from oauth2 import Token
 
 from django.conf import settings
-from django.core.cache import cache
-from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils import timezone
 
@@ -20,12 +18,16 @@ from r2d2.data_importer.models import AbstractDataProvider
 from r2d2.utils.documents import StorageDynamicDocument
 
 
+class EtsyRequestToken(models.Model):
+    request_token = models.CharField(max_length=255, null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True)  # TODO: drop old request tokens
+
+
 class EtsyAccount(AbstractDataProvider):
     """ model for storing connection between etsy accounts and user
 
         this model keeps also token if the user authorized
         our app to use this account"""
-    request_token = models.CharField(max_length=255, null=True, blank=True)
     MAX_REQUEST_LIMIT = 100
 
     @classmethod
@@ -33,40 +35,48 @@ class EtsyAccount(AbstractDataProvider):
         from r2d2.etsy_api.serializers import EtsyAccountSerializer
         return EtsyAccountSerializer
 
-    @property
-    def authorization_url(self):
+    @classmethod
+    def get_oauth_url_serializer(cls):
+        from r2d2.etsy_api.serializers import EtsyOauthUrlSerializer
+        return EtsyOauthUrlSerializer
+
+    def save(self, *args, **kwargs):
+        super(EtsyAccount, self).save(*args, **kwargs)
+        # it is no longer possible to save unauthorized account
+        self.user.data_importer_account_authorized()
+
+    @classmethod
+    def authorization_url(cls):
         """ getting authorization url for the account & storing request token """
-        if self.is_authorized:
+        client = EtsyOAuthClient(settings.ETSY_API_KEY, settings.ETSY_API_SECRET, etsy_env=EtsyEnvProduction())
+        etsy_request_token = EtsyRequestToken.objects.create()
+
+        callback_link = '%s://%s%s?id=%d' % ('https' if getattr(settings, 'IS_SECURE', False) else 'http',
+                                             config.CLIENT_DOMAIN, settings.ETSY_CALLBACK_ENDPOINT,
+                                             etsy_request_token.pk)
+
+        authorization_url = client.get_signin_url(oauth_callback=callback_link)
+        etsy_request_token.request_token = client.token.to_string()
+        etsy_request_token.save()
+
+        return authorization_url
+
+    @classmethod
+    def get_access_token(cls, oauth_verifier, request_id):
+        """ gets access token and stores it into the model """
+        try:
+            etsy_request_token = EtsyRequestToken.objects.get(id=request_id)
+        except EtsyRequestToken.DoesNotExist:
             return None
 
-        if not hasattr(self, '_authorization_url'):
-            self._authorization_url = cache.get("etsy:auth_url:%d" % self.id)
-
-        if not self._authorization_url:
-            client = EtsyOAuthClient(settings.ETSY_API_KEY, settings.ETSY_API_SECRET, etsy_env=EtsyEnvProduction())
-            callback_link = '%s://%s%s?id=%d' % ('https' if getattr(settings, 'IS_SECURE', False) else 'http',
-                                                 config.CLIENT_DOMAIN, reverse('etsy-callback'), self.id)
-            self._authorization_url = client.get_signin_url(oauth_callback=callback_link)
-            self.request_token = client.token.to_string()  # request token is required in callback
-            self.save()
-            cache.set("etsy:auth_url:%d" % self.id, self._authorization_url, 60 * 60)
-
-        return self._authorization_url
-
-    def get_access_token(self, oauth_verifier):
-        """ gets access token and stores it into the model """
         client = EtsyOAuthClient(settings.ETSY_API_KEY, settings.ETSY_API_SECRET, etsy_env=EtsyEnvProduction(),
-                                 token=Token.from_string(self.request_token))
+                                 token=Token.from_string(etsy_request_token.request_token))
         token = client.get_access_token(oauth_verifier)
+
         if not token:
-            return False
+            return None
 
-        self.access_token = token.to_string()
-        self.authorization_date = timezone.now()
-        self.save()
-
-        self.user.data_importer_account_authorized()
-        return True
+        return token.to_string()
 
     def _prepare_api(self):
         if not self._etsy_api and self.access_token:
@@ -201,7 +211,6 @@ class EtsyAccount(AbstractDataProvider):
 
     def __unicode__(self):
         return self.name
-
 
 DataImporter.register(EtsyAccount)
 
