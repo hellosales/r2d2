@@ -13,13 +13,13 @@ env.use_ssh_config = True
 
 def _set_env():
     branch = _get_branch_name()
-    user = 'r2d2-dev-api'
-    prefix = "dev-api"
+    user = 'r2d2-api-dev'
+    prefix = "api-dev"
     environment = 'devel'
     app_dir = 'r2d2'
     if branch == 'qa' or 'release' in branch:
-        user = 'r2d2-qa-api'
-        prefix = "qa-api"
+        user = 'r2d2-api-qa'
+        prefix = "api-qa"
         environment = 'qa'
         env.hosts = 'qa.arabel.la'
     elif branch == 'master':
