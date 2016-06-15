@@ -66,7 +66,6 @@ class ShopifyApiTestCase(APIBaseTestCase):
             self.assertIn('shop', response.data)
             self.assertIn('code', response.data)
             self.assertIn('timestamp', response.data)
-            self.assertIn('signature', response.data)
             self.assertIn('hmac', response.data)
 
             # post account with name and code - should pass

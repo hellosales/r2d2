@@ -31,7 +31,7 @@ class ShopifyStoreSerializer(R2D2ModelSerializer):
         shop = validated_data.pop('shop', None)
         code = validated_data.pop('code', None)
         timestamp = validated_data.pop('timestamp', None)
-        signature = validated_data.pop('signature', None)
+        signature = validated_data.pop('signature', '')
         hmac = validated_data.pop('hmac', None)
 
         # check name
@@ -42,7 +42,7 @@ class ShopifyStoreSerializer(R2D2ModelSerializer):
             errors['name'] = [_(ShopifyStore.NAME_NOT_UNIQUE_ERROR)]
 
         # if auth data is present - get the access_token
-        if shop and code and timestamp and signature and hmac:
+        if shop and code and timestamp and hmac:
             access_token = ShopifyStore.get_access_token(shop, code, timestamp, signature, hmac)
             if access_token:
                 validated_data['access_token'] = access_token
@@ -57,8 +57,6 @@ class ShopifyStoreSerializer(R2D2ModelSerializer):
                 errors['code'] = [_('Fill in this field.')]
             if not timestamp:
                 errors['timestamp'] = [_('Fill in this field.')]
-            if not signature:
-                errors['signature'] = [_('Fill in this field.')]
             if not hmac:
                 errors['hmac'] = [_('Fill in this field.')]
 
