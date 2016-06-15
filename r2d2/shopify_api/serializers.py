@@ -16,14 +16,20 @@ class ShopifyStoreSerializer(R2D2ModelSerializer):
     timestamp = serializers.CharField(required=False, write_only=True)
     signature = serializers.CharField(required=False, write_only=True)
     hmac = serializers.CharField(required=False, write_only=True)
+    shop_slug = serializers.SerializerMethodField()
 
     class Meta:
         model = ShopifyStore
 
         fields = ['pk', 'name', 'authorization_date', 'last_successfull_call', 'is_active', 'next_sync', 'last_updated',
-                  'fetch_status', 'created', 'shop', 'code', 'timestamp', 'signature', 'hmac']
+                  'fetch_status', 'created', 'shop', 'code', 'timestamp', 'signature', 'hmac', 'shop_slug']
         read_only_fields = ['pk', 'authorization_date', 'last_successfull_call', 'next_sync', 'last_updated',
-                            'fetch_status', 'created']
+                            'fetch_status', 'created', 'shop_slug']
+
+    def get_shop_slug(self, obj):
+        if obj.store_url:
+            return obj.store_url.replace('.myshopify.com', '').replace('http://', '').replace('https://', '')
+        return ''
 
     def validate(self, validated_data):
         errors = {}

@@ -75,6 +75,7 @@ class ShopifyApiTestCase(APIBaseTestCase):
             response = self.client.post(reverse('shopify-stores'), data)
             self.assertEqual(response.status_code, 201)
             self.assertEqual(response.data['name'], STORE_NAME)
+            self.assertEqual(response.data['shop_slug'], STORE_URL)
             account = ShopifyStore.objects.first()
             self.assertEqual(account.access_token, ACCESS_TOKEN)
 
