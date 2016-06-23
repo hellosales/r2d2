@@ -12,7 +12,9 @@ from r2d2.utils.rest_api_helpers import UserFilteredMixin
 
 
 class InsightsListAPI(UserFilteredMixin, ListAPIView):
-    """ API for creating & managing etsy account """
+    """ API for creating & managing etsy account
+        limit -- limit
+        offset -- offset"""
     serializer_class = InsightSerializer
     queryset = Insight.objects.order_by('-id').all()
     ordering = ('name',)
