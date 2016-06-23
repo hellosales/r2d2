@@ -70,7 +70,7 @@ class InsightsAPITestCase(APIBaseTestCase):
         self._login()
         response = self.client.get(reverse('insights'))
         self.assertEqual(response.status_code, 200)
-        self.assertNotIn('count', response.data)
+        self.assertIn('count', response.data)
         self.assertIsNotNone(response.data['next'])
         self.assertEqual(len(response.data['results']), 20)
         self.assertEqual(response.data['results'][0]['text'], 'insight 29')
