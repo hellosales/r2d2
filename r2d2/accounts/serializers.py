@@ -11,7 +11,6 @@ from django.utils.translation import ugettext_lazy as _
 from passwords.validators import complexity
 from passwords.validators import validate_length
 
-
 from r2d2.accounts.models import Account
 from r2d2.utils.serializers import R2D2ModelSerializer
 from r2d2.utils.serializers import R2D2Serializer
