@@ -10,7 +10,6 @@ from oauth2 import Token
 
 from django.conf import settings
 from django.db import models
-from django.utils import timezone
 
 from r2d2.common_layer.signals import object_imported
 from r2d2.data_importer.api import DataImporter

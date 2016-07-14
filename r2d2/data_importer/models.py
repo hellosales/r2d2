@@ -46,16 +46,6 @@ class AbstractDataProvider(models.Model):
         unique_together = ('user', 'name')
         ordering = ('name', )
 
-    def __init__(self, *args, **kwargs):
-        super(AbstractDataProvider, self).__init__(*args, **kwargs)
-        self._old_access_token = self.access_token
-
-    def save(self, *args, **kwargs):
-        if self._old_access_token and self._old_access_token != self.access_token and \
-                self.fetch_status == self.FETCH_FAILED:
-            self.fetch_status = self.FETCH_IDLE
-        return super(AbstractDataProvider, self).save(*args, **kwargs)
-
     @classmethod
     def get_serializer(cls):
         raise NotImplementedError
