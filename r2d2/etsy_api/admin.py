@@ -14,9 +14,7 @@ from r2d2.utils.documents import StorageDocumentAdmin
 
 
 class EtsyAccountAdmin(DataImporterAdmin):
-    def get_readonly_fields(self, request, obj=None):
-        readonly_fields = super(EtsyAccountAdmin, self).get_readonly_fields(request, obj)
-        return readonly_fields + ('request_token',)
+    pass
 
 
 @dynamic_fields_list_display('shop_id', 'shop_name', 'user_id')
