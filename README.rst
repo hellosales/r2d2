@@ -16,6 +16,18 @@ Dev requirements
 ================
 **MySQL, Nginx**
 
+Installing MySQL on OS X
+
+::
+
+    brew install mysql
+
+Creating DB in MySQL for your project
+
+::
+
+    mysql -u root -p
+    CREATE DATABASE name_of_your_database;
 
 *Ubuntu*
 
