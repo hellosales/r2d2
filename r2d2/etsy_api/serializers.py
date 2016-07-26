@@ -42,7 +42,6 @@ class EtsyAccountSerializer(R2D2ModelSerializer):
                 validated_data['access_token'] = access_token
                 validated_data['authorization_date'] = timezone.now()
                 # cleaning up state
-                validated_data['last_error'] = None
                 validated_data['fetch_status'] = EtsyAccount.FETCH_IDLE
             else:
                 errors['code'] = [_(EtsyAccount.OAUTH_ERROR)]

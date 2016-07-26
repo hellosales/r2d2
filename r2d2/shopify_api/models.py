@@ -11,6 +11,7 @@ from django.db import models
 from r2d2.common_layer.signals import object_imported
 from r2d2.data_importer.api import DataImporter
 from r2d2.data_importer.models import AbstractDataProvider
+from r2d2.data_importer.models import AbstractErrorLog
 from r2d2.utils.documents import StorageDynamicDocument
 
 
@@ -34,6 +35,10 @@ class ShopifyStore(AbstractDataProvider):
     def get_serializer(cls):
         from r2d2.shopify_api.serializers import ShopifyStoreSerializer
         return ShopifyStoreSerializer
+
+    @classmethod
+    def get_error_log_class(cls):
+        return ShopifyErrorLog
 
     @classmethod
     def get_oauth_url_serializer(cls):
@@ -148,3 +153,35 @@ DataImporter.register(ShopifyStore)
 class ImportedShopifyOrder(StorageDynamicDocument):
     account_model = ShopifyStore
     prefix = "shopify"
+
+
+class ShopifyErrorLog(AbstractErrorLog):
+    account = models.ForeignKey(ShopifyStore)
+
+    @classmethod
+    def map_error(cls, error):
+        if '400' in error or 'Bad Request' in error:
+            return "The request cannot be fulfilled due to bad syntax."
+        if '401' in error or 'Unauthorized' in error:
+            return "Authentication is required and has not been provided or has failed."
+        elif '403' in error or 'Forbidden' in error:
+            return "The request was a valid request but the server is refusing to respond to it."
+        elif '404' in error or 'Not Found' in error:
+            return "The requested resource could not be found but could be available again in the future."
+        elif '405' in error or 'Method Not Allowed' in error:
+            return ("A request was made of a resource using a method that is not accepted by that resource."
+                    " For example, using a GET request when it should be a POST.")
+        elif '406' in error or 'Not Acceptable' in error:
+            return ("The requested resource is only capable of generating content not acceptable according"
+                    " to the Accept headers sent in the request.")
+        elif '411' in error or 'Length Required' in error:
+            return "The request did not specify the length of the content, which is required by the requested resource."
+        elif '422' in error or 'Unprocessable Entity' in error:
+            return "The request was well-formed but there was some semantic errors."
+        elif '500' in error or '501' in error or '502' in error or 'Server Error' in error:
+            return "Shopify Server Errors."
+        elif '503' in error or 'Service Unavailable' in error:
+            return ("The server is currently unavailable (because it is overloaded or down for service)."
+                    " If you reach your API limits you will receive this error.")
+        else:
+            return "Unrecognized"

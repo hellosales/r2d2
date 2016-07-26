@@ -34,7 +34,6 @@ class AbstractDataProvider(models.Model):
     )
     fetch_status = models.CharField(max_length=20, db_index=True, choices=FETCH_STATUS_CHOICES, default=FETCH_IDLE)
     fetch_scheduled_at = models.DateTimeField(null=True, blank=True)
-    last_error = models.TextField(null=True, blank=True)
     last_api_items_dates = JSONField(default={}, blank=True, help_text='used for querying API only for updates')
     is_active = models.BooleanField(default=True)
 
@@ -50,8 +49,16 @@ class AbstractDataProvider(models.Model):
     def get_serializer(cls):
         raise NotImplementedError
 
+    @classmethod
+    def get_error_log_class(cls):
+        raise NotImplementedError
+
     def _fetch_data_inner(self):
         raise NotImplementedError
+
+    def log_error(self, error):
+        error_cls = self.get_error_log_class()
+        error_cls.objects.create(account=self, error=error)
 
     def fetch_data(self):
         from r2d2.data_importer.api import DataImporter
@@ -74,7 +81,7 @@ class AbstractDataProvider(models.Model):
                 self.last_successfull_call = now
             except Exception, e:
                 self.fetch_status = self.FETCH_FAILED
-                self.last_error = unicode(e)
+                self.log_error(unicode(e))
         self.save()
 
         # send out signal
@@ -133,3 +140,21 @@ class AbstractDataProvider(models.Model):
 class SourceSuggestion(models.Model):
     user = models.ForeignKey(Account)
     text = models.TextField()
+
+
+class AbstractErrorLog(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    error = models.TextField()
+    error_description = models.TextField(null=True, blank=True)
+
+    class Meta:
+        abstract = True
+
+    @classmethod
+    def map_error(cls, error):
+        raise NotImplementedError
+
+    def save(self, *args, **kwargs):
+        if not self.error_description:
+            self.error_description = self.map_error(self.error)
+        return super(AbstractErrorLog, self).save(*args, **kwargs)

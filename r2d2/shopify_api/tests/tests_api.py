@@ -124,10 +124,9 @@ class ShopifyApiTestCase(APIBaseTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['name'], STORE_NAME2)
 
-        # check if error is cleaned up
+        # check if fetch status is cleaned up
         account = ShopifyStore.objects.first()
         account.fetch_status = ShopifyStore.FETCH_FAILED
-        account.last_error = "some error"
         account.save()
 
         with freeze_time('2016-03-18'):
@@ -140,7 +139,6 @@ class ShopifyApiTestCase(APIBaseTestCase):
                 self.assertEqual(account.access_token, ACCESS_TOKEN)
                 self.assertEqual(account.authorization_date.day, 18)
                 self.assertEqual(account.fetch_status, ShopifyStore.FETCH_IDLE)
-                self.assertIsNone(account.last_error)
 
         # delete account
         response = self.client.delete(reverse('shopify-stores', kwargs={'pk': account.pk}))

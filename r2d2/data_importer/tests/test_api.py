@@ -9,10 +9,14 @@ from django.utils import timezone
 from r2d2.accounts.models import Account
 from r2d2.data_importer.api import DataImporter
 from r2d2.etsy_api.models import EtsyAccount
+from r2d2.shopify_api.models import ShopifyErrorLog
 from r2d2.shopify_api.models import ShopifyStore
 from r2d2.squareup_api.models import SquareupAccount
 from r2d2.utils.test_utils import APIBaseTestCase
 from rest_framework.reverse import reverse
+
+
+ERROR = "Not Found: https://fake.myshopify.com/admin/orders.json?status=any&limit=250"
 
 
 class DataImporterApiTestCase(APIBaseTestCase):
@@ -73,14 +77,18 @@ class DataImporterApiTestCase(APIBaseTestCase):
 
         # test if error is handled correctly
         with mock.patch('r2d2.shopify_api.models.ShopifyStore._fetch_data_inner') as mocked_fetch_data_inner:
-            mocked_fetch_data_inner.side_effect = Exception('failed')
+            mocked_fetch_data_inner.side_effect = Exception(ERROR)
 
             account.fetch_status = ShopifyStore.FETCH_SCHEDULED
             account.fetch_data()
 
             account = ShopifyStore.objects.get(id=account.id)
             self.assertEqual(account.fetch_status, ShopifyStore.FETCH_FAILED)
-            self.assertEqual(account.last_error, 'failed')
+            self.assertEqual(ShopifyErrorLog.objects.filter(account=account).count(), 1)
+            error = ShopifyErrorLog.objects.filter(account=account).first()
+            self.assertEqual(error.error, ERROR)
+            self.assertEqual(error.error_description, ("The requested resource could not be found but could be "
+                                                       "available again in the future."))
 
     def test_importer_user_not_approved_flow(self):
         """ not approved flow """

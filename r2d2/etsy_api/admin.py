@@ -5,6 +5,7 @@ from django_mongoengine.admin_support.decorators import dynamic_fields_list_disp
 
 from r2d2.data_importer.admin import DataImporterAdmin
 from r2d2.etsy_api.models import EtsyAccount
+from r2d2.etsy_api.models import EtsyErrorLog
 from r2d2.etsy_api.models import ImportedEtsyReceipt
 from r2d2.etsy_api.models import ImportedEtsyShop
 from r2d2.etsy_api.models import ImportedEtsyTransaction
@@ -13,8 +14,18 @@ from r2d2.etsy_api.models import ImportedEtsyTransaction
 from r2d2.utils.documents import StorageDocumentAdmin
 
 
+class EtsyErrorAdmin(admin.TabularInline):
+    model = EtsyErrorLog
+    extra = 0
+    readonly_fields = ('created_at', 'error', 'error_description')
+    ordering = ('-created_at', )
+
+    def has_add_permission(self, request):
+        return False
+
+
 class EtsyAccountAdmin(DataImporterAdmin):
-    pass
+    inlines = [EtsyErrorAdmin]
 
 
 @dynamic_fields_list_display('shop_id', 'shop_name', 'user_id')

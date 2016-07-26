@@ -55,7 +55,6 @@ class ShopifyStoreSerializer(R2D2ModelSerializer):
                 validated_data['authorization_date'] = timezone.now()
                 validated_data['store_url'] = shop
                 # cleaning up state
-                validated_data['last_error'] = None
                 validated_data['fetch_status'] = ShopifyStore.FETCH_IDLE
             else:
                 errors['code'] = [_(ShopifyStore.OAUTH_ERROR)]
