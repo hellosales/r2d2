@@ -5,11 +5,24 @@ from django_mongoengine.admin_support.decorators import dynamic_fields_list_disp
 
 from r2d2.data_importer.admin import DataImporterAdmin
 from r2d2.shopify_api.models import ImportedShopifyOrder
+from r2d2.shopify_api.models import ShopifyErrorLog
 from r2d2.shopify_api.models import ShopifyStore
 from r2d2.utils.documents import StorageDocumentAdmin
 
 
+class ShopifyErrorAdmin(admin.TabularInline):
+    model = ShopifyErrorLog
+    extra = 0
+    readonly_fields = ('created_at', 'error', 'error_description')
+    ordering = ('-created_at', )
+
+    def has_add_permission(self, request):
+        return False
+
+
 class ShopifyStoreAdmin(DataImporterAdmin):
+    inlines = [ShopifyErrorAdmin]
+
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = super(ShopifyStoreAdmin, self).get_readonly_fields(request, obj)
         return readonly_fields + ('name',)

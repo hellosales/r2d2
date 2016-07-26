@@ -1,0 +1,11 @@
+{% extends "emails/base.html" %}
+{% load get_site i18n assign replace pages_tags %}
+{% load url from future %}
+
+{% block content %}
+    Hi there, seems like there is a problem with your {{ account.name }} account on HelloSales.
+    Please click
+    <a href="{{ protocol }}{{ client_domain }}/channels?scrollToClass={{ account_class }}&amp;scrollToId={{ account.pk }}">
+        here
+    </a> to update your account. Thanks!
+{% endblock %}

@@ -14,6 +14,7 @@ from django.utils import timezone
 from r2d2.common_layer.signals import object_imported
 from r2d2.data_importer.api import DataImporter
 from r2d2.data_importer.models import AbstractDataProvider
+from r2d2.data_importer.models import AbstractErrorLog
 from r2d2.utils.documents import StorageDynamicDocument
 
 
@@ -30,6 +31,10 @@ class SquareupAccount(AbstractDataProvider):
     def get_serializer(cls):
         from r2d2.squareup_api.serializers import SquareupAccountSerializer
         return SquareupAccountSerializer
+
+    @classmethod
+    def get_error_log_class(cls):
+        return SquareupErrorLog
 
     @classmethod
     def get_oauth_url_serializer(cls):
@@ -98,7 +103,7 @@ class SquareupAccount(AbstractDataProvider):
         if response.status_code == 200:
             return response.json()
         else:
-            raise Exception('call returned status code %d' % response.status_code)
+            raise Exception('%d / %s' % (response.status_code, response.json().get('type', '')))
 
     def map_data(self, imported_squareup_payment):
         mapped_data = {
@@ -165,3 +170,43 @@ DataImporter.register(SquareupAccount)
 class ImportedSquareupPayment(StorageDynamicDocument):
     account_model = SquareupAccount
     prefix = "squareup"
+
+
+class SquareupErrorLog(AbstractErrorLog):
+    account = models.ForeignKey(SquareupAccount)
+
+    @classmethod
+    def map_error(cls, error):
+        if '400' in error:
+            if 'bad_request.missing_parameter' in error:
+                return "A required parameter was missing from the request."
+            elif 'bad_request.invalid_parameter' in error:
+                return "The request included an invalid parameter."
+            elif 'bad_request' in error:
+                return "The request was otherwise malformed."
+        if '401' in error:
+            if 'service.not_authorized' in error:
+                return "Your application is not authorized to make this request."
+            elif 'oauth.revoked' in error:
+                return "Your application's access token was revoked."
+            elif 'oauth.expired' in error:
+                return "Your application's access token has expired."
+            elif 'unauthorized' in error:
+                return "Authorization header format incorrect"
+        elif '403' in error or 'Forbidden' in error:
+            return ("The requesting application does not have permission to access the resource, typically"
+                    " because the OAuth token's permission scope is insufficient.")
+        elif '404' in error or 'Not Found' in error:
+            return "The resource specified in the request wasn't found."
+        elif '422' in error:
+            return ("The request is well formed but has semantic errors. For example, this error occurs when you"
+                    " attempt to create an item variation with the same SKU as an existing variation.")
+        elif '429' in error:
+            return ("The Connect API has received too many requests associated with the same access token or"
+                    " application in too short a time span. Try your request again later.")
+        elif '500' in error:
+            return "Square encountered an unexpected error processing the request."
+        elif '503' in error:
+            return "The Connect API service is currently unavailable."
+
+        return "Unrecognized"

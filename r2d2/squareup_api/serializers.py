@@ -42,7 +42,6 @@ class SquareupAccountSerializer(R2D2ModelSerializer):
                 validated_data['token_expiration'] = token_expiration
                 validated_data['authorization_date'] = timezone.now()
                 # cleaning up state
-                validated_data['last_error'] = None
                 validated_data['fetch_status'] = SquareupAccount.FETCH_IDLE
             else:
                 errors['code'] = [_(SquareupAccount.OAUTH_ERROR)]

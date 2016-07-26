@@ -14,6 +14,7 @@ from django.db import models
 from r2d2.common_layer.signals import object_imported
 from r2d2.data_importer.api import DataImporter
 from r2d2.data_importer.models import AbstractDataProvider
+from r2d2.data_importer.models import AbstractErrorLog
 from r2d2.utils.documents import StorageDynamicDocument
 
 
@@ -33,6 +34,10 @@ class EtsyAccount(AbstractDataProvider):
     def get_serializer(cls):
         from r2d2.etsy_api.serializers import EtsyAccountSerializer
         return EtsyAccountSerializer
+
+    @classmethod
+    def get_error_log_class(cls):
+        return EtsyErrorLog
 
     @classmethod
     def get_oauth_url_serializer(cls):
@@ -243,3 +248,24 @@ class ImportedEtsyReceipt(StorageDynamicDocument):
 # class ImportedEtsyPaymentAdjustment(StorageDynamicDocument):
 #     account_model = EtsyAccount
 #     prefix = ETSY_PREFIX
+
+
+class EtsyErrorLog(AbstractErrorLog):
+    account = models.ForeignKey(EtsyAccount)
+
+    @classmethod
+    def map_error(cls, error):
+        if '400' in error or 'Bad Request' in error:
+            return ("You've made an error in your request (such as passing a string for a parameter"
+                    " that expects a number).")
+        elif '403' in error or 'Forbidden' in error:
+            return "You've exceeded the rate limits for your account, or the data you're trying to access is private."
+        elif '404' in error or 'Not Found' in error:
+            return "The requested resource could not be found, or the URI doesn't correspond to any known command."
+        elif '500' in error or 'Server Error' in error:
+            return ("An internal error on our side. If this problem persists, submit a bug report in the bug section"
+                    " of our forums.")
+        elif '503' in error or 'Service Unavailable' in error:
+            return "The Etsy API is down for scheduled maintenance; please try again later (this should be rare!)"
+        else:
+            return "Unrecognized"
