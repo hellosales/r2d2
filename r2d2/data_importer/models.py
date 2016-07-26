@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 """ abstract data provider model """
+from constance import config
 from datetime import timedelta
 
+from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.dateformat import DateFormat
 
 from r2d2.accounts.models import Account
+from r2d2.emails.send import send_email
 from r2d2.insights.signals import data_fetched
 from r2d2.utils.fields import JSONField
 
@@ -59,6 +62,14 @@ class AbstractDataProvider(models.Model):
     def log_error(self, error):
         error_cls = self.get_error_log_class()
         error_cls.objects.create(account=self, error=error)
+
+        # send email
+        client_domain = config.CLIENT_DOMAIN
+        protocol = 'https://' if getattr(settings, 'IS_SECURE', False) else 'http://'
+        subject = 'Problem with your %s account on HelloSales' % self.name
+        send_email('channel_problem', "%s <%s>" % (self.user.get_full_name(), self.user.email), subject,
+                   {'protocol': protocol, 'client_domain': client_domain, 'account': self,
+                    'account_class': self.__class__.__name__})
 
     def fetch_data(self):
         from r2d2.data_importer.api import DataImporter
