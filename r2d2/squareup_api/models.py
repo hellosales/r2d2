@@ -186,11 +186,11 @@ class SquareupErrorLog(AbstractErrorLog):
                 return "The request was otherwise malformed."
         if '401' in error:
             if 'service.not_authorized' in error:
-                return "A required parameter was missing from the request."
+                return "Your application is not authorized to make this request."
             elif 'oauth.revoked' in error:
-                return "The request included an invalid parameter."
+                return "Your application's access token was revoked."
             elif 'oauth.expired' in error:
-                return "The request was otherwise malformed."
+                return "Your application's access token has expired."
             elif 'unauthorized' in error:
                 return "Authorization header format incorrect"
         elif '403' in error or 'Forbidden' in error:
