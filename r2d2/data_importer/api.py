@@ -56,7 +56,7 @@ class DataImporter(object):
         """ creates tasks to import data """
         time_limit = now() - timedelta(days=1)
         for model in cls.__registered_models:
-            query = model.objects.filter(user__approval_status=Account.APPROVED,
+            query = model.objects.filter(user__approval_status=Account.APPROVED, user__is_active=True,
                                          is_active=True,
                                          fetch_status__in=(model.FETCH_IDLE, model.FETCH_SUCCESS, model.FETCH_FAILED),
                                          access_token__isnull=False).exclude(fetch_scheduled_at__gt=time_limit)

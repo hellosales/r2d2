@@ -3,6 +3,7 @@
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_save
+from rest_framework.authtoken.models import Token
 
 from r2d2.accounts.models import Account
 from r2d2.insights.generators import AverageProductsPerTransactions
@@ -35,7 +36,7 @@ ALLOWED_CONTENT_TYPES = set([
 
 class Insight(models.Model):
     """ model to store insights """
-    user = models.ForeignKey(Account)
+    user = models.ForeignKey(Account, limit_choices_to={"approval_status": Account.APPROVED, 'is_active': True})
     created = models.DateTimeField(auto_now_add=True)
     text = models.TextField()
     generator_class = models.CharField(max_length=100, editable=False)

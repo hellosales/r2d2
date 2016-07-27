@@ -144,5 +144,11 @@ class Account(AbstractBaseUser, PermissionsMixin):
         token, created = OneTimeToken.objects.get_or_create(user=self)
         return str(token)
 
+    def save(self, *args, **kwargs):
+        # if user is deactivated, token should be removed, so the user is logged out
+        if self.pk and not self.is_active:
+            Token.objects.filter(user=self).delete()
+        return super(Account, self).save(*args, **kwargs)
+
     def __unicode__(self):
         return self.email.split('@')[0]
