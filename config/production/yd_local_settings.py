@@ -66,7 +66,8 @@ SQUAREUP_API_KEY = 'p4OiJb_Aa9527UGzFbFz4g'
 SQUAREUP_API_SECRET = 'tBWttX7fCBcphFF7JUkoeHt-JSKkmZ9J_Qc-w6K8yhY'
 
 CONSTANCE_CONFIG = {
-    'CLIENT_DOMAIN': ('r2d2.com', 'client domain')
+    'CLIENT_DOMAIN': ('r2d2.com', 'client domain'),
+    'ALERTS_RECEIVERS': ('team@ydtech.co', 'receivers of alerts - comma separated list')
 }
 
 import raven

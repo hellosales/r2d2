@@ -412,11 +412,10 @@ DJANGO_MONEY_RATES = {
     'CURRENCYLAYER_KEY': '601a320b8b2e70e3cba08579d74c2095'
 }
 
-USER_SIGNED_UP_ALERT_EMAIL = ('team+r2d2-dev@ydtech.co', )
-
 # here you can put settigns that can be edited through panel
 CONSTANCE_CONFIG = {
-    'CLIENT_DOMAIN': ('localhost:3000', 'client domain')
+    'CLIENT_DOMAIN': ('localhost:3000', 'client domain'),
+    'ALERTS_RECEIVERS': ('team@ydtech.co', 'receivers of alerts - comma separated list')
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 

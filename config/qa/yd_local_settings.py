@@ -63,7 +63,8 @@ SQUAREUP_API_KEY = 'sq0idp-XK_5K4LY55FBbUQcpqLtRw'
 SQUAREUP_API_SECRET = 'sq0csp-xSFx5gcCvqavEJsJx2m0E1vh0rdupk6MhcK9_8a2Smw'
 
 CONSTANCE_CONFIG = {
-    'CLIENT_DOMAIN': ('r2d2-qa.arabel.la', 'client domain')
+    'CLIENT_DOMAIN': ('r2d2-qa.arabel.la', 'client domain'),
+    'ALERTS_RECEIVERS': ('team@ydtech.co', 'receivers of alerts - comma separated list')
 }
 
 RAVEN_CONFIG = {
