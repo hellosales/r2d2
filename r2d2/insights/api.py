@@ -44,4 +44,4 @@ class DownloadAttachmentApi(GenericAPIView):
             response["Content-Disposition"] = "attachment; filename=%s" % attachment.file_name
             return response
         except InsightAttachment.DoesNotExist:
-            return Response(data={'user': unicode(request.user), 'pk': pk}, status=status.HTTP_404_NOT_FOUND)
+            return Response(status=status.HTTP_404_NOT_FOUND)
