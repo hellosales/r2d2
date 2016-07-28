@@ -28,6 +28,7 @@ django-filebrowser==3.6.2
 raven==5.11.0 # rq.filter: >=5.0.0,< 5.2.0  # sentry update required - painfull.
 #django-modeltranslation==0.4.1
 ydcommon==0.1.44
+Fabric==1.12.0
 lxml==3.5.0
 BeautifulSoup==3.2.1
 flup==1.0.2
