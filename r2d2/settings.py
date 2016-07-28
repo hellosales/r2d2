@@ -132,6 +132,7 @@ CORS_ALLOW_HEADERS = (
 )
 
 CORS_EXPOSE_HEADERS = (
+    'content-disposition',
     # 'x-mobile-version',
 )
 
