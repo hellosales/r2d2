@@ -19,7 +19,7 @@
                             <p>
                                 {% for attachment in insight.attachments.all %}
                                     {% if not attachment.is_image %}
-                                        <a href="{{ protocol }}{{ client_domain }}/download/{{ attachment.id }}%}" download>{{ attachment.file_name }}</a><br> #}
+                                        <a href="{{ protocol }}{{ client_domain }}/download/{{ attachment.id }}" download>{{ attachment.file_name }}</a><br>
                                     {% endif %}
                                 {% endfor %}
                             </p>
