@@ -75,7 +75,12 @@ class ShopifyStoreSerializer(R2D2ModelSerializer):
 
 
 class ShopifyOauthUrlSerializer(R2D2Serializer):
-    shop_slug = serializers.SlugField(required=True)
+    shop_slug = serializers.SlugField(
+        required=True,
+        error_messages={
+            'invalid': _('Enter a valid "Store-Address" consisting of letters, numbers, underscores or hyphens.')
+        }
+    )
 
     def to_representation(self, obj):
         return {
