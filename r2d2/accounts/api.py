@@ -144,6 +144,23 @@ class RegisterAPI(CreateAPIView):
             user = serializer.save()
             user.backend = 'django.contrib.auth.backends.ModelBackend'
             login(request, user)
+
+            current_site = get_current_site(self.request)
+            site_name = current_site.name
+            domain = current_site.domain
+            c = {
+                'STATIC_URL': settings.STATIC_URL,
+                'site': current_site,
+                'email': user.email,
+                'domain': domain,
+                'client_domain': config.CLIENT_DOMAIN,
+                'site_name': site_name,
+                'uid': urlsafe_base64_encode(str(user.id)),
+                'user': user,
+                'token': urlsafe_base64_encode(str(default_token_generator.make_token(user))),
+                'protocol': self.request.is_secure() and 'https' or 'http',
+            }
+            send_email('account_created', user.email, _("Welcome to HelloSales!"), c, cms=True)
             return Response(AccountSerializer(user).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
