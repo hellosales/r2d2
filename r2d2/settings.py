@@ -53,6 +53,7 @@ PAGE_TEMPLATES = (
     ('pages/email-admin.html', 'email-admin'),
     ('pages/landing.html', 'landing'),
     ('pages/email-insight.html', 'email-insight'),
+    ('email-account.html', 'email-account'),
 )
 
 PAGE_USE_SITE_ID = True
