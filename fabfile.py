@@ -23,7 +23,7 @@ def _set_env():
         environment = 'qa'
         env.hosts = 'qa.arabel.la'
     elif branch == 'master':
-        env.hosts = 'hello-sales.com'
+        env.hosts = 'prod.arabel.la'
         env.user = "api-hello-sales"
         env.shell = "/bin/bash -c"
         prefix = "production"
