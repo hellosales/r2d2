@@ -38,6 +38,7 @@ def _set_env():
     env.environment = environment
     env.app_dir = app_dir
     env.branch = branch
+    env.repo_name = 'r2d2'
 
 _set_env()
 
