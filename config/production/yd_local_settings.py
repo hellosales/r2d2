@@ -46,9 +46,6 @@ SECRET_KEY = 'prodvay&e&9hdwo_bniq-$z0j64q4w27-fm58nu9!m+i$nc0e!*!o0'
 #        }
 # }
 
-RAVEN_CONFIG = {
-    'dsn': 'https://54665faea7f8432daa6784b080dc1717:2b155e862db64414a184b0e9d595467e@sentry.arabel.la/17',
-}
 
 ENV_PREFIX = 'api-hello-sales'
 
@@ -73,6 +70,6 @@ CONSTANCE_CONFIG = {
 import raven
 
 RAVEN_CONFIG = {
-    'dsn': 'https://97293106f2a543859de54e596489f320:7a544014f02644f289d2353dc452f2bb@sentry.arabel.la/7',
-    'private_dsn': 'https://97293106f2a543859de54e596489f320@sentry.arabel.la/7',
+    'dsn': 'https://97293106f2a543859de54e596489f320:7a544014f02644f289d2353dc452f2bb@sentry.arabel.la/17',
+    'private_dsn': 'https://97293106f2a543859de54e596489f320@sentry.arabel.la/17',
 }
