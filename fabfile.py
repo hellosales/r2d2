@@ -23,11 +23,11 @@ def _set_env():
         environment = 'qa'
         env.hosts = 'qa.arabel.la'
     elif branch == 'master':
-        env.hosts = 'r2d2.com'
-        env.user = "yd"
+        env.hosts = 'hello-sales.com'
+        env.user = "api-hello-sales"
         env.shell = "/bin/bash -c"
         prefix = "production"
-        user = 'r2d2-api'
+        user = 'api-hello-sales'
         environment = 'production'
 
     env.remote_user = user
@@ -62,8 +62,8 @@ def deploy(full=False, libs=False, migrate=False, local_git=False):
         sudo(env.python + ' manage.py collectstatic -v0 --noinput', user=env.remote_user)
         sudo(env.python + ' manage.py compress -f', user=env.remote_user)
     if env.prefix == 'production':
-        sudo('supervisorctl restart r2d2-api')
-        sudo('supervisorctl restart r2d2-api-celery')
+        sudo('supervisorctl restart api-hello-sales')
+        sudo('supervisorctl restart api-hello-sales-celery')
     else:
         sudo('supervisorctl restart r2d2-%s' % env.prefix)
         sudo('supervisorctl restart r2d2-celery-%s' % env.prefix)
