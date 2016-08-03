@@ -292,7 +292,7 @@ MIN_PASSWORD_LENGTH = 8
 
 ALLOWED_HOSTS = [
     '.arabel.la',
-    '.r2d2.com',
+    '.hello-sales.com',
 ]
 
 
