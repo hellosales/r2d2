@@ -15,10 +15,10 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'r2d2',
-        'USER': 'r2d2',
-        'PASSWORD': '',
-        'HOST': '',
+        'NAME': 'api-hello-sales',
+        'USER': 'api-hello-sales',
+        'PASSWORD': 'MenUtheewajFugAisBochainOlmAmt',
+        'HOST': 'ydproddb.cisjmnb7cksz.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
         'ATOMIC_REQUESTS': True
     },
@@ -47,26 +47,26 @@ SECRET_KEY = 'prodvay&e&9hdwo_bniq-$z0j64q4w27-fm58nu9!m+i$nc0e!*!o0'
 # }
 
 RAVEN_CONFIG = {
-    'dsn': '',
+    'dsn': 'https://54665faea7f8432daa6784b080dc1717:2b155e862db64414a184b0e9d595467e@sentry.arabel.la/17',
 }
 
-ENV_PREFIX = 'r2d2-prod'
+ENV_PREFIX = 'api-hello-sales'
 
 CELERY_ALWAYS_EAGER = False
-# BROKER_URL = 'librabbitmq://r2d2_prod:jfyhhgckginv@localhost:5672/r2d2_prod'
+BROKER_URL = 'librabbitmq://api-hello-sales:iydocuwjp9xt@localhost:5672/api-hello-sales'
 
-AWS_STORAGE_BUCKET_NAME = 'r2d2-'
+AWS_STORAGE_BUCKET_NAME = 'api-hello-sales'
 
 # IAM Role
-AWS_ACCESS_KEY_ID = ''
-AWS_SECRET_ACCESS_KEY = ''
+AWS_ACCESS_KEY_ID = 'AKIAITSHDBMHBTIKBTXQ'
+AWS_SECRET_ACCESS_KEY = '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'
 
 # TODO: create app for r2d2 production
 SQUAREUP_API_KEY = 'p4OiJb_Aa9527UGzFbFz4g'
 SQUAREUP_API_SECRET = 'tBWttX7fCBcphFF7JUkoeHt-JSKkmZ9J_Qc-w6K8yhY'
 
 CONSTANCE_CONFIG = {
-    'CLIENT_DOMAIN': ('r2d2.com', 'client domain'),
+    'CLIENT_DOMAIN': ('hello-sales.com', 'client domain'),
     'ALERTS_RECEIVERS': ('team@ydtech.co', 'receivers of alerts - comma separated list')
 }
 
