@@ -6,8 +6,16 @@ location = lambda x: os.path.join(str(project()), str(x))
 
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
+EMAIL_USE_TLS = True  # fixme
+EMAIL_HOST = 'smtp.sendgrid.net'  # fixme
+EMAIL_HOST_PASSWORD = "adoipovyuHerdUttAbIb11"  # fixme
+EMAIL_HOST_USER = 'rtwodtwo'  # fixme
+EMAIL_PORT = 587  # fixme
+DEFAULT_FROM_EMAIL = '"HelloSales" <hello@hello-sales.com>'
+
 ADMINS = (
     ('Team', 'team@ydtech.co'),
+    ('Matt Laszuk', 'matt.laszuk@gmail.com'),
 )
 
 MANAGERS = ADMINS
@@ -64,7 +72,7 @@ SQUAREUP_API_SECRET = 'tBWttX7fCBcphFF7JUkoeHt-JSKkmZ9J_Qc-w6K8yhY'
 
 CONSTANCE_CONFIG = {
     'CLIENT_DOMAIN': ('hello-sales.com', 'client domain'),
-    'ALERTS_RECEIVERS': ('team@ydtech.co', 'receivers of alerts - comma separated list')
+    'ALERTS_RECEIVERS': ('team@ydtech.co,matt.laszuk@gmail.com', 'receivers of alerts - comma separated list')
 }
 
 import raven
