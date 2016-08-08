@@ -30,6 +30,7 @@ class ShopifyStore(AbstractDataProvider):
         unique_together = (('user', 'name'), ('user', 'store_url'))
 
     def save(self, *args, **kwargs):
+        self.store_url = self.store_url.replace('https://', '').replace('http://', '')
         super(ShopifyStore, self).save(*args, **kwargs)
         # it is no longer possible to save unauthorized account
         self.user.data_importer_account_authorized()
