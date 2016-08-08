@@ -26,6 +26,9 @@ class ShopifyStore(AbstractDataProvider):
     store_url = models.URLField()
     MAX_REQUEST_LIMIT = 250
 
+    class Meta:
+        unique_together = (('user', 'name'), ('user', 'store_url'))
+
     def save(self, *args, **kwargs):
         super(ShopifyStore, self).save(*args, **kwargs)
         # it is no longer possible to save unauthorized account
