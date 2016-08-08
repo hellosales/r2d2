@@ -3,7 +3,6 @@
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_save
-from rest_framework.authtoken.models import Token
 
 from r2d2.accounts.models import Account
 from r2d2.insights.generators import AverageProductsPerTransactions
