@@ -17,7 +17,7 @@ class DataImporterAdmin(admin.ModelAdmin):
 
     def force_fetching_action(self, request, queryset):
         for item in queryset:
-            if item.user.approval_status == Account.APPROVED and item.user.is_active:
+            if item.is_active and item.user.approval_status == Account.APPROVED and item.user.is_active:
                 DataImporter.create_import_task(item.__class__, item.pk)
     force_fetching_action.short_description = "force fetching data"
 
