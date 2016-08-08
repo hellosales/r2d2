@@ -137,7 +137,7 @@ class SquareupAccount(AbstractDataProvider):
 
     def _fetch_data_inner(self):
         start_time = self.MIN_TIME
-        now = datetime.now()
+        now = timezone.now()
         while True:
             end_time = start_time + timedelta(days=365)
             if end_time > now:
