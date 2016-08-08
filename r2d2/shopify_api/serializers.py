@@ -40,12 +40,22 @@ class ShopifyStoreSerializer(R2D2ModelSerializer):
         signature = validated_data.pop('signature', '')
         hmac = validated_data.pop('hmac', None)
 
+        user = self.context['request'].user
+
         # check name
-        query = ShopifyStore.objects.filter(name=name, user=self.context['request'].user)
+        query = ShopifyStore.objects.filter(name=name, user=user)
         if self.instance:
             query = query.exclude(pk=self.instance.pk)
         if query.exists():
             errors['name'] = [_(ShopifyStore.NAME_NOT_UNIQUE_ERROR)]
+
+        if shop:
+            shop = shop.replace('http://', '').replace('https://', '')
+            query = ShopifyStore.objects.filter(user=user, store_url=shop)
+            if self.instance:
+                query = query.exclude(pk=self.instance.pk)
+            if query.exists():
+                errors['shop_slug'] = [_('This field must be unique.')]
 
         # if auth data is present - get the access_token
         if shop and code and timestamp and hmac:

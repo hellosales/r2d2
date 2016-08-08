@@ -13,6 +13,7 @@ from django.views.generic import TemplateView
 
 from r2d2.accounts.forms import AuthenticationForm
 
+
 class LogoutView(RedirectView):
     url = reverse_lazy(settings.LOGOUT_REDIRECT_URLNAME)
 

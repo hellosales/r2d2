@@ -136,7 +136,8 @@ class DataImporterGenerateOauthUrl(GenericAPIView):
             shop_slug -- shop slug, required only for shopify """
         model_class = DataImporter.get_model_by_name(request.data.get('class', None))
         if model_class:
-            serializer = model_class.get_oauth_url_serializer()(data=request.data)
+            serializer = model_class.get_oauth_url_serializer()(data=request.data,
+                                                                context=self.get_serializer_context())
             if serializer.is_valid():
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
