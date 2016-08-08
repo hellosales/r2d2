@@ -91,6 +91,7 @@ class ShopifyApiTestCase(APIBaseTestCase):
             # create second account - using proxy
             data['name'] = STORE_NAME2
             data['class'] = 'ShopifyStore'
+            data['shop'] = 'arabel-la-store2.myshopify.com'
             response = self.client.post(reverse('data-importer-accounts'), data)
             self.assertEqual(response.status_code, 201)
             self.assertEqual(response.data['name'], STORE_NAME2)

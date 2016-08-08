@@ -125,7 +125,7 @@ class DataImporterApiTestCase(APIBaseTestCase):
     def test_sending_signal_to_generators(self):
         self._create_user()
         account = ShopifyStore.objects.create(user=self.user, access_token='token', name='name',
-                                              authorization_date=timezone.now())
+                                              authorization_date=timezone.now(), store_url='store_1')
 
         with mock.patch('r2d2.data_importer.tasks.fetch_data_task.apply_async') as mocked_fetch_data:
             mocked_fetch_data.return_value = None
@@ -146,7 +146,7 @@ class DataImporterApiTestCase(APIBaseTestCase):
 
                     with freeze_time('2014-12-14 2:00'):
                         account2 = ShopifyStore.objects.create(user=self.user, access_token='token', name='name2',
-                                                               authorization_date=timezone.now())
+                                                               authorization_date=timezone.now(), store_url='store_2')
                         DataImporter.run_fetching_data()
                         account2 = ShopifyStore.objects.get(id=account2.id)
                         account2.fetch_data()
@@ -189,11 +189,11 @@ class DataImporterAccountsApiTestCase(APIBaseTestCase):
         SquareupAccount.objects.create(user=self.user, access_token='token', name='other name',
                                        authorization_date=timezone.now())
         ShopifyStore.objects.create(user=self.user, access_token='token', name='other-name',
-                                    authorization_date=timezone.now())
+                                    authorization_date=timezone.now(), store_url='test-1')
         EtsyAccount.objects.create(user=self.user, access_token='token', name='same-name',
                                    authorization_date=timezone.now())
         ShopifyStore.objects.create(user=self.user, access_token='token', name='same-name',
-                                    authorization_date=timezone.now())
+                                    authorization_date=timezone.now(), store_url='test-2')
 
         # test getting accounts list
         response = self.client.get(reverse('data-importer-accounts'))
