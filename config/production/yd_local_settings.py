@@ -8,8 +8,8 @@ PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 EMAIL_USE_TLS = True  # fixme
 EMAIL_HOST = 'smtp.sendgrid.net'  # fixme
-EMAIL_HOST_PASSWORD = "adoipovyuHerdUttAbIb11"  # fixme
-EMAIL_HOST_USER = 'rtwodtwo'  # fixme
+EMAIL_HOST_PASSWORD = "edIdtatecyecThaxorrijkiQuotEb0"  # fixme
+EMAIL_HOST_USER = 'hello-sales'  # fixme
 EMAIL_PORT = 587  # fixme
 DEFAULT_FROM_EMAIL = '"HelloSales" <hello@hello-sales.com>'
 
