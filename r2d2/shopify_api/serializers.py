@@ -88,7 +88,7 @@ class ShopifyOauthUrlSerializer(R2D2Serializer):
     shop_slug = serializers.SlugField(
         required=True,
         error_messages={
-            'invalid': _('Enter a valid "Store-Address" consisting of letters, numbers, underscores or hyphens.')
+            'invalid': _('Invalid Store-Address.')
         }
     )
 
