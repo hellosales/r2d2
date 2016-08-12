@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
+from r2d2.data_importer.api import DataImporter
 from r2d2.shopify_api.models import ShopifyStore
 from r2d2.utils.serializers import R2D2ModelSerializer
 from r2d2.utils.serializers import R2D2Serializer
@@ -43,10 +44,7 @@ class ShopifyStoreSerializer(R2D2ModelSerializer):
         user = self.context['request'].user
 
         # check name
-        query = ShopifyStore.objects.filter(name=name, user=user)
-        if self.instance:
-            query = query.exclude(pk=self.instance.pk)
-        if query.exists():
+        if not DataImporter.check_name_uniqeness(self.context['request'].user, name, self.instance):
             errors['name'] = [_(ShopifyStore.NAME_NOT_UNIQUE_ERROR)]
 
         if shop:

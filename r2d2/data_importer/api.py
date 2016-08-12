@@ -46,6 +46,16 @@ class DataImporter(object):
         return None
 
     @classmethod
+    def check_name_uniqeness(cls, user, name, instance):
+        for model in cls.__registered_models:
+            query = model.objects.filter(name=name, user=user)
+            if instance and instance.__class__ == model:
+                query = query.exclude(id=instance.id)
+            if query.exists():
+                return False
+        return True
+
+    @classmethod
     def create_import_task(cls, model, pk):
         """ create celery task for data importer """
         model.objects.filter(pk=pk).update(fetch_status=model.FETCH_SCHEDULED, fetch_scheduled_at=now())
