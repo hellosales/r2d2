@@ -192,7 +192,7 @@ class DataImporterAccountsApiTestCase(APIBaseTestCase):
                                     authorization_date=timezone.now(), store_url='test-1')
         EtsyAccount.objects.create(user=self.user, access_token='token', name='same-name',
                                    authorization_date=timezone.now())
-        ShopifyStore.objects.create(user=self.user, access_token='token', name='not-the-same-name',
+        ShopifyStore.objects.create(user=self.user, access_token='token', name='same-name-2',
                                     authorization_date=timezone.now(), store_url='test-2')
 
         # test getting accounts list
@@ -209,14 +209,14 @@ class DataImporterAccountsApiTestCase(APIBaseTestCase):
         self.assertEqual(response.data[1]['name'], 'same-name')
         etsy_account = response.data[1]
         self.assertEqual(response.data[0]['class'], 'ShopifyStore')
-        self.assertEqual(response.data[0]['name'], 'not-the-same-name')
+        self.assertEqual(response.data[0]['name'], 'same-name-2')
 
         # test getting single account
         account = response.data[0]
         response = self.client.get(reverse('data-importer-accounts'), {'class': account['class'], 'pk': account['pk']})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['class'], 'ShopifyStore')
-        self.assertEqual(response.data['name'], 'not-the-same-name')
+        self.assertEqual(response.data['name'], 'same-name-2')
 
         # test editing name - squareup
         square_account['name'] = 'new name'
