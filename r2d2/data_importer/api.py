@@ -46,6 +46,16 @@ class DataImporter(object):
         return None
 
     @classmethod
+    def check_name_uniqeness(cls, user, name, instance):
+        for model in cls.__registered_models:
+            query = model.objects.filter(name=name, user=user)
+            if instance and instance.__class__ == model:
+                query = query.exclude(id=instance.id)
+            if query.exists():
+                return False
+        return True
+
+    @classmethod
     def create_import_task(cls, model, pk):
         """ create celery task for data importer """
         model.objects.filter(pk=pk).update(fetch_status=model.FETCH_SCHEDULED, fetch_scheduled_at=now())
@@ -136,7 +146,8 @@ class DataImporterGenerateOauthUrl(GenericAPIView):
             shop_slug -- shop slug, required only for shopify """
         model_class = DataImporter.get_model_by_name(request.data.get('class', None))
         if model_class:
-            serializer = model_class.get_oauth_url_serializer()(data=request.data)
+            serializer = model_class.get_oauth_url_serializer()(data=request.data,
+                                                                context=self.get_serializer_context())
             if serializer.is_valid():
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

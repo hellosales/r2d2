@@ -52,8 +52,9 @@ class HeaderDataSerializer(R2D2Serializer):
             return "%.1fM" % (math.floor((number / 100000.0)) / 10.0)
 
     def get_channels_number(self, obj):
-        return EtsyAccount.objects.filter(user=obj).count() + ShopifyStore.objects.filter(user=obj).count() + \
-            SquareupAccount.objects.filter(user=obj).count()
+        return EtsyAccount.objects.filter(user=obj, is_active=True).count() + \
+            ShopifyStore.objects.filter(user=obj, is_active=True).count() + \
+            SquareupAccount.objects.filter(user=obj, is_active=True).count()
 
     def get_insights_number(self, obj):
         return Insight.objects.filter(user=obj).count()

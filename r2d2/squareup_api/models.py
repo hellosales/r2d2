@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """ etsy models """
+import pytz
 import requests
 
 from datetime import datetime
@@ -22,7 +23,7 @@ class SquareupAccount(AbstractDataProvider):
     """ model for storing connection between squareup account and user,
         each user may be connected with many accounts """
     MAX_REQUEST_LIMIT = 200
-    MIN_TIME = datetime(year=2013, month=1, day=1)
+    MIN_TIME = datetime(year=2013, month=1, day=1, tzinfo=pytz.utc)
 
     token_expiration = models.DateTimeField(null=True, blank=True, db_index=True)
     merchant_id = models.CharField(max_length=255, null=True, blank=True)
@@ -137,7 +138,7 @@ class SquareupAccount(AbstractDataProvider):
 
     def _fetch_data_inner(self):
         start_time = self.MIN_TIME
-        now = datetime.now()
+        now = timezone.now()
         while True:
             end_time = start_time + timedelta(days=365)
             if end_time > now:
@@ -151,7 +152,8 @@ class SquareupAccount(AbstractDataProvider):
 
                 # mapping data & sending it out
                 mapped_data = self.map_data(imported_squareup_payment)
-                object_imported.send(sender=None, importer_account=self, mapped_data=mapped_data)
+                if mapped_data['products']:  # there are transactions with no sale - strange
+                    object_imported.send(sender=None, importer_account=self, mapped_data=mapped_data)
 
             if len(payments) == self.MAX_REQUEST_LIMIT:
                 start_time = parse_date(payments[-1]['created_at'])
