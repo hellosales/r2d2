@@ -1,0 +1,184 @@
+{% load compress %}{% load static l10n i18n %}{% load pages_tags %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width">
+    <style>
+      #outlook a {
+        padding: 0; }
+
+      body {
+        width: 100% !important;
+        min-width: 100%;
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+        margin: 0;
+        padding: 0;
+        -moz-box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        background: #fff;
+    }
+
+    img {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        padding: 0;
+    }
+
+    .content {
+        background: #fff;
+        overflow: hidden;
+        padding: 0 50px;
+        color: #474b51;
+    }
+
+    .body {
+        background: #fff;
+        color: #474b51;
+        width: 100%;
+        min-width: 100%;
+        font-family: Arial;
+        font-size: 16px;
+    }
+
+    .body a {
+        color: #cb867b;
+        text-decoration: underline;
+    }
+
+    .maincol {
+        padding: 0 10px;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .logo {
+        padding-top: 35px;
+        padding-bottom: 30px;
+    }
+
+    .welcome {
+        padding-bottom: 60px;
+        font-size: 60px;
+    }
+
+    .confidential {
+        font-size: 12px;
+    }
+
+    .circles {
+        padding-top: 35px;
+    }
+
+    .section--grey {
+        background: #cbd3df;
+        padding: 35px 15px;
+    }
+
+    .text {
+        padding-bottom: 25px;
+        line-height: 24px;
+    }
+
+    .text-header {
+        padding-bottom: 25px;
+        font-size: 36px;
+    }
+
+    .footer {
+        padding-top: 50px;
+    }
+
+    .text.footer {
+        padding-bottom: 0;
+    }
+
+    </style>
+  <body>
+    <!-- <style> -->
+    {# placeholders #}
+
+        {% imageplaceholder logo as logo %}
+        {% imageplaceholder button as button %}
+        {% imageplaceholder circles as circles %}
+
+    {# /placeholder #}
+    <table class="body" cellpadding="0" cellspacing="0">
+      <tr>
+        <td align="center" valign="top" class="maincol">
+          <center>
+              <table class="container text-center" width="760" cellpadding="0" cellspacing="0">
+                <tbody>
+                  <tr>
+                      <td>
+                        <table cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td class="logo">
+                                    <img src="https://r2d2-dev-arabella.s3.amazonaws.com/upload/page_6/logo-1470120045.93-r2-logo.jpg" alt="">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="welcome">
+                                    Welcome!
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="text">
+                                    We’re so excited that you’ve joined us!
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="text">
+                                    Hello Sales analyzes your transaction information for patterns and sends useful<br> insights straight to your inbox. We’ll start slicing and dicing your transactions just as<br> soon as you tell us where to find them.  It takes only a few seconds.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="button">
+                                    <a href="{{ protocol }}://{{ client_domain }}/channels"><img src="https://r2d2-dev-arabella.s3.amazonaws.com/upload/page_6/button-1470120047.38-r2-button.jpg" alt=""></a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="confidential">
+                                    All of your information will remain confidential.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="circles"><img src="https://r2d2-dev-arabella.s3.amazonaws.com/upload/page_6/circles-1470120048.22-r2-icons.jpg" alt=""></td>
+                            </tr>
+                            <tr>
+                                <td class="section--grey">
+                                    <table cellpadding="0" cellspacing="0" width="100%">
+                                        <tr>
+                                            <td class="text-header">Once you’re set up</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text">Once you have at least one Channel created, you’ll begin to receive regular insights<br> in your inbox and on the Insights Page.  You’ll also be able to add and manage<br> channels from the Channels Page. </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text">We’d love to hear about your experience with Hello Sales.<br>
+Please reach out to <a href="mailto:hello@hello-sales.com ">hello@hello-sales.com</a> with any feedback, requests, comments,<br> or questions.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text footer">This is an automated message - please do not reply to this email.</td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                      </td>
+                  </tr>
+                </tbody>
+              </table>
+          </center>
+        </td>
+      </tr>
+    </table>
+  </body>
+
+</html>

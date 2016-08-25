@@ -125,7 +125,7 @@ class DataImporterApiTestCase(APIBaseTestCase):
     def test_sending_signal_to_generators(self):
         self._create_user()
         account = ShopifyStore.objects.create(user=self.user, access_token='token', name='name',
-                                              authorization_date=timezone.now())
+                                              authorization_date=timezone.now(), store_url='store_1')
 
         with mock.patch('r2d2.data_importer.tasks.fetch_data_task.apply_async') as mocked_fetch_data:
             mocked_fetch_data.return_value = None
@@ -146,7 +146,7 @@ class DataImporterApiTestCase(APIBaseTestCase):
 
                     with freeze_time('2014-12-14 2:00'):
                         account2 = ShopifyStore.objects.create(user=self.user, access_token='token', name='name2',
-                                                               authorization_date=timezone.now())
+                                                               authorization_date=timezone.now(), store_url='store_2')
                         DataImporter.run_fetching_data()
                         account2 = ShopifyStore.objects.get(id=account2.id)
                         account2.fetch_data()
@@ -189,11 +189,11 @@ class DataImporterAccountsApiTestCase(APIBaseTestCase):
         SquareupAccount.objects.create(user=self.user, access_token='token', name='other name',
                                        authorization_date=timezone.now())
         ShopifyStore.objects.create(user=self.user, access_token='token', name='other-name',
-                                    authorization_date=timezone.now())
+                                    authorization_date=timezone.now(), store_url='test-1')
         EtsyAccount.objects.create(user=self.user, access_token='token', name='same-name',
                                    authorization_date=timezone.now())
-        ShopifyStore.objects.create(user=self.user, access_token='token', name='same-name',
-                                    authorization_date=timezone.now())
+        ShopifyStore.objects.create(user=self.user, access_token='token', name='same-name-2',
+                                    authorization_date=timezone.now(), store_url='test-2')
 
         # test getting accounts list
         response = self.client.get(reverse('data-importer-accounts'))
@@ -209,19 +209,14 @@ class DataImporterAccountsApiTestCase(APIBaseTestCase):
         self.assertEqual(response.data[1]['name'], 'same-name')
         etsy_account = response.data[1]
         self.assertEqual(response.data[0]['class'], 'ShopifyStore')
-        self.assertEqual(response.data[0]['name'], 'same-name')
+        self.assertEqual(response.data[0]['name'], 'same-name-2')
 
         # test getting single account
         account = response.data[0]
         response = self.client.get(reverse('data-importer-accounts'), {'class': account['class'], 'pk': account['pk']})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['class'], 'ShopifyStore')
-        self.assertEqual(response.data['name'], 'same-name')
-
-        # test unauthorizing account
-        account['access_token'] = None
-        response = self.client.put(reverse('data-importer-accounts'), account)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['name'], 'same-name-2')
 
         # test editing name - squareup
         square_account['name'] = 'new name'
@@ -232,14 +227,22 @@ class DataImporterAccountsApiTestCase(APIBaseTestCase):
         # test editing name - etsy
         etsy_account['name'] = 'new name'
         response = self.client.put(reverse('data-importer-accounts'), etsy_account)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['name'], 'new name')
+        self.assertEqual(response.status_code, 400)
 
-        # test editing name - shopify - error
+        etsy_account['name'] = 'new name 2'
+        response = self.client.put(reverse('data-importer-accounts'), etsy_account)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['name'], 'new name 2')
+
+        # test editing name - shopify
         shopify_account['name'] = 'new name'
         response = self.client.put(reverse('data-importer-accounts'), shopify_account)
+        self.assertEqual(response.status_code, 400)
+
+        shopify_account['name'] = 'new name 3'
+        response = self.client.put(reverse('data-importer-accounts'), shopify_account)
         self.assertEqual(response.status_code, 200)
-        self.assertIn('name', response.data)
+        self.assertEqual(response.data['name'], 'new name 3')
 
     @freeze_time('2014-12-15 01:00')
     def test_dates_serializing(self):

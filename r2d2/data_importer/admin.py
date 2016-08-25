@@ -2,6 +2,7 @@
 """ base admin for data importer submodels """
 from django.contrib import admin
 
+from r2d2.accounts.models import Account
 from r2d2.data_importer.api import DataImporter
 from r2d2.data_importer.models import SourceSuggestion
 
@@ -16,7 +17,8 @@ class DataImporterAdmin(admin.ModelAdmin):
 
     def force_fetching_action(self, request, queryset):
         for item in queryset:
-            DataImporter.create_import_task(item.__class__, item.pk)
+            if item.is_active and item.user.approval_status == Account.APPROVED and item.user.is_active:
+                DataImporter.create_import_task(item.__class__, item.pk)
     force_fetching_action.short_description = "force fetching data"
 
     actions = ['force_fetching_action']

@@ -127,7 +127,7 @@ class AccountApiTestCase(APIBaseTestCase):
             self.assertTrue(accounts[0].check_password('xx123456'))
             self.assertEqual(accounts[0].date_joined.date(), date(2016, 3, 17))
 
-            self.assertEqual(len(mail.outbox), 0)
+            self.assertEqual(len(mail.outbox), 1)
 
     def test_user_api(self):
         self._create_user()

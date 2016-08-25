@@ -53,6 +53,7 @@ PAGE_TEMPLATES = (
     ('pages/email-admin.html', 'email-admin'),
     ('pages/landing.html', 'landing'),
     ('pages/email-insight.html', 'email-insight'),
+    ('email-account.html', 'email-account'),
 )
 
 PAGE_USE_SITE_ID = True
@@ -132,6 +133,7 @@ CORS_ALLOW_HEADERS = (
 )
 
 CORS_EXPOSE_HEADERS = (
+    'content-disposition',
     # 'x-mobile-version',
 )
 
@@ -290,7 +292,7 @@ MIN_PASSWORD_LENGTH = 8
 
 ALLOWED_HOSTS = [
     '.arabel.la',
-    '.r2d2.com',
+    '.hello-sales.com',
 ]
 
 
@@ -412,11 +414,10 @@ DJANGO_MONEY_RATES = {
     'CURRENCYLAYER_KEY': '601a320b8b2e70e3cba08579d74c2095'
 }
 
-USER_SIGNED_UP_ALERT_EMAIL = ('team+r2d2-dev@ydtech.co', )
-
 # here you can put settigns that can be edited through panel
 CONSTANCE_CONFIG = {
-    'CLIENT_DOMAIN': ('localhost:3000', 'client domain')
+    'CLIENT_DOMAIN': ('localhost:3000', 'client domain'),
+    'ALERTS_RECEIVERS': ('team@ydtech.co', 'receivers of alerts - comma separated list')
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 

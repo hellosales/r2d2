@@ -6,8 +6,16 @@ location = lambda x: os.path.join(str(project()), str(x))
 
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
+EMAIL_USE_TLS = True  # fixme
+EMAIL_HOST = 'smtp.sendgrid.net'  # fixme
+EMAIL_HOST_PASSWORD = "edIdtatecyecThaxorrijkiQuotEb0"  # fixme
+EMAIL_HOST_USER = 'hello-sales'  # fixme
+EMAIL_PORT = 587  # fixme
+DEFAULT_FROM_EMAIL = '"HelloSales" <hello@hello-sales.com>'
+
 ADMINS = (
     ('Team', 'team@ydtech.co'),
+    ('Matt Laszuk', 'matt.laszuk@gmail.com'),
 )
 
 MANAGERS = ADMINS
@@ -15,10 +23,10 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'r2d2',
-        'USER': 'r2d2',
-        'PASSWORD': '',
-        'HOST': '',
+        'NAME': 'api-hello-sales',
+        'USER': 'api-hello-sales',
+        'PASSWORD': 'MenUtheewajFugAisBochainOlmAmt',
+        'HOST': 'ydproddb.cisjmnb7cksz.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
         'ATOMIC_REQUESTS': True
     },
@@ -46,32 +54,30 @@ SECRET_KEY = 'prodvay&e&9hdwo_bniq-$z0j64q4w27-fm58nu9!m+i$nc0e!*!o0'
 #        }
 # }
 
-RAVEN_CONFIG = {
-    'dsn': '',
-}
 
-ENV_PREFIX = 'r2d2-prod'
+ENV_PREFIX = 'api-hello-sales'
 
 CELERY_ALWAYS_EAGER = False
-# BROKER_URL = 'librabbitmq://r2d2_prod:jfyhhgckginv@localhost:5672/r2d2_prod'
+BROKER_URL = 'librabbitmq://api-hello-sales:iydocuwjp9xt@localhost:5672/api-hello-sales'
 
-AWS_STORAGE_BUCKET_NAME = 'r2d2-'
+AWS_STORAGE_BUCKET_NAME = 'api-hello-sales'
 
 # IAM Role
-AWS_ACCESS_KEY_ID = ''
-AWS_SECRET_ACCESS_KEY = ''
+AWS_ACCESS_KEY_ID = 'AKIAITSHDBMHBTIKBTXQ'
+AWS_SECRET_ACCESS_KEY = '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'
 
 # TODO: create app for r2d2 production
 SQUAREUP_API_KEY = 'p4OiJb_Aa9527UGzFbFz4g'
 SQUAREUP_API_SECRET = 'tBWttX7fCBcphFF7JUkoeHt-JSKkmZ9J_Qc-w6K8yhY'
 
 CONSTANCE_CONFIG = {
-    'CLIENT_DOMAIN': ('r2d2.com', 'client domain')
+    'CLIENT_DOMAIN': ('hello-sales.com', 'client domain'),
+    'ALERTS_RECEIVERS': ('team@ydtech.co,matt.laszuk@gmail.com', 'receivers of alerts - comma separated list')
 }
 
 import raven
 
 RAVEN_CONFIG = {
-    'dsn': 'https://97293106f2a543859de54e596489f320:7a544014f02644f289d2353dc452f2bb@sentry.arabel.la/7',
-    'private_dsn': 'https://97293106f2a543859de54e596489f320@sentry.arabel.la/7',
+    'dsn': 'https://97293106f2a543859de54e596489f320:7a544014f02644f289d2353dc452f2bb@sentry.arabel.la/17',
+    'private_dsn': 'https://97293106f2a543859de54e596489f320@sentry.arabel.la/17',
 }

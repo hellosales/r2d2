@@ -65,11 +65,12 @@ class AbstractDataProvider(models.Model):
 
         # send email
         client_domain = config.CLIENT_DOMAIN
+        bcc = config.ALERTS_RECEIVERS.split(',')
         protocol = 'https://' if getattr(settings, 'IS_SECURE', False) else 'http://'
         subject = 'Problem with your %s account on HelloSales' % self.name
         send_email('channel_problem', "%s <%s>" % (self.user.get_full_name(), self.user.email), subject,
                    {'protocol': protocol, 'client_domain': client_domain, 'account': self,
-                    'account_class': self.__class__.__name__})
+                    'account_class': self.__class__.__name__}, bcc=bcc)
 
     def fetch_data(self):
         from r2d2.data_importer.api import DataImporter
