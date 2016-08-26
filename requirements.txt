@@ -64,3 +64,4 @@ git+https://github.com/ArabellaTech/django-mongoengine#egg=django_mongoengine
 django-cors-headers==1.1.0
 django-extensions==1.6.1
 python-memcached==1.57
+pandas==0.18.1
