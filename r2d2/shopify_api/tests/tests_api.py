@@ -87,6 +87,7 @@ class ShopifyApiTestCase(APIBaseTestCase):
             response = self.client.post(reverse('shopify-stores'), data)
             self.assertEqual(response.status_code, 400)
             self.assertIn('name', response.data)
+            self.assertEqual(response.data['shop_slug'][0], 'A channel with this name already exists.')
 
             # create second account - using proxy
             data['name'] = STORE_NAME2

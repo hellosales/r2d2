@@ -244,13 +244,14 @@ class DataImporterAccountsApiTestCase(APIBaseTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['name'], 'new name 3')
 
-    @freeze_time('2014-12-15 01:00')
+    @freeze_time('2014-12-15 01:00:49.397015-05:00')
     def test_dates_serializing(self):
         """ test serializing is_active / next_sync / last_updated """
 
         # fresh account, not scheduled yet
         account = ShopifyStore.objects.create(user=self.user, access_token='token', name='name',
                                               authorization_date=timezone.now())
+
         self._login()
         response = self.client.get(reverse('data-importer-accounts'))
         self.assertEqual(response.status_code, 200)
