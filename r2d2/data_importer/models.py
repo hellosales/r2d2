@@ -138,7 +138,8 @@ class AbstractDataProvider(models.Model):
             # new account - just show next 5 minutes
             else:
                 dt = now + timedelta(minutes=5)
-            if dt.date() == now.date():
+            dt = dt.astimezone(timezone.get_current_timezone())
+            if dt.date() == now.astimezone(timezone.get_current_timezone()).date():
                 return 'today ' + DateFormat(dt).format('@ g:i A')
             else:
                 return 'tomorrow ' + DateFormat(dt).format('@ g:i A')
@@ -148,7 +149,9 @@ class AbstractDataProvider(models.Model):
     @property
     def last_updated(self):
         if self.last_successfull_call:
-            return DateFormat(self.last_successfull_call).format('n/j/Y @ g:i A')
+            return DateFormat(
+                self.last_successfull_call.astimezone(timezone.get_current_timezone())
+            ).format('n/j/Y @ g:i A')
         else:
             return ''
 

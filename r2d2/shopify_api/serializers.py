@@ -53,7 +53,7 @@ class ShopifyStoreSerializer(R2D2ModelSerializer):
             if self.instance:
                 query = query.exclude(pk=self.instance.pk)
             if query.exists():
-                errors['shop_slug'] = [_('This field must be unique.')]
+                errors['shop_slug'] = [_('A channel with this name already exists.')]
 
         # if auth data is present - get the access_token
         if shop and code and timestamp and hmac:

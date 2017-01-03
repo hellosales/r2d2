@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
 
+IS_SECURE = True
+
 project = lambda: os.path.dirname(os.path.realpath(__file__))
 location = lambda x: os.path.join(str(project()), str(x))
 
@@ -66,9 +68,11 @@ AWS_STORAGE_BUCKET_NAME = 'api-hello-sales'
 AWS_ACCESS_KEY_ID = 'AKIAITSHDBMHBTIKBTXQ'
 AWS_SECRET_ACCESS_KEY = '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'
 
-# TODO: create app for r2d2 production
-SQUAREUP_API_KEY = 'p4OiJb_Aa9527UGzFbFz4g'
-SQUAREUP_API_SECRET = 'tBWttX7fCBcphFF7JUkoeHt-JSKkmZ9J_Qc-w6K8yhY'
+SHOPIFY_API_KEY = '74ce0b5cb25ebb2fde10ba55fcf24cbc'
+SHOPIFY_API_SECRET = '9b6bd9a8ac0b7a7803fa735de0196989'
+
+SQUAREUP_API_KEY = 'sq0idp-bOxK1iCqtPUHmobFsqSsVg'
+SQUAREUP_API_SECRET = 'sq0csp-3ZxZ0wxmKVlPICcp6lU_XoUzWpbIuWgwiyPVGC362vU'
 
 CONSTANCE_CONFIG = {
     'CLIENT_DOMAIN': ('hello-sales.com', 'client domain'),
