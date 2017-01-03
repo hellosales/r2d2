@@ -16,6 +16,7 @@ from r2d2.utils.test_utils import APIBaseTestCase
 
 SHOPIFY_MAPPED_DATA = {
     'transaction_id': 450789469,
+    'currency_code':'USD',
     'date': u'2008-01-10T11:00:00-05:00',
     'products': [{
         'name': "IPod Nano - 8gb",
@@ -101,4 +102,4 @@ class TestImport(APIBaseTestCase):
                 # test if signal was called
                 self.assertEqual(CommonTransaction.objects.count(), 1)
                 common_transaction = CommonTransaction.objects.all()[0]
-                self.assertEqual(common_transaction.source, "ShopifyStore")
+                self.assertEqual(common_transaction.source, "Shopify")

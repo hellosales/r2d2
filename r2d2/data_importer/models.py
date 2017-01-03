@@ -18,6 +18,7 @@ from r2d2.utils.fields import JSONField
 class AbstractDataProvider(models.Model):
     user = models.ForeignKey(Account)
     name = models.CharField(max_length=255, db_index=True)
+    official_channel_name = None # intended as official Hello Sales display name for channel
     access_token = models.CharField(max_length=255)
     authorization_date = models.DateTimeField()
     last_successfull_call = models.DateTimeField(null=True, blank=True)
@@ -42,6 +43,9 @@ class AbstractDataProvider(models.Model):
 
     OAUTH_ERROR = "There was a problem authorizing this channel. Please try again or contact Hello Sales."
     NAME_NOT_UNIQUE_ERROR = "Sorry, that Channel Name already exists. Please choose a different name for this Channel."
+    
+    def __init__(self, *args, **kwargs):
+        super(AbstractDataProvider, self).__init__(*args,**kwargs)
 
     class Meta:
         abstract = True

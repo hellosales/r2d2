@@ -171,6 +171,7 @@ class EtsyAccount(AbstractDataProvider):
             'total_tax': Decimal(receipt.total_tax_cost) + Decimal(receipt.total_vat_cost),
             'total_discount': Decimal(receipt.discount_amt),
             'total_total': Decimal(receipt.adjusted_grandtotal),
+            'currency_code': receipt.currency_code, # NOTE transaction and payment also list currencies but we'll just use this one at launch
             'products': []
         }
 
@@ -212,6 +213,7 @@ class EtsyAccount(AbstractDataProvider):
     def __init__(self, *args, **kwargs):
         super(EtsyAccount, self).__init__(*args, **kwargs)
         self._etsy_api = None
+        self.official_channel_name = 'Etsy'
 
     def __unicode__(self):
         return self.name

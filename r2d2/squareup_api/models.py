@@ -28,6 +28,10 @@ class SquareupAccount(AbstractDataProvider):
     token_expiration = models.DateTimeField(null=True, blank=True, db_index=True)
     merchant_id = models.CharField(max_length=255, null=True, blank=True)
 
+    def __init__(self, *args, **kwargs):
+        super(SquareupAccount, self).__init__(*args,**kwargs)
+        self.official_channel_name = 'Square'
+        
     @classmethod
     def get_serializer(cls):
         from r2d2.squareup_api.serializers import SquareupAccountSerializer
@@ -107,31 +111,84 @@ class SquareupAccount(AbstractDataProvider):
             raise Exception('%d / %s' % (response.status_code, response.json().get('type', '')))
 
     def map_data(self, imported_squareup_payment):
+        """
+        inelegant way to handle Square's Money data:
+        https://docs.connect.squareup.com/api/connect/v2/#type-money
+        "The amount of money, in the lowest in the smallest denomination of 
+        the currency indicated by currency. For example, when currency_code 
+        is USD, amount is in cents."
+        """
+        if (imported_squareup_payment.net_sales_money['currency_code']=='USD'):
+            net_sales_divisor=100
+        else:
+            net_sales_divisor=1
+
+        if (imported_squareup_payment.tax_money['currency_code']=='USD'):
+            tax_money_divisor=100
+        else:
+            tax_money_divisor=1
+
+        if (imported_squareup_payment.discount_money['currency_code']=='USD'):
+            discount_money_divisor=100
+        else:
+            discount_money_divisor=1
+
         mapped_data = {
             'user_id': self.user_id,
             'transaction_id': imported_squareup_payment.squareup_id,
             'date': imported_squareup_payment.created_at,
-            'total_price': Decimal(imported_squareup_payment.net_sales_money['amount']),
-            'total_tax': Decimal(imported_squareup_payment.tax_money['amount']),
-            'total_discount': Decimal(imported_squareup_payment.discount_money['amount']),
+            'total_price': Decimal(imported_squareup_payment.net_sales_money['amount'])/net_sales_divisor,
+            'total_tax': Decimal(imported_squareup_payment.tax_money['amount'])/tax_money_divisor,
+            'total_discount': Decimal(imported_squareup_payment.discount_money['amount'])/discount_money_divisor,
             'total_total': 0,
+            'currency_code': imported_squareup_payment.net_sales_money['currency_code'],
             'products': []
         }
         mapped_data['total_total'] = (mapped_data['total_price'] + mapped_data['total_tax'] -
                                       mapped_data['total_discount'])
 
         for item in imported_squareup_payment.itemizations:
+            """
+            inelegant way to handle Square's Money data:
+            https://docs.connect.squareup.com/api/connect/v2/#type-money
+            "The amount of money, in the lowest in the smallest denomination of 
+            the currency indicated by currency. For example, when currency_code 
+            is USD, amount is in cents."
+            """
+            if (item['gross_sales_money']['currency_code']=='USD'):
+                gross_sales_divisor=100
+            else:
+                gross_sales_divisor=1
+
+            if (item['discount_money']['currency_code']=='USD'):
+                discount_divisor=100
+            else:
+                discount_divisor=1
+
+            if (item['total_money']['currency_code']=='USD'):
+                total_divisor=100
+            else:
+                total_divisor=1
+
             mapped_product = {
                 'name': item['name'],
                 'sku': item['item_detail']['sku'],
                 'quantity': Decimal(item['quantity']),
-                'price': Decimal(item['gross_sales_money']['amount']),
+                'price': Decimal(item['gross_sales_money']['amount'])/gross_sales_divisor,
                 'tax': Decimal(0),
-                'discount': Decimal(item['discount_money']['amount']),
-                'total': Decimal(item['total_money']['amount'])
+                'discount': Decimal(item['discount_money']['amount'])/discount_divisor,
+                'total': Decimal(item['total_money']['amount'])/total_divisor
             }
             for tax in item['taxes']:
-                mapped_product['tax'] += Decimal(tax['applied_money']['amount'])
+                if (tax['applied_money']['currency_code']=='USD'):
+                    applied_divisor=100
+                else:
+                    applied_divisor=1
+
+                if (tax['applied_money']):
+                    mapped_product['tax'] += Decimal(tax['applied_money']['amount'])/applied_divisor
+                else:
+                    mapped_product['tax'] += Decimal(0)
             mapped_data['products'].append(mapped_product)
 
         return mapped_data
