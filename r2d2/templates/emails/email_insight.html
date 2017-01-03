@@ -15,7 +15,7 @@
                     <tr><td><img src="https://r2d2-dev-arabella.s3.amazonaws.com/upload/page_5/tabletop-1465212087.39-table-top.jpg" alt=""></td></tr>
                     <tr>
                         <td class="content">
-                            <p>{{ insight.text }}</p>
+                            <p>{%autoescape off%}{{ insight.text }}{%endautoescape%}</p>
                             <p>
                                 {% for attachment in insight.attachments.all %}
                                     {% if not attachment.is_image %}

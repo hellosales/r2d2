@@ -87,6 +87,40 @@
     .maincol {
         padding: 0 10px;
     }
+    
+    .table {
+        border-top-width: 1px;
+        border-right-width: 1px;
+        border-bottom-width: 1px;
+        border-left-width: 1px;
+        border-collapse: collapse;
+        border-spacing: 0;
+    }
+
+    .dataframe * {
+        border-color: #c0c0c0;
+        border-collapse: collapse;
+        box-shadow: none;
+        padding-left: 2px;
+        padding-right: 2px;
+    }
+
+    .dataframe th{
+        background: #eee;
+        border-style:none;
+    }
+
+    .dataframe td{
+        background: #fff;
+        text-align: right; 
+        min-width:5em;
+    }
+
+    .dataframe-summary-row tr:last-child,
+    .dataframe-summary-col td:last-child{
+        background: #eee;
+        font-weight: 500;
+    }
 
     @media only screen and (max-width: 596px) {
         .logo {
