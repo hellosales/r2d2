@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.db import migrations
-from django.conf import settings
 import r2d2.insights.models
+
+from django.conf import settings
+from django.db import migrations
 
 
 class Migration(migrations.Migration):
@@ -12,7 +13,8 @@ class Migration(migrations.Migration):
         ('insights', '0001_initial'),
     ]
 
-    sql = "CREATE OR REPLACE VIEW insights_insight_history_summary AS \
+    sql = "DROP VIEW IF EXISTS insights_insight_history_summary; "  # "OR REPLACE"
+    sql = sql + "CREATE VIEW insights_insight_history_summary AS \
     SELECT max(ii.id) as id, \
         ii.user_id, \
         ii.insight_model_id, \
