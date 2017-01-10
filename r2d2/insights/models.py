@@ -32,15 +32,25 @@ ALLOWED_CONTENT_TYPES = set([
 
     
 class Insight(models.Model):
+<<<<<<< Updated upstream
     """ 
     model to store served insights 
+=======
+    """
+    model to store served insights
+>>>>>>> Stashed changes
     """
     user = models.ForeignKey(Account, limit_choices_to={"approval_status": Account.APPROVED, 'is_active': True})
     created = models.DateTimeField(auto_now_add=True)
     text = models.TextField()
     generator_class = models.CharField(max_length=100, editable=False)
     insight_model_id = models.IntegerField()
+<<<<<<< Updated upstream
     was_helpful = models.NullBooleanField() # whether the user voted helpful or unhelpful
+=======
+    was_helpful = models.NullBooleanField()  # whether the user voted helpful or unhelpful
+
+>>>>>>> Stashed changes
 
 class Product(models.Model):
     """
@@ -49,7 +59,12 @@ class Product(models.Model):
     insight = models.ForeignKey(Insight)
     sku = models.CharField(max_length=500)
     name = models.CharField(max_length=500)
+<<<<<<< Updated upstream
     
+=======
+
+
+>>>>>>> Stashed changes
 class Channel(models.Model):
     """
     A DataProvider encapsulation that allows us to trap source info.
@@ -59,22 +74,39 @@ class Channel(models.Model):
     insight = models.ForeignKey(Insight)
     official_channel_name = models.CharField(max_length=500)
     data_importer_class = models.CharField(max_length=500)
+<<<<<<< Updated upstream
     
+=======
+
+
+>>>>>>> Stashed changes
 class InsightHistorySummary(models.Model):
     """
     Unmanaged model for the insights_insight_history_summary view that summarizes
     how many of each InsightModel have been served, and what the most recent date
     is for each
     """
+<<<<<<< Updated upstream
     id = models.IntegerField(primary_key=True) # Placeholder id only, not meaningful
+=======
+    id = models.IntegerField(primary_key=True)  # Placeholder id only, not meaningful
+>>>>>>> Stashed changes
     user = models.ForeignKey(Account, on_delete=models.DO_NOTHING)
     insight_model_id = models.IntegerField()
     count_insights = models.IntegerField()
     most_recent = models.DateTimeField()
+<<<<<<< Updated upstream
     
     class Meta:
         managed = False
         db_table = 'insights_insight_history_summary'
+=======
+
+    class Meta:
+        managed = False
+        db_table = 'insights_insight_history_summary'
+
+>>>>>>> Stashed changes
 
 def validate_file_extension(value):
     """ The file formats accepted should include excel files, csv files, word docs, .txt files, and .jpg files. """

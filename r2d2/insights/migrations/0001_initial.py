@@ -51,7 +51,12 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('content_type', models.CharField(max_length=50, null=True)),
+<<<<<<< Updated upstream
                 ('file', models.FileField(upload_to=b'insights_attachments', validators=[r2d2.insights.models.validate_file_extension])),
+=======
+                ('file', models.FileField(upload_to=b'insights_attachments',
+                                          validators=[r2d2.insights.models.validate_file_extension])),
+>>>>>>> Stashed changes
                 ('insight', models.ForeignKey(related_name='attachments', to='insights.Insight')),
             ],
         ),

@@ -29,9 +29,15 @@ class SquareupAccount(AbstractDataProvider):
     merchant_id = models.CharField(max_length=255, null=True, blank=True)
 
     def __init__(self, *args, **kwargs):
+<<<<<<< Updated upstream
         super(SquareupAccount, self).__init__(*args,**kwargs)
         self.official_channel_name = 'Square'
         
+=======
+        super(SquareupAccount, self).__init__(*args, **kwargs)
+        self.official_channel_name = 'Square'
+
+>>>>>>> Stashed changes
     @classmethod
     def get_serializer(cls):
         from r2d2.squareup_api.serializers import SquareupAccountSerializer

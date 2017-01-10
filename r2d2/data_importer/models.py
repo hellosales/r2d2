@@ -18,7 +18,11 @@ from r2d2.utils.fields import JSONField
 class AbstractDataProvider(models.Model):
     user = models.ForeignKey(Account)
     name = models.CharField(max_length=255, db_index=True)
+<<<<<<< Updated upstream
     official_channel_name = None # intended as official Hello Sales display name for channel
+=======
+    official_channel_name = None  # intended as official Hello Sales display name for channel
+>>>>>>> Stashed changes
     access_token = models.CharField(max_length=255)
     authorization_date = models.DateTimeField()
     last_successfull_call = models.DateTimeField(null=True, blank=True)
