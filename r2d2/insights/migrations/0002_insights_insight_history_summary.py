@@ -10,7 +10,8 @@ class Migration(migrations.Migration):
         ('insights', '0001_initial'),
     ]
 
-    sql = "CREATE OR REPLACE VIEW insights_insight_history_summary AS \
+    sql = "DROP VIEW IF EXISTS insights_insight_history_summary; "  # "OR REPLACE"
+    sql = sql + "CREATE VIEW insights_insight_history_summary AS \
     SELECT max(ii.id) as id, \
         ii.user_id, \
         ii.insight_model_id, \
