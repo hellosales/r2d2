@@ -53,12 +53,7 @@ class InsightsAPITestCase(APIBaseTestCase):
 
         for i in range(0, 30):
             with freeze_time('2015-%d-%d' % (i % 12 + 1, i / 2 + 1)):
-<<<<<<< Updated upstream
                 Insight.objects.create(user=user, text="insight %d" % i, generator_class="FakeGenerator", insight_model_id=1)
-=======
-                Insight.objects.create(user=user, text="insight %d" % i,
-                                       generator_class="FakeGenerator", insight_model_id=1)
->>>>>>> Stashed changes
 
         for i in range(0, 5):
             self._add_transaction(user)

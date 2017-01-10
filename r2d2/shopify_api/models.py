@@ -27,11 +27,7 @@ class ShopifyStore(AbstractDataProvider):
     MAX_REQUEST_LIMIT = 250
 
     def __init__(self, *args, **kwargs):
-<<<<<<< Updated upstream
         super(ShopifyStore, self).__init__(*args,**kwargs)
-=======
-        super(ShopifyStore, self).__init__(*args, **kwargs)
->>>>>>> Stashed changes
         self.official_channel_name = 'Shopify'
 
     class Meta:
