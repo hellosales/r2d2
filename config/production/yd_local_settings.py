@@ -28,7 +28,7 @@ DATABASES = {
         'NAME': 'api-hello-sales',
         'USER': 'api-hello-sales',
         'PASSWORD': 'MenUtheewajFugAisBochainOlmAmt',
-        'HOST': 'ydproddb.cisjmnb7cksz.us-east-1.rds.amazonaws.com',
+        'HOST': 'ydproddb.ydtech.co',
         'PORT': '3306',
         'ATOMIC_REQUESTS': True
     },
