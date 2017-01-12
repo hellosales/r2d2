@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """ tests for insights generation """
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 from decimal import Decimal
 from freezegun import freeze_time
 
@@ -9,16 +8,15 @@ from django.utils import timezone
 import pandas as pd
 import numpy as np
 
-from r2d2.accounts.models import Account
-from r2d2.common_layer.models import CommonTransaction, ExchangeRateSource, ExchangeRate
+from r2d2.common_layer.models import CommonTransaction
 from r2d2.insights.models import Insight, InsightHistorySummary
-from r2d2.insights.generators import InsightDispatcher, InsightModel, DataImportedInsight, AverageProductsPerTransactions, AverageTransactionsPerWeek
+from r2d2.insights.generators import InsightDispatcher, InsightModel, DataImportedInsight,\
+    AverageProductsPerTransactions, AverageTransactionsPerWeek
 from r2d2.insights.signals import data_fetched
 from r2d2.shopify_api.models import ShopifyStore
 from r2d2.utils.test_utils import APIBaseTestCase
 import r2d2.insights.generators as gen
 import r2d2.common_layer.models as clmodels
-import r2d2.common_layer.currency as curr
 
 
 class InsightsAPITestCase(APIBaseTestCase):
@@ -50,10 +48,10 @@ class InsightsAPITestCase(APIBaseTestCase):
             source='Shopify',
             currency_code='EUR'
         )
-        
+
     def create_insight_history(self, user, date, registered):
         plus_hour = timedelta(minutes=60)
-        
+
         for im in registered:
             Insight.objects.create(user=user,
                                    created=date,
@@ -61,7 +59,6 @@ class InsightsAPITestCase(APIBaseTestCase):
                                    generator_class=InsightDispatcher.__class__.__name__,
                                    insight_model_id=im.type_id)
             date = date + plus_hour
-
 
     @freeze_time('2016-04-29')
     def setUp(self):
@@ -122,7 +119,7 @@ class InsightsAPITestCase(APIBaseTestCase):
             self.assertEqual(Insight.objects.count(), 4)
             insight = Insight.objects.all().order_by('-created')[0]
             self.assertEqual(insight.text, "Transactions data was updated")
-            
+
     def test_insight_dispatcher(self):
         """
         Test key InsightDispatcher methods:
@@ -138,7 +135,7 @@ class InsightsAPITestCase(APIBaseTestCase):
         # initialize_insight_model_subcollections
         registered_models = InsightDispatcher.get_registered_models()
         models_as_df = InsightDispatcher.initialize_insight_model_subcollections()
-        self.assertEqual(models_as_df.shape[0],len(registered_models))
+        self.assertEqual(models_as_df.shape[0], len(registered_models))
         self.assertTrue(np.array_equal(models_as_df.columns, ['type_id',
                                                               'class_name',
                                                               'periods',
@@ -151,35 +148,47 @@ class InsightsAPITestCase(APIBaseTestCase):
                                                               'priority',
                                                               'shows_table']))
         for (type_id, model) in registered_models.iteritems():
-            self.assertEqual(model.__class__.__name__, models_as_df.loc[models_as_df.type_id==type_id,'class_name'].values[0])
-            self.assertEqual(model.periods, models_as_df.loc[models_as_df.type_id==type_id, 'periods'].values[0])
-            self.assertEqual(model.is_for_initial_pull, models_as_df.loc[models_as_df.type_id==type_id, 'is_for_initial_pull'].values[0])
-            self.assertEqual(model.is_for_update_pull, models_as_df.loc[models_as_df.type_id==type_id, 'is_for_update_pull'].values[0])
-            self.assertEqual(model.is_limited, models_as_df.loc[models_as_df.type_id==type_id,'is_limited'].values[0])
-            self.assertEqual(model.is_source_limited, models_as_df.loc[models_as_df.type_id==type_id,'is_source_limited'].values[0])
-            self.assertEqual(model.is_product_limited, models_as_df.loc[models_as_df.type_id==type_id,'is_product_limited'].values[0])
-            self.assertEqual(model.compares_sources, models_as_df.loc[models_as_df.type_id==type_id,'compares_sources'].values[0])
-            self.assertEqual(model.priority, models_as_df.loc[models_as_df.type_id==type_id,'priority'].values[0])
-            self.assertEqual(model.shows_table, models_as_df.loc[models_as_df.type_id==type_id,'shows_table'].values[0])
-            
+            self.assertEqual(model.__class__.__name__,
+                             models_as_df.loc[models_as_df.type_id == type_id, 'class_name'].values[0])
+            self.assertEqual(model.periods,
+                             models_as_df.loc[models_as_df.type_id == type_id, 'periods'].values[0])
+            self.assertEqual(model.is_for_initial_pull,
+                             models_as_df.loc[models_as_df.type_id == type_id, 'is_for_initial_pull'].values[0])
+            self.assertEqual(model.is_for_update_pull,
+                             models_as_df.loc[models_as_df.type_id == type_id, 'is_for_update_pull'].values[0])
+            self.assertEqual(model.is_limited,
+                             models_as_df.loc[models_as_df.type_id == type_id, 'is_limited'].values[0])
+            self.assertEqual(model.is_source_limited,
+                             models_as_df.loc[models_as_df.type_id == type_id, 'is_source_limited'].values[0])
+            self.assertEqual(model.is_product_limited,
+                             models_as_df.loc[models_as_df.type_id == type_id, 'is_product_limited'].values[0])
+            self.assertEqual(model.compares_sources,
+                             models_as_df.loc[models_as_df.type_id == type_id, 'compares_sources'].values[0])
+            self.assertEqual(model.priority,
+                             models_as_df.loc[models_as_df.type_id == type_id, 'priority'].values[0])
+            self.assertEqual(model.shows_table,
+                             models_as_df.loc[models_as_df.type_id == type_id, 'shows_table'].values[0])
+
         # insight_history_to_df
         ih = InsightHistorySummary.objects.all()
         ih_df = InsightDispatcher.insight_history_to_df(ih)
-        self.assertEqual(models_as_df.shape[0],len(registered_models))
+        self.assertEqual(models_as_df.shape[0], len(registered_models))
         self.assertTrue(np.array_equal(ih_df.columns, ['id',
                                                        'user_id',
                                                        'insight_model_id',
                                                        'count_insights',
                                                        'most_recent']))
         for insight in ih:
-            self.assertEqual(insight.user_id, ih_df.loc[ih_df.id==insight.id, 'user_id'].values[0])
-            self.assertEqual(insight.insight_model_id, ih_df.loc[ih_df.id==insight.id,'insight_model_id'].values[0])
-            self.assertEqual(insight.count_insights, ih_df.loc[ih_df.id==insight.id,'count_insights'].values[0])
+            self.assertEqual(insight.user_id, ih_df.loc[ih_df.id == insight.id, 'user_id'].values[0])
+            self.assertEqual(insight.insight_model_id,
+                             ih_df.loc[ih_df.id == insight.id, 'insight_model_id'].values[0])
+            self.assertEqual(insight.count_insights,
+                             ih_df.loc[ih_df.id == insight.id, 'count_insights'].values[0])
 
             # numpy to datetime conversion headaches below
-            dt64ns = ih_df.loc[ih_df.id==insight.id,'most_recent'].values[0]
+            dt64ns = ih_df.loc[ih_df.id == insight.id, 'most_recent'].values[0]
             self.assertEqual(pd.to_datetime((insight.most_recent).replace(tzinfo=None)), pd.to_datetime(dt64ns))
-        
+
         # process_choices
         # Note: this test only checks these things:
         #    1) If no InsightModels are passed it should return None
@@ -188,8 +197,6 @@ class InsightsAPITestCase(APIBaseTestCase):
         self.assertEqual(InsightDispatcher.process_choices(ih, None), None)
         self.assertTrue(isinstance(InsightDispatcher.process_choices(ih, models_as_df), InsightModel))
         self.assertEqual(InsightDispatcher.process_choices(ih, models_as_df, list(registered_models.values())), None)
-
-
 
     def test_data_frame_functions(self):
         """
@@ -207,52 +214,52 @@ class InsightsAPITestCase(APIBaseTestCase):
         # salesByChannel
         out = gen.salesByChannel(txnsDF)
         test = txnsDF.groupby(['source'], as_index=False)
-        test = test.agg({'product_quantity' : 'sum', 'product_total_converted' : 'sum'})
+        test = test.agg({'product_quantity': 'sum', 'product_total_converted': 'sum'})
         self.assertEqual(gen.salesByChannel(None), None)
         self.assertTrue(test.product_quantity.equals(out.product_quantity))
         self.assertTrue(test.product_total_converted.equals(out.product_total_converted))
-        
+
         # salesByPeriod
         self.assertEqual(gen.salesByPeriod(None, 'year'), None)
-        periods = {'year': '1A', 
-                   'quarter': '1Q', 
-                   'month': '1M', 
-                   '7 days': '7D', 
-                   '30 days': '30D', 
-                   '365 days': '365D', 
-                   'week': '1W', 
-                   'day': '1D', 
+        periods = {'year': '1A',
+                   'quarter': '1Q',
+                   'month': '1M',
+                   '7 days': '7D',
+                   '30 days': '30D',
+                   '365 days': '365D',
+                   'week': '1W',
+                   'day': '1D',
                    'hour': '1H'}
-        
+
         for (period, freq) in periods.iteritems():
             test = txnsDF
             grouper = pd.TimeGrouper(freq)
             test.index = test.date
             test = test.groupby(grouper)
-            test = test.agg({'product_quantity' : 'sum', 'product_total_converted' : 'sum'})
+            test = test.agg({'product_quantity': 'sum', 'product_total_converted': 'sum'})
             out = gen.salesByPeriod(txnsDF, period, False)
 
-            self.assertTrue(out.product_quantity.equals( test.product_quantity))
-            self.assertTrue(out.product_total_converted.equals( test.product_total_converted))
-            
+            self.assertTrue(out.product_quantity.equals(test.product_quantity))
+            self.assertTrue(out.product_total_converted.equals(test.product_total_converted))
+
             test = txnsDF
             test.index = test.date
-            test = test.groupby([grouper,'product_name','sku'])
-            test = test.agg({'product_quantity' : 'sum', 'product_total_converted' : 'sum'})
+            test = test.groupby([grouper, 'product_name', 'sku'])
+            test = test.agg({'product_quantity': 'sum', 'product_total_converted': 'sum'})
             out = gen.salesByPeriod(txnsDF, period, True)
-            self.assertTrue(out.product_quantity.equals( test.product_quantity))
-            self.assertTrue(out.product_total_converted.equals( test.product_total_converted))
-            
+            self.assertTrue(out.product_quantity.equals(test.product_quantity))
+            self.assertTrue(out.product_total_converted.equals(test.product_total_converted))
+
         # topProducts
         test = txnsDF
         test = test.groupby(['product_name'], as_index=False)
-        test = test.agg({'product_quantity' : 'sum', 'product_total_converted' : 'sum'})
+        test = test.agg({'product_quantity': 'sum', 'product_total_converted': 'sum'})
         test = test.sort_values(by=['product_total_converted', 'product_quantity'], ascending=False)
         out = gen.topProducts(txnsDF)
         self.assertEqual(gen.topProducts(None), None)
-        self.assertTrue(test.product_total_converted.equals( out.product_total_converted))
-        self.assertTrue(test.product_quantity.equals( out.product_quantity))
-        
+        self.assertTrue(test.product_total_converted.equals(out.product_total_converted))
+        self.assertTrue(test.product_quantity.equals(out.product_quantity))
+
         # normalizeDFColumns
         test = txnsDF
         columnDict = {'date': 'Date',
@@ -280,8 +287,7 @@ class InsightsAPITestCase(APIBaseTestCase):
                       'product_total_converted': 'Item Total',
                       'value': 'Exchange Rate'}
         self.assertTrue(test.rename(columns=columnDict).equals(gen.normalizeDFColumns(txnsDF)))
-        
-    
+
     def test_time_functions(self):
         """
         Test generators.py support functions having to do with time:
@@ -292,7 +298,7 @@ class InsightsAPITestCase(APIBaseTestCase):
         getPreviousWeek
         getPreviousPeriod
         """
-        a_date = datetime(2016,1,1)
+        a_date = datetime(2016, 1, 1)
         special_dates = [a_date]
 
         # year checking
@@ -300,7 +306,7 @@ class InsightsAPITestCase(APIBaseTestCase):
         self.assertEqual(period, "year")
         self.assertEqual(start_date, a_date.replace(year=a_date.year-1))
         self.assertEqual(end_date, a_date - timedelta(microseconds=1))
-        
+
         # month checks
         one_date = a_date.replace(month=2)
         one_microsecond = timedelta(microseconds=1)
@@ -310,20 +316,20 @@ class InsightsAPITestCase(APIBaseTestCase):
             self.assertEqual(period, "month")
             self.assertEqual(start_date, one_date.replace(month=one_date.month-1))
             self.assertEqual(end_date, one_date - one_microsecond)
-            
+
             if one_date.month == 12:
                 break
             else:
                 one_date = a_date.replace(month=one_date.month+1)
 
         # week checks
-        one_date = a_date.replace(day=4) # First Monday of the year
+        one_date = a_date.replace(day=4)  # First Monday of the year
         plus_7 = timedelta(days=7)
         while one_date.year < 2017:
             special_dates.append(one_date)
             (period, start_date, end_date) = gen.isBeginningOfPeriod(one_date) or (None, None, None)
 
-            if one_date.day == 1: # A month beginning
+            if one_date.day == 1:  # A month beginning
                 self.assertEqual(period, "month")
             else:
                 self.assertEqual(period, "week")
@@ -332,7 +338,7 @@ class InsightsAPITestCase(APIBaseTestCase):
                 self.assertEqual(end_date, this_monday - one_microsecond)
 
             one_date = one_date + plus_7
-            
+
         # check no other dates are special
         one_day = timedelta(days=1)
         one_date = a_date + one_day
@@ -353,7 +359,7 @@ class InsightsAPITestCase(APIBaseTestCase):
             if one_date.month == 1:
                 self.assertEqual(one_date.replace(month=one_date.month + 11, year=one_date.year-1, day=1), start_date)
             else:
-                self.assertEqual(one_date.replace(month=one_date.month - last_month, day=1), start_date)
+                self.assertEqual(one_date.replace(month=one_date.month - 1, day=1), start_date)
             self.assertEqual(one_date.replace(day=1) - one_microsecond, end_date)
 
             (start_date, end_date) = gen.getPreviousWeek(one_date)
@@ -364,7 +370,6 @@ class InsightsAPITestCase(APIBaseTestCase):
             one_date = one_date + one_day
             counter += 1
 
-                             
     def test_formatters(self):
         """
         periodFormatter
@@ -373,21 +378,21 @@ class InsightsAPITestCase(APIBaseTestCase):
         percentTableFormat
         fancyDateTimeDeltaFormat
         """
-        now = datetime(2016,4,29)
-        self.assertEqual(gen.periodFormatter(now,'year'), '2016')
-        self.assertEqual(gen.periodFormatter(now,'quarter'), '04/29/16')
-        self.assertEqual(gen.periodFormatter(now,'month'), 'April')
-        self.assertEqual(gen.periodFormatter(now,'week'), '04/29/16')
-        self.assertEqual(gen.periodFormatter(now,'day'), '04/29/16')
-        self.assertEqual(gen.periodFormatter(now,'hour'), 'Fri Apr 29 00:00:00 2016')
-        self.assertEqual(gen.periodFormatter(now,'foo'), None)
+        now = datetime(2016, 4, 29)
+        self.assertEqual(gen.periodFormatter(now, 'year'), '2016')
+        self.assertEqual(gen.periodFormatter(now, 'quarter'), '04/29/16')
+        self.assertEqual(gen.periodFormatter(now, 'month'), 'April')
+        self.assertEqual(gen.periodFormatter(now, 'week'), '04/29/16')
+        self.assertEqual(gen.periodFormatter(now, 'day'), '04/29/16')
+        self.assertEqual(gen.periodFormatter(now, 'hour'), 'Fri Apr 29 00:00:00 2016')
+        self.assertEqual(gen.periodFormatter(now, 'foo'), None)
 
-        self.assertEqual(gen.integerTableFormat(1.00),'1')
-        self.assertEqual(gen.dollarTableFormat(1.00),'$1.00')
-        self.assertEqual(gen.percentTableFormat(1.00),'100.00%')
-        self.assertEqual(gen.fancyDateTimeDeltaFormat(now, now.replace(year=now.year + 1, month=now.month+3), 1), 
+        self.assertEqual(gen.integerTableFormat(1.00), '1')
+        self.assertEqual(gen.dollarTableFormat(1.00), '$1.00')
+        self.assertEqual(gen.percentTableFormat(1.00), '100.00%')
+        self.assertEqual(gen.fancyDateTimeDeltaFormat(now, now.replace(year=now.year + 1, month=now.month+3), 1),
                          '1 year')
-        self.assertEqual(gen.fancyDateTimeDeltaFormat(now, now.replace(year=now.year + 1, month=now.month+3), 2), 
+        self.assertEqual(gen.fancyDateTimeDeltaFormat(now, now.replace(year=now.year + 1, month=now.month+3), 2),
                          '1 year, 3 months')
-        self.assertEqual(gen.fancyDateTimeDeltaFormat(now.replace(month=now.month - 3, day=now.day-14), now, 3), 
+        self.assertEqual(gen.fancyDateTimeDeltaFormat(now.replace(month=now.month - 3, day=now.day-14), now, 3),
                          '3 months, 15 days')

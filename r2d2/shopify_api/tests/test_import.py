@@ -16,7 +16,7 @@ from r2d2.utils.test_utils import APIBaseTestCase
 
 SHOPIFY_MAPPED_DATA = {
     'transaction_id': 450789469,
-    'currency_code':'USD',
+    'currency_code': 'USD',
     'date': u'2008-01-10T11:00:00-05:00',
     'products': [{
         'name': "IPod Nano - 8gb",

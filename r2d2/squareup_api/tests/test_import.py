@@ -15,7 +15,7 @@ from r2d2.utils.test_utils import APIBaseTestCase
 
 SQUAREUP_MAPPED_DATA = {
     'transaction_id': u'fZR0ZGHuHjprkXOtojv5S',
-    'currency_code':u'USD',
+    'currency_code': u'USD',
     'date': u'2015-11-18T19:30:50Z',
     'products': [{
         'name': u'Custom Amount',

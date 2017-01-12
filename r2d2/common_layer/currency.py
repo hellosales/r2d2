@@ -2,7 +2,6 @@
 '''
 Module for currency handling and conversion
 '''
-from datetime import date
 import pandas as pd
 
 from r2d2.common_layer.models import ExchangeRate
@@ -22,7 +21,7 @@ class MoneyConverter(object):
         if cls.__exchange_rates is not None and force is False:
             return
 
-        cls.__exchange_rates = cls.exchange_rates_to_df(ExchangeRate.objects.filter())
+        cls.__exchange_rates = exchange_rates_to_df(ExchangeRate.objects.filter())
 
     @classmethod
     def get_rate_cached(cls, from_curr, to_curr, date, force_date=True):
@@ -40,17 +39,18 @@ class MoneyConverter(object):
         cls.load_exchange_rates()
 
         if force_date:
-            rates = MoneyConverter.__exchange_rates[(MoneyConverter.__exchange_rates.currency==from_curr)
-                                                    & (MoneyConverter.__exchange_rates.base_currency==to_curr)
-                                                    & (MoneyConverter.__exchange_rates.date==date)]
+            rates = MoneyConverter.__exchange_rates[(MoneyConverter.__exchange_rates.currency == from_curr)
+                                                    & (MoneyConverter.__exchange_rates.base_currency == to_curr)
+                                                    & (MoneyConverter.__exchange_rates.date == date)]
         else:
-            rates = MoneyConverter.__exchange_rates[(MoneyConverter.__exchange_rates.currency==from_curr)
-                                                    & (MoneyConverter.__exchange_rates.base_currency==to_curr)
-                                                    & (MoneyConverter.__exchange_rates.date==clutils.nearest(date, MoneyConverter.__exchange_rates.date.unique()))]
+            rates = MoneyConverter.__exchange_rates[(MoneyConverter.__exchange_rates.currency == from_curr)
+                                                    & (MoneyConverter.__exchange_rates.base_currency == to_curr)
+                                                    & (MoneyConverter.__exchange_rates.date == clutils.nearest(date, MoneyConverter.__exchange_rates.date.unique()))]
 
         if rates.shape[0] > 1:
             rate = rates[0]
-            raise RuntimeWarning('More than one exchange rate/date combination found for %(from_curr)s and %(date)s'%{'from_curr':from_curr, 'date':date})
+            raise RuntimeWarning('More than one exchange rate/date combination found for %(from_curr)s and %(date)s'
+                                 % {'from_curr': from_curr, 'date': date})
         elif rates.shape[0] == 0:
             raise LookupError('No ExchangeRate could be found for these currencies and dates')
 
@@ -70,12 +70,6 @@ def exchange_rates_to_df(rates):
     value = []
     base_currency = []
     date = []
-
-    columns = ['id',
-               'currency',
-               'value',
-               'base_currency',
-               'date']
 
     for rate in rates:
         eid.append(rate.id),

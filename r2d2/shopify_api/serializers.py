@@ -23,7 +23,8 @@ class ShopifyStoreSerializer(R2D2ModelSerializer):
         model = ShopifyStore
 
         fields = ['pk', 'name', 'authorization_date', 'last_successfull_call', 'is_active', 'next_sync', 'last_updated',
-                  'fetch_status', 'created', 'shop', 'code', 'timestamp', 'signature', 'hmac', 'shop_slug', 'official_channel_name']
+                  'fetch_status', 'created', 'shop', 'code', 'timestamp', 'signature', 'hmac', 'shop_slug',
+                  'official_channel_name']
         read_only_fields = ['pk', 'authorization_date', 'last_successfull_call', 'next_sync', 'last_updated',
                             'fetch_status', 'created', 'shop_slug', 'official_channel_name']
 

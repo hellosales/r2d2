@@ -42,8 +42,6 @@ class TestBase(APIBaseTestCase):
             'total_total': 9.0,
             'currency_code': 'EUR',
         }
-        
-        
 
     def setUp(self):
         self._create_user()
@@ -53,9 +51,9 @@ class TestBase(APIBaseTestCase):
                                                        access_token='oauth_token=x&oauth_token_secret=y', name='name',
                                                        authorization_date=timezone.now())
         source = ExchangeRateSource.objects.create(id=1,
-                                          name='USD',
-                                          last_update=timezone.now().date(),
-                                          base_currency='USD')
+                                                   name='USD',
+                                                   last_update=timezone.now().date(),
+                                                   base_currency='USD')
         ExchangeRate.objects.create(id=1,
                                     currency='EUR',
                                     value=Decimal(10),
@@ -72,18 +70,17 @@ class TestBase(APIBaseTestCase):
         ExchangeRate.objects.all().delete()
         ExchangeRateSource.objects.all().delete()
 
-
     @freeze_time('2016-08-28')
     def test_all(self):
         """ - Test creating object on signal
             - Test updating object on signal
-            - Test if there is no collision for objects with same ID but different sources 
-            - Test CommonTransaction to pandas.DataFrame conversion 
+            - Test if there is no collision for objects with same ID but different sources
+            - Test CommonTransaction to pandas.DataFrame conversion
             - Test currency conversion of CommonTransaction DataFrame
         """
 
         now = datetime.now()
-        
+
         # test creating object on signal
         self.assertEqual(CommonTransaction.objects.count(), 0)
         sample_object = self._get_sample_transaction(1, now)
@@ -107,13 +104,13 @@ class TestBase(APIBaseTestCase):
         sample_object = self._get_sample_transaction(2, now)
         object_imported.send(sender=None, importer_account=self.shopify_account, mapped_data=sample_object)
         self.assertEqual(CommonTransaction.objects.count(), 3)
-        
-        # test CommonTransaction to pandas.DataFrame conversion.  Test that we 
+
+        # test CommonTransaction to pandas.DataFrame conversion.  Test that we
         # get the same number of rows as in the DB, and that a lookup returns the
         # same data
         test_df = clmodels.common_transactions_to_df([common_transaction])
         self.assertEqual(1, len(test_df.index))
-        self.assertEqual(test_df.user_id.iloc[0],common_transaction.user_id)
+        self.assertEqual(test_df.user_id.iloc[0], common_transaction.user_id)
         self.assertEqual(test_df.transaction_id.iloc[0], common_transaction.transaction_id)
         self.assertEqual(test_df.date.iloc[0], common_transaction.date)
         self.assertEqual(test_df.total_price.iloc[0], common_transaction.total_price)
@@ -129,19 +126,26 @@ class TestBase(APIBaseTestCase):
         self.assertEqual(test_df.product_tax.iloc[0], common_transaction.products[0].tax)
         self.assertEqual(test_df.product_discount.iloc[0], common_transaction.products[0].discount)
         self.assertEqual(test_df.product_total.iloc[0], common_transaction.products[0].total)
-        
+
         # test currency conversion
         rates = ExchangeRate.objects.all()
-        test_df.date = pd.to_datetime(rates[0].date) # reset date to that of one of our rates to force a match
-        test_df_converted = curr.convert_common_transactions_df(test_df.copy(),'USD', True)
+        test_df.date = pd.to_datetime(rates[0].date)  # reset date to that of one of our rates to force a match
+        test_df_converted = curr.convert_common_transactions_df(test_df.copy(), 'USD', True)
         this_rate = ExchangeRate.objects.filter(currency=common_transaction.currency_code, date=test_df.date.iloc[0])[0]
         self.assertEqual(test_df_converted.value.iloc[0], this_rate.value)
-        self.assertEqual(test_df_converted.total_total_converted.iloc[0], this_rate.value*common_transaction.total_total)
-        self.assertEqual(test_df_converted.total_discount_converted.iloc[0], this_rate.value*common_transaction.total_discount)
-        self.assertEqual(test_df_converted.total_price_converted.iloc[0], this_rate.value*common_transaction.total_price)
-        self.assertEqual(test_df_converted.total_tax_converted.iloc[0], this_rate.value*common_transaction.total_tax)
-        self.assertEqual(test_df_converted.product_price_converted.iloc[0], this_rate.value*common_transaction.products[0].price)
-        self.assertEqual(test_df_converted.product_tax_converted.iloc[0], this_rate.value*common_transaction.products[0].tax)
-        self.assertEqual(test_df_converted.product_discount_converted.iloc[0], this_rate.value*common_transaction.products[0].discount)
-        self.assertEqual(test_df_converted.product_total_converted.iloc[0], this_rate.value*common_transaction.products[0].total)
-        
+        self.assertEqual(test_df_converted.total_total_converted.iloc[0],
+                         this_rate.value*common_transaction.total_total)
+        self.assertEqual(test_df_converted.total_discount_converted.iloc[0],
+                         this_rate.value*common_transaction.total_discount)
+        self.assertEqual(test_df_converted.total_price_converted.iloc[0],
+                         this_rate.value*common_transaction.total_price)
+        self.assertEqual(test_df_converted.total_tax_converted.iloc[0],
+                         this_rate.value*common_transaction.total_tax)
+        self.assertEqual(test_df_converted.product_price_converted.iloc[0],
+                         this_rate.value*common_transaction.products[0].price)
+        self.assertEqual(test_df_converted.product_tax_converted.iloc[0],
+                         this_rate.value*common_transaction.products[0].tax)
+        self.assertEqual(test_df_converted.product_discount_converted.iloc[0],
+                         this_rate.value*common_transaction.products[0].discount)
+        self.assertEqual(test_df_converted.product_total_converted.iloc[0],
+                         this_rate.value*common_transaction.products[0].total)

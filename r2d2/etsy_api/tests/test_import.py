@@ -15,7 +15,7 @@ from r2d2.utils.test_utils import APIBaseTestCase
 
 ETSY_MAPPED_DATA = {
     'transaction_id': '1062792031',
-    'currency_code':'USD',
+    'currency_code': 'USD',
     'date': '2015-12-08T13:49:44',
     'products': [{
         'name': u'Silk Scarf',
