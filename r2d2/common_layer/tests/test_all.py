@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """ tests for basic functionality of common layer - creating & updating objects on signals """
-from datetime import date
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 from freezegun import freeze_time
 from decimal import Decimal
 
@@ -10,7 +8,6 @@ from django.utils import timezone
 import pandas as pd
 
 from r2d2.common_layer.models import CommonTransaction, ExchangeRate, ExchangeRateSource
-from r2d2.common_layer.currency import MoneyConverter
 import r2d2.common_layer.models as clmodels
 import r2d2.common_layer.currency as curr
 from r2d2.common_layer.signals import object_imported

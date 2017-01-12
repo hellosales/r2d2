@@ -39,13 +39,15 @@ class MoneyConverter(object):
         cls.load_exchange_rates()
 
         if force_date:
-            rates = MoneyConverter.__exchange_rates[(MoneyConverter.__exchange_rates.currency == from_curr)
-                                                    & (MoneyConverter.__exchange_rates.base_currency == to_curr)
-                                                    & (MoneyConverter.__exchange_rates.date == date)]
+            rates = MoneyConverter.__exchange_rates[(MoneyConverter.__exchange_rates.currency == from_curr) &
+                                                    (MoneyConverter.__exchange_rates.base_currency == to_curr) &
+                                                    (MoneyConverter.__exchange_rates.date == date)]
         else:
-            rates = MoneyConverter.__exchange_rates[(MoneyConverter.__exchange_rates.currency == from_curr)
-                                                    & (MoneyConverter.__exchange_rates.base_currency == to_curr)
-                                                    & (MoneyConverter.__exchange_rates.date == clutils.nearest(date, MoneyConverter.__exchange_rates.date.unique()))]
+            rates = MoneyConverter.__exchange_rates[(MoneyConverter.__exchange_rates.currency == from_curr) &
+                                                    (MoneyConverter.__exchange_rates.base_currency == to_curr) &
+                                                    (MoneyConverter.__exchange_rates.date ==
+                                                     clutils.nearest(date, MoneyConverter.__exchange_rates.date.unique()
+                                                                     ))]
 
         if rates.shape[0] > 1:
             rate = rates[0]

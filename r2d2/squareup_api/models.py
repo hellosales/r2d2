@@ -114,24 +114,24 @@ class SquareupAccount(AbstractDataProvider):
         """
         inelegant way to handle Square's Money data:
         https://docs.connect.squareup.com/api/connect/v2/#type-money
-        "The amount of money, in the lowest in the smallest denomination of 
-        the currency indicated by currency. For example, when currency_code 
+        "The amount of money, in the lowest in the smallest denomination of
+        the currency indicated by currency. For example, when currency_code
         is USD, amount is in cents."
         """
-        if (imported_squareup_payment.net_sales_money['currency_code']=='USD'):
-            net_sales_divisor=100
+        if (imported_squareup_payment.net_sales_money['currency_code'] == 'USD'):
+            net_sales_divisor = 100
         else:
-            net_sales_divisor=1
+            net_sales_divisor = 1
 
-        if (imported_squareup_payment.tax_money['currency_code']=='USD'):
-            tax_money_divisor=100
+        if (imported_squareup_payment.tax_money['currency_code'] == 'USD'):
+            tax_money_divisor = 100
         else:
-            tax_money_divisor=1
+            tax_money_divisor = 1
 
-        if (imported_squareup_payment.discount_money['currency_code']=='USD'):
-            discount_money_divisor=100
+        if (imported_squareup_payment.discount_money['currency_code'] == 'USD'):
+            discount_money_divisor = 100
         else:
-            discount_money_divisor=1
+            discount_money_divisor = 1
 
         mapped_data = {
             'user_id': self.user_id,
@@ -151,24 +151,24 @@ class SquareupAccount(AbstractDataProvider):
             """
             inelegant way to handle Square's Money data:
             https://docs.connect.squareup.com/api/connect/v2/#type-money
-            "The amount of money, in the lowest in the smallest denomination of 
-            the currency indicated by currency. For example, when currency_code 
+            "The amount of money, in the lowest in the smallest denomination of
+            the currency indicated by currency. For example, when currency_code
             is USD, amount is in cents."
             """
-            if (item['gross_sales_money']['currency_code']=='USD'):
-                gross_sales_divisor=100
+            if (item['gross_sales_money']['currency_code'] == 'USD'):
+                gross_sales_divisor = 100
             else:
-                gross_sales_divisor=1
+                gross_sales_divisor = 1
 
-            if (item['discount_money']['currency_code']=='USD'):
-                discount_divisor=100
+            if (item['discount_money']['currency_code'] == 'USD'):
+                discount_divisor = 100
             else:
-                discount_divisor=1
+                discount_divisor = 1
 
-            if (item['total_money']['currency_code']=='USD'):
-                total_divisor=100
+            if (item['total_money']['currency_code'] == 'USD'):
+                total_divisor = 100
             else:
-                total_divisor=1
+                total_divisor = 1
 
             mapped_product = {
                 'name': item['name'],
@@ -180,10 +180,10 @@ class SquareupAccount(AbstractDataProvider):
                 'total': Decimal(item['total_money']['amount'])/total_divisor
             }
             for tax in item['taxes']:
-                if (tax['applied_money']['currency_code']=='USD'):
-                    applied_divisor=100
+                if (tax['applied_money']['currency_code'] == 'USD'):
+                    applied_divisor = 100
                 else:
-                    applied_divisor=1
+                    applied_divisor = 1
 
                 if (tax['applied_money']):
                     mapped_product['tax'] += Decimal(tax['applied_money']['amount'])/applied_divisor

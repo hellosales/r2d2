@@ -171,7 +171,8 @@ class EtsyAccount(AbstractDataProvider):
             'total_tax': Decimal(receipt.total_tax_cost) + Decimal(receipt.total_vat_cost),
             'total_discount': Decimal(receipt.discount_amt),
             'total_total': Decimal(receipt.adjusted_grandtotal),
-            'currency_code': receipt.currency_code, # NOTE transaction and payment also list currencies but we'll just use this one at launch
+            # NOTE transaction and payment also list currencies but we'll just use this one at launch
+            'currency_code': receipt.currency_code,
             'products': []
         }
 

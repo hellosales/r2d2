@@ -195,8 +195,8 @@ class InsightDispatcher(BaseGenerator):
         cls.__insight_models_df = pd.DataFrame(zipped, columns=columns)
         cls.__initial_insight_models = cls.__insight_models_df[cls.__insight_models_df.is_for_initial_pull]
         cls.__periodic_insight_models = cls.__insight_models_df[~cls.__insight_models_df.periods.isnull()]
-        cls.__update_insight_models = cls.__insight_models_df[cls.__insight_models_df.is_for_update_pull
-                                                              & cls.__insight_models_df.periods.isnull()]
+        cls.__update_insight_models = cls.__insight_models_df[cls.__insight_models_df.is_for_update_pull &
+                                                              cls.__insight_models_df.periods.isnull()]
 
         return cls.__insight_models_df
 
@@ -1907,7 +1907,8 @@ class DataImportedInsight(BaseGenerator):
 
 
 class AverageProductsPerTransactions(BaseGenerator):
-    """ Insights that generates - "Average number of products per transaction increased/decreased from X to Y compared to previous week" """
+    """ Insights that generates -
+    "Average number of products per transaction increased/decreased from X to Y compared to previous week" """
 
     map_f = Code("""
         function() {
@@ -1951,7 +1952,8 @@ class AverageProductsPerTransactions(BaseGenerator):
         insight = Insight(insight_model_id=2)
         if last_24 != prev_week:
             args = ("increased" if last_24 > prev_week else "decreased", prev_week, last_24)
-            insight.text = "Average number of products per transaction in last 24h %s from %0.2f to %0.2f compared to previous week" % args
+            insight.text = "Average number of products per transaction in last 24h %s from %0.2f to %0.2f compared to\
+ previous week" % args
             return (insight, None, None)
         return None
 
