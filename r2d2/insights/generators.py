@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from functools import partial
 from collections import OrderedDict
 from decimal import Decimal
+from django.db import transaction
 import importlib
 import math
 import pandas as pd
@@ -32,24 +33,26 @@ class BaseGenerator(object):
     def handle_data_fetched(cls, **kwargs):
         account = kwargs['account']  # the user account
         success = kwargs['success']  # the status of the fetch
-        fetched_from_all = kwargs['fetched_from_all']  # whether this is the first fetch
+        fetched_from_all = kwargs['fetched_from_all']
 
         if cls.should_be_triggered(account, success, fetched_from_all):
             (insight, channels, products) = cls.trigger(account, success, fetched_from_all) or (None, None, None)
             if insight:
-                insight.user = account.user
-                insight.generator_class = cls.__name__
-                insight.save()
+                # explicit transaction here to allow channels and products to be saved before post_save is called
+                with transaction.atomic():
+                    insight.user = account.user
+                    insight.data_provider_name = account.__class__.__name__
+                    insight.data_provider_id = account.id
+                    insight.generator_class = cls.__name__
+                    insight.save()
 
-                if channels:
-                    for channel in channels:
-                        channel.data_importer_class = account.__class__
-                    # change this to insight.product_set.set(channels) if upgrading to Django 1.10+
-                    insight.channel_set = channels
+                    if channels:
+                        # change this to insight.product_set.set(channels) if upgrading to Django 1.10+
+                        insight.channel_set = channels
 
-                if products:
-                    # change this to insight.product_set.set(products) if upgrading to Django 1.10+
-                    insight.product_set = products
+                    if products:
+                        # change this to insight.product_set.set(products) if upgrading to Django 1.10+
+                        insight.product_set = products
 
 
 class InsightModel(object):
@@ -59,16 +62,6 @@ class InsightModel(object):
     how it was used with a particular Insight
     priority: 1-10, 1 being most important, 10 least important
     """
-    PRIORITY_CHOICES = ((1, 1),
-                        (2, 2),
-                        (3, 3),
-                        (4, 4),
-                        (5, 5),
-                        (6, 6),
-                        (7, 7),
-                        (8, 8),
-                        (9, 9),
-                        (10, 10))
     type_id = None  # the unique ID of the InsightModel
     periods = []  # periods insight should be used for period analysis:  'year', 'month', 'week', or empty list
     is_for_initial_pull = False  # whether Insight should be used for the initial transaction pull
@@ -93,7 +86,7 @@ class InsightDispatcher(BaseGenerator):
     """
     Dispatcher decides which insight to show once a signal is sent:
     1.  If this is an initial insight, choose that
-    2.  If this is a pull that allows for a period (Year, month, week) closing insight, choose that.
+    2.  If this is a pull that allows for a period (year, month, week) closing insight, choose that.
         Note:  If there are no txns for the period go to 3
     3.  Otherwise push an insight for the last pull.  If there are no txns, no insight
     """
@@ -136,7 +129,7 @@ class InsightDispatcher(BaseGenerator):
 
     @classmethod
     def should_be_triggered(cls, account, success, fetched_from_all):
-        return True
+        return success
 
     @classmethod
     def initialize_insight_model_subcollections(cls):
@@ -238,7 +231,7 @@ class InsightDispatcher(BaseGenerator):
 
     @classmethod
     def choose_insight_model(cls, user_id, source, fetched_from_all, period=None,
-                             insight_history=None, exclude_list=None):
+                             insight_history=None, exclude_list=None, is_initial=False):
         """
         Determines which InsightModel to use to generate the next Insight.
         The is the heart of the InsightModel choosing process.
@@ -249,7 +242,7 @@ class InsightDispatcher(BaseGenerator):
             cls.initialize_insight_model_subcollections()
 
         # First subset our insights
-        if fetched_from_all:  # First fetch insights
+        if is_initial:  # First fetch insights
             choices = cls.__initial_insight_models
         elif period is not None:  # period insights
             choices = cls.__periodic_insight_models
@@ -337,18 +330,34 @@ class InsightDispatcher(BaseGenerator):
         the beginning of a new period, and generates an insight based on those
         criteria.
         """
-        from r2d2.insights.models import InsightHistorySummary
+        from r2d2.insights.models import Insight, InsightHistorySummary
         im_params = {}
         rolling_window = True
         period = None
         start_date = None
         end_date = None
 
+        # Select InsightModel
+        # Can also filter on ManyToOne objects like this:
+        # ih = Insight.objects.filter(user_id=1, channel__official_channel_name='Etsy')
+        insight_history = InsightHistorySummary.objects.filter(user_id=account.user_id)
+        insight = None
+        already_tried = []
+
+        # History for this source to know if this is the first Insight
+        count = 0
+        if len(insight_history) > 0:
+            count = Insight.objects.filter(user_id=account.user_id,
+                                           data_provider_id=account.id,
+                                           data_provider_name=account.__class__.__name__).count()
+
+        is_initial = (count == 0)
+
         # Select period and set special params
-        if (fetched_from_all is False):  # Generate the period
+        if not is_initial:  # Generate the period
             (period, start_date, end_date) = isBeginningOfPeriod()
 
-        if (fetched_from_all is True):  # Initial insight, free of any period and source consideration for now
+        if is_initial:  # Initial insight, free of any period and source consideration for now
             period = 'week'
             im_params = {'rolling_window': True,
                          'account': account}
@@ -358,16 +367,18 @@ class InsightDispatcher(BaseGenerator):
             year_end = None
             if period == 'week':
                 week_end = end_date
-                _, month_end = getPreviousMonth()
-                _, year_end = getPreviousYear()
+                month_start, month_end = getPreviousMonth()
+                year_start, year_end = getPreviousYear()
             if period == 'month':
                 month_end = end_date
-                _, year_end = getPreviousYear()
+                year_start, year_end = getPreviousYear()
             if period == 'year':
                 year_end = end_date
             im_params = {'rolling_window': False,
                          'week_end': week_end,
+                         'month_start': month_start,
                          'month_end': month_end,
+                         'year_start': year_start,
                          'year_end': year_end,
                          'start_date': start_date,
                          'end_date': end_date,
@@ -375,13 +386,6 @@ class InsightDispatcher(BaseGenerator):
         else:
             im_params = {'rolling_window': rolling_window,
                          'account': account}
-
-        # Select InsightModel
-        # Can also filter on ManyToOne objects like this:
-        # ih = Insight.objects.filter(user_id=1, channel__official_channel_name='Etsy')
-        insight_history = InsightHistorySummary.objects.filter(user_id=account.user_id)
-        insight = None
-        already_tried = []
 
         all_txns = None
         all_txns_for_source = None
@@ -392,7 +396,8 @@ class InsightDispatcher(BaseGenerator):
                                                      fetched_from_all,
                                                      period,
                                                      insight_history,
-                                                     exclude_list=already_tried)
+                                                     exclude_list=already_tried,
+                                                     is_initial=is_initial)
             if insight_model is None:
                 return None
 
@@ -404,6 +409,7 @@ class InsightDispatcher(BaseGenerator):
                     all_txns = CommonTransaction.objects.filter(user_id=account.user_id)
                     all_txns_df = curr.convert_common_transactions_df(clmodels.common_transactions_to_df(all_txns),
                                                                       'USD', False)
+
                 if all_txns_df is not None:
                     txns = all_txns_df.copy()
                 else:
@@ -411,10 +417,12 @@ class InsightDispatcher(BaseGenerator):
             else:
                 if all_txns_for_source is None:
                     all_txns_for_source = CommonTransaction.objects.filter(user_id=account.user_id,
-                                                                           source=account.official_channel_name)
+                                                                           data_provider_name=account.__class__.__name__,
+                                                                           data_provider_id=account.id)
                     all_txns_for_source_df = curr.convert_common_transactions_df(
                                                                 clmodels.common_transactions_to_df(all_txns_for_source),
                                                                 'USD', False)
+
                 if all_txns_for_source_df is not None:
                     txns = all_txns_for_source_df.copy()
                 else:
@@ -424,13 +432,16 @@ class InsightDispatcher(BaseGenerator):
                                                                   account.official_channel_name,
                                                                   txns, period, **im_params) or (None, None, None)
 
+        if insight is not None:
+            insight.is_initial = is_initial
+
         return (insight, channels, products)
 
 
 class TopChannelInsight(InsightModel):
     """
     Given the passed CommonTransactions returns an insight of the form:
-    "The majority of your sales come from %(source)s, making up %(share)s of your revenue."
+    "Your largest channel is %(source)s, making up %(share)s of your revenue."
 
     If the transactions list is empty return None
     Assumes that currencies are normalized
@@ -446,10 +457,10 @@ class TopChannelInsight(InsightModel):
         self.compares_sources = True
         self.priority = 7
         self.shows_table = False
-        self.output_message = "The majority of your sales come from %(source)s, making up %(share)s of your revenue."
+        self.output_message = "Your largest channel is %(source)s, making up %(share)s of your revenue."
 
     def execute(self, user_id, source, txns, period, **kwargs):
-        from r2d2.insights.models import Insight, Channel
+        from r2d2.insights.models import Insight
 
         if txns is None or txns.shape[0] == 0:
             return None
@@ -459,13 +470,14 @@ class TopChannelInsight(InsightModel):
         share = txnsDF.share.max()
         source = txnsDF.source[txnsDF.share.idxmax()]
 
-        channel = Channel(official_channel_name=source)
+        channels = channels_from_common_transactions_df(txnsDF)
         insight = Insight(insight_model_id=self.type_id,
+                          time_period=format_time_period_string(txns.date.min(), txns.date.max()),
                           text=self.output_message %
                           {"source": source,
                            "share": percentTableFormat(share)})
 
-        return(insight, [channel], None)
+        return(insight, channels, None)
 
 
 class BestRevenueWeekEverInsight(InsightModel):
@@ -492,7 +504,7 @@ class BestRevenueWeekEverInsight(InsightModel):
          more than your second best week (the week ending %(second_best_week)s)."
 
     def execute(self, user_id, source, txns, period, **kwargs):
-        from r2d2.insights.models import Insight, Channel
+        from r2d2.insights.models import Insight
 
         if txns is None or txns.shape[0] == 0:
             return None
@@ -503,7 +515,8 @@ class BestRevenueWeekEverInsight(InsightModel):
                ", %(percent_over)s more than your second best week (the week ending %(second_best_week)s)."]
         week_end = kwargs.get('week_end')
 
-        txnsDF = clmodels.common_transactions_to_df(txns)
+        txnsDF = txns
+        channels = channels_from_common_transactions_df(txns)
 
         grouper = pd.TimeGrouper('1W')
         txnsDF.index = txnsDF.date
@@ -529,15 +542,15 @@ class BestRevenueWeekEverInsight(InsightModel):
             percent_over = 0.0
             output_message = msg[0] + '.'
 
-        channel = Channel(official_channel_name=source)
         insight = Insight(insight_model_id=self.type_id,
+                          time_period=format_time_period_string(kwargs.get('week_start'), week_end),
                           text=output_message %
                           {"source": source,
                            "total_rev": dollarTableFormat(total_rev),
                            "percent_over": percentTableFormat(percent_over),
                            "second_best_week": periodFormatter(second_best_week, 'week')})
 
-        return(insight, [channel], None)
+        return(insight, channels, None)
 
 
 class BestUnitsWeekEverInsight(InsightModel):
@@ -563,7 +576,7 @@ class BestUnitsWeekEverInsight(InsightModel):
          a %(percent_over)s increase over your second best week (the week ending %(second_best_week)s)."
 
     def execute(self, user_id, source, txns, period, **kwargs):
-        from r2d2.insights.models import Insight, Channel
+        from r2d2.insights.models import Insight
 
         if txns is None or txns.shape[0] == 0:
             return None
@@ -575,7 +588,8 @@ class BestUnitsWeekEverInsight(InsightModel):
 
         week_end = kwargs.get('week_end')
 
-        txnsDF = clmodels.common_transactions_to_df(txns)
+        txnsDF = txns
+        channels = channels_from_common_transactions_df(txns)
 
         grouper = pd.TimeGrouper('1W')
         txnsDF.index = txnsDF.date
@@ -600,15 +614,15 @@ class BestUnitsWeekEverInsight(InsightModel):
             percent_over = 0.0
             output_message = msg[0] + '.'
 
-        channel = Channel(official_channel_name=source)
         insight = Insight(insight_model_id=self.type_id,
+                          time_period=format_time_period_string(kwargs.get('week_start'), week_end),
                           text=output_message %
                           {"source": source,
                            "total_units": integerTableFormat(total_units),
                            "percent_over": percentTableFormat(percent_over),
                            "second_best_week": periodFormatter(second_best_week, 'week')})
 
-        return(insight, [channel], None)
+        return(insight, channels, None)
 
 
 class BestTransactionsWeekEverInsight(InsightModel):
@@ -634,7 +648,7 @@ class BestTransactionsWeekEverInsight(InsightModel):
           %(txn_total)s transactions is a %(percent)s increase over the second place week ending %(second_best_week)s'
 
     def execute(self, user_id, source, txns, period, **kwargs):
-        from r2d2.insights.models import Insight, Channel
+        from r2d2.insights.models import Insight
 
         if txns is None or txns.shape[0] == 0:
             return None
@@ -647,7 +661,8 @@ class BestTransactionsWeekEverInsight(InsightModel):
 
         week_end = kwargs.get('week_end')
 
-        txnsDF = clmodels.common_transactions_to_df(txns)
+        txnsDF = txns
+        channels = channels_from_common_transactions_df(txns)
 
         grouper = pd.TimeGrouper('1W')
         txnsDF.index = txnsDF.date
@@ -672,15 +687,15 @@ class BestTransactionsWeekEverInsight(InsightModel):
             percent_over = 0.0
             output_message = msg[0] + '.'
 
-        channel = Channel(official_channel_name=source)
         insight = Insight(insight_model_id=self.type_id,
+                          time_period=format_time_period_string(kwargs.get('week_start'), week_end),
                           text=output_message %
                           {"source": source,
                            "total_txns": integerTableFormat(total_txns),
                            "percent_over": percentTableFormat(percent_over),
                            "second_best_week": periodFormatter(second_best_week, 'week')})
 
-        return(insight, [channel], None)
+        return(insight, channels, None)
 
 
 class PeriodProductComparisonInsight(InsightModel):
@@ -728,15 +743,14 @@ class PeriodProductComparisonInsight(InsightModel):
         month_end = kwargs.get('month_end')
         year_end = kwargs.get('year_end')
 
-        txnsDF = clmodels.common_transactions_to_df(txns)
-
-        if txnsDF is None:
-            return None
+        txnsDF = txns
 
         if (rolling_window is False):
             byWeek = salesByPeriod(txnsDF, 'week', True)
+            time_period = format_time_period_string(kwargs.get('week_start'), week_end)
         elif (rolling_window is True):
             byWeek = salesByPeriod(txnsDF, '7 days', True)
+            time_period = format_time_period_string(txnsDF.date.max() - timedelta(days=7), txnsDF.date.max())
 
         if (rolling_window is False and week_end not in byWeek.index):
             return None
@@ -749,9 +763,11 @@ class PeriodProductComparisonInsight(InsightModel):
             week_quantity = byWeek.loc[(week_end, product, sku)].product_quantity
             month_quantity = byMonth.loc[(max(byMonth.index.get_level_values(0)), product, sku)].product_quantity
             year_quantity = byYear.loc[(max(byYear.index.get_level_values(0)), product, sku)].product_quantity
+            time_period = format_time_period_string(txnsDF.date.max() - timedelta(days=365), txnsDF.date.max())
         else:
             byMonth = salesByPeriod(txnsDF, 'month', True)
             byYear = salesByPeriod(txnsDF, 'year', True)
+            time_period = format_time_period_string(kwargs.get('year_start'), year_end)
 
             # choose which product
             for (oneProduct, oneSku) in byWeek.loc[week_end, ].index:
@@ -768,6 +784,7 @@ class PeriodProductComparisonInsight(InsightModel):
 
         product = Product(name=product, sku=sku)
         insight = Insight(insight_model_id=self.type_id,
+                          time_period=time_period,
                           text=self.output_message %
                           {"week_quantity": integerTableFormat(week_quantity),
                            "month_quantity": integerTableFormat(month_quantity),
@@ -801,30 +818,42 @@ class TopPeriodInsight(InsightModel):
         self.output_message = "Your biggest %(period)s on %(source)s was %(periodStr)s.  You sold over %(maxTotal)s"
 
     def execute(self, user_id, source, txns, period, **kwargs):
-        from r2d2.insights.models import Insight, Channel
+        from r2d2.insights.models import Insight
         if txns is None or txns.shape[0] == 0:
             return None
 
+        channels = channels_from_common_transactions_df(txns)
         txnsDF = salesByPeriod(txns, period)
 
         maxTotal = txnsDF.product_total_converted.max()
         topPeriod = txnsDF.product_total_converted.idxmax()
 
+        start_date = kwargs.get('start_date')
+        end_date = kwargs.get('end_date')
+
+        if start_date is None:
+            start_date = txns.date.min()
+
+        if end_date is None:
+            end_date = txns.date.max()
+
         if (period == 'week'):
             periodStr = 'the week ending %(topPeriod)s' % {"topPeriod": periodFormatter(topPeriod, 'day')}
         elif (period == 'quarter'):
             periodStr = 'the quarter ending %(topPeriod)s' % {"topPeriod": periodFormatter(topPeriod, 'day')}
+            time_period = format_time_period_string(kwargs.get('quarter_start'), kwargs.get('quarter_end'))
         else:
             periodStr = periodFormatter(topPeriod, period)
+            time_period = format_time_period_string(kwargs.get('year_start'), kwargs.get('year_end'))
 
-        channel = Channel(official_channel_name=source)
         insight = Insight(insight_model_id=self.type_id,
+                          time_period=format_time_period_string(start_date, end_date),
                           text=self.output_message %
                           {"source": source,
                            "period": period,
                            "periodStr": periodStr,
                            "maxTotal": dollarTableFormat(maxTotal)})
-        return(insight, [channel], None)
+        return(insight, channels, None)
 
 
 class SalesByChannelInsight(InsightModel):
@@ -855,6 +884,7 @@ class SalesByChannelInsight(InsightModel):
             return None
 
         txnsDF = salesByChannel(txns)
+        channels = channels_from_common_transactions_df(txnsDF)
 
         txnsDF = normalizeDFColumns(txnsDF)
         txnsDF = txnsDF[['Channel', 'Item Quantity', 'Item Total', 'Share']]
@@ -863,10 +893,11 @@ class SalesByChannelInsight(InsightModel):
         tableStr = dfToHTML(txnsDF)
 
         insight = Insight(insight_model_id=self.type_id,
+                          time_period=format_time_period_string(txns.date.min(), txns.date.max()),
                           text=self.output_message %
                           {'period': period,
                            'table': tableStr})
-        return(insight, None, None)
+        return(insight, channels, None)
 
 
 class DiscountPercentageInsight(InsightModel):
@@ -891,15 +922,12 @@ class DiscountPercentageInsight(InsightModel):
         self.output_message = '%(percentage)s of your sales on %(source)s were discounted yesterday'
 
     def execute(self, user_id, source, txns, period, **kwargs):
-        from r2d2.insights.models import Insight, Channel
+        from r2d2.insights.models import Insight
 
         if txns is None or txns.shape[0] == 0:
             return None
 
-        if not isinstance(txns, pd.DataFrame):
-            txnsDF = clmodels.common_transactions_to_df(txns)
-        else:
-            txnsDF = txns
+        txnsDF = txns
 
         account = kwargs['account']
         end_date = account.last_successfull_call
@@ -909,6 +937,8 @@ class DiscountPercentageInsight(InsightModel):
 
         if txnsDF is None:
             return None
+
+        channels = channels_from_common_transactions_df(txnsDF)
 
         # Note we can't just sum the total_total_converted column by group because it's denormalized
         txnsDF = txnsDF.groupby(['transaction_id'])
@@ -924,12 +954,12 @@ class DiscountPercentageInsight(InsightModel):
         else:
             message = self.output_message
 
-        channel = Channel(official_channel_name=source)
         insight = Insight(insight_model_id=self.type_id,
+                          time_period=format_time_period_string(end_date),
                           text=message %
                           {'source': source,
                            'percentage': percentTableFormat(discount_share)})
-        return(insight, [channel], None)
+        return(insight, channels, None)
 
 
 class DailyAverageProductsPerTransaction(InsightModel):
@@ -954,12 +984,12 @@ class DailyAverageProductsPerTransaction(InsightModel):
         self.output_message = 'You averaged %(average)s products per transaction yesterday on %(source)s'
 
     def execute(self, user_id, source, txns, period, **kwargs):
-        from r2d2.insights.models import Insight, Channel
+        from r2d2.insights.models import Insight
 
         if txns is None or txns.shape[0] == 0:
             return None
 
-        txnsDF = clmodels.common_transactions_to_df(txns)
+        txnsDF = txns
 
         account = kwargs['account']
         end_date = account.last_successfull_call
@@ -970,6 +1000,7 @@ class DailyAverageProductsPerTransaction(InsightModel):
         if txns is None or txns.shape[0] == 0:
             return None
 
+        channels = channels_from_common_transactions_df(txnsDF)
         txnsDF = txnsDF.groupby(['transaction_id'])
         txnsDF = txnsDF.agg({'product_name': 'count'})
         average = txnsDF.product_name.mean()
@@ -977,12 +1008,12 @@ class DailyAverageProductsPerTransaction(InsightModel):
         if math.isnan(average):
             return None
 
-        channel = Channel(official_channel_name=source)
         insight = Insight(insight_model_id=self.type_id,
+                          time_period=format_time_period_string(end_date),
                           text=self.output_message %
                           {'source': source,
                            'average': decimalNumberFormat(average)})
-        return(insight, [channel], None)
+        return(insight, channels, None)
 
 
 class WeeklyAverageProductsPerTransaction(InsightModel):
@@ -1007,7 +1038,7 @@ class WeeklyAverageProductsPerTransaction(InsightModel):
         self.output_message = 'Last week you averaged %(average)s products per transaction on %(source)s'
 
     def execute(self, user_id, source, txns, period, **kwargs):
-        from r2d2.insights.models import Insight, Channel
+        from r2d2.insights.models import Insight
 
         if txns is None or txns.shape[0] == 0:
             return None
@@ -1020,6 +1051,8 @@ class WeeklyAverageProductsPerTransaction(InsightModel):
         if txnsDF is None or txnsDF.shape[0] == 0:
             return None
 
+        channels = channels_from_common_transactions_df(txnsDF)
+
         txnsDF = txnsDF.groupby(['transaction_id'])
         txnsDF = txnsDF.agg({'product_name': 'count'})
         average = txnsDF.product_name.mean()
@@ -1027,12 +1060,12 @@ class WeeklyAverageProductsPerTransaction(InsightModel):
         if math.isnan(average):
             return None
 
-        channel = Channel(official_channel_name=source)
         insight = Insight(insight_model_id=self.type_id,
+                          time_period=format_time_period_string(start_date, end_date),
                           text=self.output_message %
                           {'source': source,
                            'average': decimalNumberFormat(average)})
-        return(insight, [channel], None)
+        return(insight, channels, None)
 
 
 class AverageTransactionsPerPeriodInsight(InsightModel):
@@ -1066,14 +1099,14 @@ class AverageTransactionsPerPeriodInsight(InsightModel):
         This is %(percent_diff)s %(more_or_less)s than the previous month'
 
     def execute(self, user_id, source, txns, period, **kwargs):
-        from r2d2.insights.models import Insight, Channel
+        from r2d2.insights.models import Insight
 
         if txns is None or txns.shape[0] == 0:
             return None
         elif period not in self.periods:
             return None
 
-        txnsDF = clmodels.common_transactions_to_df(txns)
+        txnsDF = txns
 
         end_date = kwargs['end_date']
         start_date = kwargs['start_date']
@@ -1082,6 +1115,8 @@ class AverageTransactionsPerPeriodInsight(InsightModel):
 
         if this_period_txns is None or this_period_txns.shape[0] == 0:
             return None
+
+        channels = channels_from_common_transactions_df(txnsDF)
 
         grouper = pd.TimeGrouper('1W')
         this_period_txns.index = this_period_txns.date
@@ -1132,14 +1167,14 @@ class AverageTransactionsPerPeriodInsight(InsightModel):
                         msg[1] = '  This is the same as the previous year'
 
         output_message = msg[0] + msg[1]
-        channel = Channel(official_channel_name=source)
         insight = Insight(insight_model_id=self.type_id,
+                          time_period=format_time_period_string(start_date, end_date),
                           text=output_message %
                           {'source': source,
                            'current_average': decimalNumberFormat(current_average),
                            'percent_diff': percentTableFormat(percent_diff),
                            'more_or_less': more_or_less})
-        return(insight, [channel], None)
+        return(insight, channels, None)
 
 
 class TopProductsInsight(InsightModel):
@@ -1164,7 +1199,7 @@ class TopProductsInsight(InsightModel):
         self.output_message = 'Here\'s last %(period)s\'s sales breakdown<br><br> %(table)s '
 
     def execute(self, user_id, source, txns, period, **kwargs):
-        from r2d2.insights.models import Insight, Channel
+        from r2d2.insights.models import Insight
 
         if txns is None or txns.shape[0] == 0:
             return None
@@ -1173,6 +1208,8 @@ class TopProductsInsight(InsightModel):
         end_date = kwargs['end_date']
 
         txnsDF = topProducts(txns, start_date, end_date)
+
+        channels = channels_from_common_transactions_df(txnsDF)
 
         if txnsDF is None or txnsDF.shape[0] == 0:
             return None
@@ -1183,12 +1220,12 @@ class TopProductsInsight(InsightModel):
         txnsDF.index.name = None
         tableStr = dfToHTML(txnsDF, True)
 
-        channel = Channel(official_channel_name=source)
         insight = Insight(insight_model_id=self.type_id,
+                          time_period=format_time_period_string(start_date, end_date),
                           text=self.output_message %
                           {"period": period,
                            "table": tableStr})
-        return(insight, [channel], None)
+        return(insight, channels, None)
 
 
 class DailyProductSalesInsight(InsightModel):
@@ -1213,12 +1250,12 @@ class DailyProductSalesInsight(InsightModel):
         self.output_message = 'Here\'s yesterday\'s sales breakdown for %(source)s<br><br> %(table)s '
 
     def execute(self, user_id, source, txns, period, **kwargs):
-        from r2d2.insights.models import Insight, Channel
+        from r2d2.insights.models import Insight
 
         if txns is None or txns.shape[0] == 0:
             return None
 
-        txnsDF = clmodels.common_transactions_to_df(txns)
+        txnsDF = txns
 
         account = kwargs['account']
         end_date = account.last_successfull_call
@@ -1229,6 +1266,8 @@ class DailyProductSalesInsight(InsightModel):
         if txnsDF is None or txnsDF.shape[0] == 0:
             return None
 
+        channels = channels_from_common_transactions_df(txnsDF)
+
         txnsDF = txnsDF.groupby(['product_name'])
         txnsDF = txnsDF.agg({'product_quantity': 'sum', 'product_total_converted': 'sum'})
 
@@ -1237,19 +1276,19 @@ class DailyProductSalesInsight(InsightModel):
         txnsDF.index.name = None
         tableStr = dfToHTML(txnsDF, True)
 
-        channel = Channel(official_channel_name=source)
         insight = Insight(insight_model_id=self.type_id,
+                          time_period=format_time_period_string(end_date),
                           text=self.output_message %
                           {"source": source,
                            "table": tableStr})
-        return(insight, [channel], None)
+        return(insight, channels, None)
 
 
 class BestSellingProductsInsight(InsightModel):
     """
     Returns an insight with a list of the top 1-3 products (by quantity)
     of the form:
-    'Your best selling products are
+    'Your best selling products:
     * product 1
     * product 2
     * product 3'
@@ -1267,13 +1306,14 @@ class BestSellingProductsInsight(InsightModel):
         self.compares_sources = False
         self.priority = 6
         self.shows_table = False
-        self.output_message = 'Your best selling products on %(source)s are<br>%(product_table)s'
+        self.output_message = 'Your best selling products on %(source)s:<br>%(product_table)s'
 
     def execute(self, user_id, source, txns, period, **kwargs):
-        from r2d2.insights.models import Insight, Channel
+        from r2d2.insights.models import Insight
         if txns is None or txns.shape[0] == 0:
             return None
 
+        channels = channels_from_common_transactions_df(txns)
         txnsDF = topProducts(txns, None, None)
 
         if txnsDF is None or txnsDF.shape[0] == 0:
@@ -1283,12 +1323,12 @@ class BestSellingProductsInsight(InsightModel):
         productsList = txnsDF.product_name[0:3].tolist()
         product_table = listToHTML(productsList)
 
-        channel = Channel(official_channel_name=source)
         insight = Insight(insight_model_id=self.type_id,
+                          time_period=format_time_period_string(txns.date.min(), txns.date.max()),
                           text=self.output_message %
                           {"source": source,
                            "product_table": product_table})
-        return(insight, [channel], None)
+        return(insight, channels, None)
 
 
 class ProductCountInsight(InsightModel):
@@ -1313,31 +1353,29 @@ class ProductCountInsight(InsightModel):
         self.output_message = 'You\'ve sold %(products)s unique products over the last %(timeframe)s'
 
     def execute(self, user_id, source, txns, period, **kwargs):
-        from r2d2.insights.models import Insight, Channel
+        from r2d2.insights.models import Insight
         if txns is None or txns.shape[0] == 0:
             return None
 
-        txnsDF = clmodels.common_transactions_to_df(txns)
-
-        if txnsDF is None:
-            return None
+        channels = channels_from_common_transactions_df(txns)
+        txnsDF = txns
 
         products = txnsDF.product_name.unique().size
         timeframe = txnsDF.date.min()
 
-        channel = Channel(official_channel_name=source)
         insight = Insight(insight_model_id=self.type_id,
+                          time_period=format_time_period_string(timeframe, kwargs.get('end_date')),
                           text=self.output_message %
                           {"products": products,
                            "timeframe": fancyDateTimeDeltaFormat(timeframe, levels=2)})
-        return(insight, [channel], None)
+        return(insight, channels, None)
 
 
 class OldestTransactionInsight(InsightModel):
     """
     Returns an insight telling when the oldest transaction on a channel was
 
-    'Your first transaction on %(source)s was way back in %(date)s:<br>%(txns_detail)s'
+    'Your first transaction on %(source)s was way back on %(date)s:<br>%(txns_detail)s'
 
     If the transactions list is empty return None
     """
@@ -1352,21 +1390,24 @@ class OldestTransactionInsight(InsightModel):
         self.compares_sources = False
         self.priority = 10
         self.shows_table = True
-        self.output_message = 'Your first transaction on %(source)s was way back in %(date)s:<br><br>%(txn_detail)s'
+        self.output_message = 'Your first transaction on %(source)s was way back on %(date)s:<br><br>%(txn_detail)s'
 
     def execute(self, user_id, source, txns, period, **kwargs):
-        from r2d2.insights.models import Insight, Channel
+        from r2d2.insights.models import Insight
         if txns is None or txns.shape[0] == 0:
             return None
 
-        txnsDF = clmodels.common_transactions_to_df(txns)
+        txnsDF = txns
 
-        if txnsDF is None:
-            return None
+        end_date = kwargs.get('end_date')
+
+        if end_date is None:
+            end_date = txnsDF.date.max()
 
         date = txnsDF.date.min()
 
         txnsDF = txnsDF[txnsDF.date == date]
+        channels = channels_from_common_transactions_df(txnsDF)
         txnsDF = topProducts(txnsDF)
         txnsDF = normalizeDFColumns(txnsDF)
         txnsDF = txnsDF[['Name', 'Item Quantity', 'Item Total']]
@@ -1374,13 +1415,51 @@ class OldestTransactionInsight(InsightModel):
         txnsDF.index.name = None
         tableStr = dfToHTML(txnsDF)
 
-        channel = Channel(official_channel_name=source)
         insight = Insight(insight_model_id=self.type_id,
+                          time_period=format_time_period_string(end_date),
                           text=self.output_message %
                           {"source": source,
                            "date": periodFormatter(date, "day"),
                            "txn_detail": tableStr})
-        return(insight, [channel], None)
+        return(insight, channels, None)
+
+
+class DaysSinceLastTransactionInsight(InsightModel):
+    """
+    Returns an insight telling when the last transaction on a channel was
+
+    'Your last sale on %(source)s was %(time_period)s ago'
+
+    If the transactions list is empty return None
+    """
+    def __init__(self, *args, **kwargs):
+        super(DaysSinceLastTransactionInsight, self).__init__(*args, **kwargs)
+        self.periods = None
+        self.is_for_initial_pull = False
+        self.is_for_update_pull = True
+        self.is_limited = False
+        self.is_source_limited = True
+        self.is_product_limited = False
+        self.compares_sources = False
+        self.priority = 10
+        self.shows_table = False
+        self.output_message = 'Your last sale on %(source)s was %(time_period)s ago'
+
+    def execute(self, user_id, source, txns, period, **kwargs):
+        from r2d2.insights.models import Insight
+        if txns is None or txns.shape[0] == 0:
+            return None
+
+        end_date = datetime.now()
+        date = txns.date.max()
+        channels = channels_from_common_transactions_df(txns)
+
+        insight = Insight(insight_model_id=self.type_id,
+                          time_period=format_time_period_string(end_date),
+                          text=self.output_message %
+                          {"source": source,
+                           "time_period": fancyDateTimeDeltaFormat(date)})
+        return(insight, channels, None)
 
 
 class ProductMultiplesInsight(InsightModel):
@@ -1407,14 +1486,21 @@ class ProductMultiplesInsight(InsightModel):
         <br><br>%(products)s'
 
     def execute(self, user_id, source, txns, period, **kwargs):
-        from r2d2.insights.models import Insight, Channel
+        from r2d2.insights.models import Insight
         if txns is None or txns.shape[0] == 0:
             return None
 
-        txnsDF = clmodels.common_transactions_to_df(txns)
+        txnsDF = txns
+        channels = channels_from_common_transactions_df(txnsDF)
 
-        if txnsDF is None:
-            return None
+        start_date = kwargs.get('start_date')
+        end_date = kwargs.get('end_date')
+
+        if start_date is None:
+            start_date = txnsDF.date.min()
+
+        if end_date is None:
+            end_date = txnsDF.date.max()
 
         txnsDF = txnsDF[['transaction_id', 'product_name', 'product_quantity']]  # take only columns we need
         txnsDF.product_quantity = txnsDF.product_quantity.astype(int)  # convert Decimal to int type
@@ -1435,12 +1521,12 @@ class ProductMultiplesInsight(InsightModel):
         txnsDF.index.name = None
         tableStr = dfToHTML(txnsDF)
 
-        channel = Channel(official_channel_name=source)
         insight = Insight(insight_model_id=self.type_id,
+                          time_period=format_time_period_string(start_date, end_date),
                           text=self.output_message %
                           {"source": source,
                            "products": tableStr})
-        return(insight, [channel], None)
+        return(insight, channels, None)
 
 
 def salesByChannel(txnsDF):
@@ -1451,7 +1537,7 @@ def salesByChannel(txnsDF):
     if txnsDF is None or txnsDF.shape[0] == 0:
         return None
 
-    txnsDF = txnsDF.groupby(['source'], as_index=False)
+    txnsDF = txnsDF.groupby(['source', 'data_provider_name', 'data_provider_id'], as_index=False)
     txnsDF = txnsDF.agg({'product_quantity': 'sum', 'product_total_converted': 'sum'})
     total = txnsDF.product_total_converted.sum()
 
@@ -1759,6 +1845,25 @@ def getPreviousPeriod(fromDate, numDays):
     return (firstDay, lastDay)
 
 
+def format_time_period_string(from_date, to_date=None):
+    '''
+    Formats the passed from_date and to_date into a string indicating time period:
+    "from_date to to_date".  If to_date is None returns the same output as periodFormatter
+    '''
+    if from_date is None:
+        return ''
+    elif to_date is not None and from_date.date() == to_date.date():
+        # This prevents periods like "12/8/16 to 12/8/16"
+        to_date = None
+
+    period_str = periodFormatter(from_date)
+
+    if to_date is not None:
+        period_str += ' to ' + periodFormatter(to_date)
+
+    return period_str
+
+
 def periodFormatter(date, period="day"):
     """
     Takes a datetime and a period and formats, returning a date formatted for insight display.
@@ -1875,6 +1980,28 @@ def mode(df, key_cols, value_col, count_col):
             .drop_duplicates(subset=key_cols))
 
 
+def channels_from_common_transactions_df(df):
+    """
+    Takes a DataFrame with columns data_provider_name and data_provider_id
+    and returns a list of corresponding Channels.
+    """
+    from r2d2.insights.models import Channel
+    if df is None or df.shape[0] == 0:
+        return []
+
+    if 'data_provider_name' not in df or 'data_provider_id' not in df.columns:
+        raise ValueError('DataFrame must have data_provider_name and data_provider_id columns')
+
+    parseDF = df[['data_provider_name', 'data_provider_id']]
+    parseDF = parseDF.drop_duplicates()
+
+    channels = []
+    for index, row in parseDF.iterrows():
+        channels.append(Channel(data_provider_name=row['data_provider_name'],
+                                data_provider_id=row['data_provider_id']))
+
+    return channels
+
 """
 OLD UNUSED INSIGHTS BELOW HERE.  Only used for testing
 """
@@ -1903,6 +2030,8 @@ class DataImportedInsight(BaseGenerator):
             insight.text = "Transactions data was imported"
         else:
             insight.text = "Transactions data was updated"
+
+        insight.is_initial = False
         return (insight, None, None)
 
 
@@ -1954,6 +2083,7 @@ class AverageProductsPerTransactions(BaseGenerator):
             args = ("increased" if last_24 > prev_week else "decreased", prev_week, last_24)
             insight.text = "Average number of products per transaction in last 24h %s from %0.2f to %0.2f compared to\
  previous week" % args
+            insight.is_initial = False
             return (insight, None, None)
         return None
 
@@ -1980,6 +2110,7 @@ class AverageTransactionsPerWeek(BaseGenerator):
         if last_24 != prev_week:
             args = ("increased" if last_24 > prev_week else "decreased", prev_week, last_24)
             insight.text = "Number of transactions in last 24h %s from %0.2f to %d compared to previous week" % args
+            insight.is_initial = False
             return (insight, None, None)
         return None
 
@@ -2003,3 +2134,4 @@ InsightDispatcher.register(BestRevenueWeekEverInsight, 14)
 InsightDispatcher.register(BestUnitsWeekEverInsight, 15)
 InsightDispatcher.register(BestTransactionsWeekEverInsight, 16)
 InsightDispatcher.register(ProductMultiplesInsight, 17)
+InsightDispatcher.register(DaysSinceLastTransactionInsight, 18)
