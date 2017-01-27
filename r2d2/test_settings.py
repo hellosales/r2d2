@@ -36,7 +36,7 @@ def update_settings_for_tests(settings):
         settings['DATABASES'] = {
             'default': {
                 'NAME': ':memory:',
-                'ENGINE': 'django.db.backends.sqlite3',
+                'ENGINE': 'transaction_hooks.backends.sqlite3',
             },
         }
 
