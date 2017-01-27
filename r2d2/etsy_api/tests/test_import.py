@@ -22,16 +22,16 @@ ETSY_MAPPED_DATA = {
         'sku': '259848284',
         'quantity': Decimal("3"),
         'price': Decimal('0.20'),
-        'tax': None,
-        'discount': None,
+        'tax': Decimal('0'),
+        'discount': Decimal('0'),
         'total': Decimal('0.20')
     }, {
         'name': 'Silk Scarf Clasp',
         'sku': '259743529',
         'quantity': Decimal("1"),
         'price': Decimal('0.30'),
-        'tax': None,
-        'discount': None,
+        'tax': Decimal('0'),
+        'discount': Decimal('0'),
         'total': Decimal('0.30')
     }],
     'total_price': Decimal('0.9'),

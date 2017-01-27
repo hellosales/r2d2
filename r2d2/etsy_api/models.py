@@ -182,8 +182,8 @@ class EtsyAccount(AbstractDataProvider):
                 'sku': str(item.listing_id),
                 'quantity': Decimal(item.quantity),
                 'price': Decimal(item.price),
-                'tax': None,
-                'discount': None,
+                'tax': Decimal(0),
+                'discount': Decimal(0),
                 'total': Decimal(item.price)
             }
             mapped_data['products'].append(mapped_product)
