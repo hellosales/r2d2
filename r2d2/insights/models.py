@@ -39,8 +39,16 @@ class Insight(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     text = models.TextField()
     generator_class = models.CharField(max_length=100, editable=False)
+    is_initial = models.BooleanField()  # whether this was the initial insight for this user
+    time_period = models.CharField(max_length=100, editable=False)
     insight_model_id = models.IntegerField()
     was_helpful = models.NullBooleanField()  # whether the user voted helpful or unhelpful
+
+    # The DataProvider that triggered the Insight to fire
+    # These two fields allow us to do a DB lookup for the AbstractDataProvider subclass.
+    # TODO: modify this if this is managed more flexibly through the DB later
+    data_provider_name = models.CharField(max_length=200, editable=False)
+    data_provider_id = models.IntegerField()
 
 
 class Product(models.Model):
@@ -54,13 +62,21 @@ class Product(models.Model):
 
 class Channel(models.Model):
     """
-    A DataProvider encapsulation that allows us to trap source info.
-    TODO:  remove this if the different data providers are managed more flexibly
+    The channel referenced in the Insight, which may be different than the channel
+    that caused the Insight to fire.
+    A DataProvider encapsulation that allows us to trap source info for Insights.
+    This is meant to allow us to know which Channels were discussed in an Insight.
+    Name is name of the Channel in the Insight, NOT DataProvider of pulled from
+    to generate the Insight
+    TODO:  modify this if the different data providers are managed more flexibly
         as data via the DB instead of as separate apps in Django
     """
     insight = models.ForeignKey(Insight)
-    official_channel_name = models.CharField(max_length=500)
-    data_importer_class = models.CharField(max_length=500)
+
+    # These two fields allow us to do a DB lookup for the AbstractDataProvider subclass.
+    # TODO: modify this if this is managed more flexibly through the DB later
+    data_provider_name = models.CharField(max_length=200, editable=False)
+    data_provider_id = models.IntegerField()
 
 
 class InsightHistorySummary(models.Model):

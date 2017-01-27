@@ -34,6 +34,11 @@ class CommonTransaction(document.Document):
     currency_code = fields.StringField()
     source = fields.StringField()
 
+    # These two fields allow us to do a DB lookup for the AbstractDataProvider subclass.
+    # TODO: modify this if this is managed more flexibly through the DB later
+    data_provider_name = fields.StringField()
+    data_provider_id = fields.IntField()
+
 
 class ExchangeRateSource(models.Model):
     """
@@ -81,6 +86,8 @@ def unpack(txn):
     total_totals = []
     currency_codes = []
     sources = []
+    data_provider_name = []
+    data_provider_id = []
     product_name = []
     sku = []
     product_quantity = []
@@ -99,6 +106,8 @@ def unpack(txn):
         total_totals.append(txn.total_total)
         currency_codes.append(txn.currency_code)
         sources.append(txn.source)
+        data_provider_name.append(txn.data_provider_name)
+        data_provider_id.append(txn.data_provider_id)
         product_name.append(product.name)
         sku.append(product.sku)
         product_quantity.append(product.quantity)
@@ -116,6 +125,8 @@ def unpack(txn):
                  total_totals,
                  currency_codes,
                  sources,
+                 data_provider_name,
+                 data_provider_id,
                  product_name,
                  sku,
                  product_quantity,
@@ -140,6 +151,8 @@ def get_unpack_columns():
             'total_total',
             'currency_code',
             'source',
+            'data_provider_name',
+            'data_provider_id',
             'product_name',
             'sku',
             'product_quantity',
@@ -190,7 +203,10 @@ def object_imported_handler(**kwargs):
     mapped_data = kwargs['mapped_data']
     transaction_id = map_id(importer_account, mapped_data.pop('transaction_id'))
     CommonTransaction.objects.filter(transaction_id=transaction_id).delete()
-    CommonTransaction.objects.create(transaction_id=transaction_id, source=importer_account.official_channel_name,
+    CommonTransaction.objects.create(transaction_id=transaction_id,
+                                     source=importer_account.official_channel_name,
+                                     data_provider_name=importer_account.__class__.__name__,
+                                     data_provider_id=importer_account.id,
                                      **mapped_data)
 
 object_imported.connect(object_imported_handler)

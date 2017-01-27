@@ -174,3 +174,22 @@ class AbstractErrorLog(models.Model):
         if not self.error_description:
             self.error_description = self.map_error(self.error)
         return super(AbstractErrorLog, self).save(*args, **kwargs)
+
+
+def reconstitute_data_provider(name, pk):
+    """
+    Given a DataProvider name and pk will attempt to pull the record from the db
+    """
+    from r2d2.data_importer.api import DataImporter
+
+    if not name or not pk:
+        return None
+
+    model = DataImporter.get_model_by_name(name)
+
+    if model is None:
+        return None
+
+    di = model.objects.get(pk=pk)
+
+    return di

@@ -22,7 +22,7 @@ import r2d2.common_layer.models as clmodels
 class InsightsAPITestCase(APIBaseTestCase):
     """ tests for Insights generators """
 
-    def _add_transaction(self, user, number_of_products, date):
+    def _add_transaction(self, user, number_of_products, date, account):
         self._transaction_id = getattr(self, '_transaction_id', 0) + 1
 
         products = []
@@ -46,18 +46,27 @@ class InsightsAPITestCase(APIBaseTestCase):
             total_discount=Decimal(0),
             total_total=Decimal(number_of_products * 1.0),
             source='Shopify',
-            currency_code='EUR'
+            currency_code='EUR',
+            data_provider_name=account.__class__.__name__,
+            data_provider_id=account.id
         )
 
     def create_insight_history(self, user, date, registered):
         plus_hour = timedelta(minutes=60)
+        ct_account = ShopifyStore.objects.create(user=user,
+                                                 name='name',
+                                                 access_token='fake token',
+                                                 authorization_date=timezone.now())
 
         for im in registered:
             Insight.objects.create(user=user,
                                    created=date,
                                    text=im.__class__.__name__ + ' test',
                                    generator_class=InsightDispatcher.__class__.__name__,
-                                   insight_model_id=im.type_id)
+                                   insight_model_id=im.type_id,
+                                   is_initial=False,
+                                   data_provider_name=ct_account.__class__.__name__,
+                                   data_provider_id=ct_account.id)
             date = date + plus_hour
 
     @freeze_time('2016-04-29')
@@ -71,10 +80,10 @@ class InsightsAPITestCase(APIBaseTestCase):
         # create some fake transactions:
         # - 3 for last week with avg 2 products per transaction (1, 2, 3)
         for i in range(1, 4):
-            self._add_transaction(user, i, week_ago)
+            self._add_transaction(user, i, week_ago, self.account)
         # - 2 for today with avg 1.5 products per transaction (1, 2)
         for i in range(1, 3):
-            self._add_transaction(user, i, hour_ago)
+            self._add_transaction(user, i, hour_ago, self.account)
 
     def tearDown(self):
         CommonTransaction.objects.all().delete()

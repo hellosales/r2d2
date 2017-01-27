@@ -17,7 +17,7 @@ from freezegun import freeze_time
 
 class InsightsAPITestCase(APIBaseTestCase):
     """ tests for Insights API """
-    def _add_transaction(self, user,):
+    def _add_transaction(self, user, account):
         self._transaction_id = getattr(self, '_transaction_id', 0) + 1
 
         products = [{
@@ -39,25 +39,33 @@ class InsightsAPITestCase(APIBaseTestCase):
             total_discount=Decimal(0),
             total_total=Decimal(1.0),
             source='Shopify',
-            currency_code='USD'
+            currency_code='USD',
+            data_provider_name=account.__class__.__name__,
+            data_provider_id=account.id
         )
 
     def setUp(self):
         user = self._create_user()
         self.account = EtsyAccount.objects.create(user=self.user, name='name', access_token='fake token',
                                                   authorization_date=timezone.now())
-        self.account = ShopifyStore.objects.create(user=self.user, name='name', access_token='fake token',
+        ct_account = ShopifyStore.objects.create(user=self.user, name='name', access_token='fake token',
                                                    authorization_date=timezone.now())
+        self.account = ct_account
         self.account = SquareupAccount.objects.create(user=self.user, name='name', access_token='fake token',
                                                       authorization_date=timezone.now())
 
         for i in range(0, 30):
             with freeze_time('2015-%d-%d' % (i % 12 + 1, i / 2 + 1)):
-                Insight.objects.create(user=user, text="insight %d" % i,
-                                       generator_class="FakeGenerator", insight_model_id=1)
+                Insight.objects.create(user=user,
+                                       text="insight %d" % i,
+                                       generator_class="FakeGenerator",
+                                       insight_model_id=1,
+                                       is_initial=False,
+                                       data_provider_name=ct_account.__class__.__name__,
+                                       data_provider_id=ct_account.id)
 
         for i in range(0, 5):
-            self._add_transaction(user)
+            self._add_transaction(user, ct_account)
 
     def tearDown(self):
         CommonTransaction.objects.all().delete()
