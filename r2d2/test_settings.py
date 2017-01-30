@@ -31,6 +31,10 @@ def update_settings_for_tests(settings):
             'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
         }
     }
+    if settings['DATABASES']['default']['ENGINE'] == 'django.db.backends.sqlite3':
+        settings['DATABASES']['default']['ENGINE'] = 'transaction_hooks.backends.sqlite3'
+    else:
+        settings['DATABASES']['default']['ENGINE'] = 'transaction_hooks.backends.mysql'
 
     if os.getenv('FASTER'):
         settings['DATABASES'] = {
@@ -39,8 +43,6 @@ def update_settings_for_tests(settings):
                 'ENGINE': 'transaction_hooks.backends.sqlite3',
             },
         }
-    else:
-        settings['DATABASES']['default']['ENGINE'] = 'transaction_hooks.backends.mysql'
 
     if len(settings['MONGODB_DATABASES']) == 0:
         settings['MONGODB_DATABASES'] = {
