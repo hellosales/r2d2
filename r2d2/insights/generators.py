@@ -416,12 +416,13 @@ class InsightDispatcher(BaseGenerator):
                     txns = None
             else:
                 if all_txns_for_source is None:
-                    all_txns_for_source = CommonTransaction.objects.filter(user_id=account.user_id,
-                                                                           data_provider_name=account.__class__.__name__,
-                                                                           data_provider_id=account.id)
+                    all_txns_for_source = CommonTransaction.objects.filter(
+                                            user_id=account.user_id,
+                                            data_provider_name=account.__class__.__name__,
+                                            data_provider_id=account.id)
                     all_txns_for_source_df = curr.convert_common_transactions_df(
-                                                                clmodels.common_transactions_to_df(all_txns_for_source),
-                                                                'USD', False)
+                                            clmodels.common_transactions_to_df(all_txns_for_source),
+                                            'USD', False)
 
                 if all_txns_for_source_df is not None:
                     txns = all_txns_for_source_df.copy()
@@ -837,6 +838,8 @@ class TopPeriodInsight(InsightModel):
         if end_date is None:
             end_date = txns.date.max()
 
+        time_period = format_time_period_string(start_date, end_date)
+
         if (period == 'week'):
             periodStr = 'the week ending %(topPeriod)s' % {"topPeriod": periodFormatter(topPeriod, 'day')}
         elif (period == 'quarter'):
@@ -847,7 +850,7 @@ class TopPeriodInsight(InsightModel):
             time_period = format_time_period_string(kwargs.get('year_start'), kwargs.get('year_end'))
 
         insight = Insight(insight_model_id=self.type_id,
-                          time_period=format_time_period_string(start_date, end_date),
+                          time_period=time_period,
                           text=self.output_message %
                           {"source": source,
                            "period": period,
