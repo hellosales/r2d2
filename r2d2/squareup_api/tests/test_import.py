@@ -15,20 +15,21 @@ from r2d2.utils.test_utils import APIBaseTestCase
 
 SQUAREUP_MAPPED_DATA = {
     'transaction_id': u'fZR0ZGHuHjprkXOtojv5S',
+    'currency_code': u'USD',
     'date': u'2015-11-18T19:30:50Z',
     'products': [{
         'name': u'Custom Amount',
         'sku': u'',
         'quantity': Decimal("1"),
-        'price': Decimal('100'),
+        'price': Decimal('1'),
         'tax': Decimal('0'),
         'discount': Decimal('0'),
-        'total': Decimal('100')
+        'total': Decimal('1')
     }],
-    'total_price': Decimal('100'),
+    'total_price': Decimal('1'),
     'total_tax': Decimal('0'),
     'total_discount': Decimal('0'),
-    'total_total': Decimal('100')
+    'total_total': Decimal('1')
 }
 
 
@@ -66,4 +67,4 @@ class TestImport(APIBaseTestCase):
 
                 self.assertEqual(CommonTransaction.objects.count(), 3)
                 common_transaction = CommonTransaction.objects.all()[0]
-                self.assertEqual(common_transaction.source, "SquareupAccount")
+                self.assertEqual(common_transaction.source, "Square")

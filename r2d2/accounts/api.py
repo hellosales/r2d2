@@ -149,7 +149,7 @@ class RegisterAPI(CreateAPIView):
                 'client_domain': config.CLIENT_DOMAIN,
                 'protocol': self.request.is_secure() and 'https' or 'http',
             }
-            send_email('account_created', user.email, _("Welcome to HelloSales!"), c, cms=True)
+            send_email('account_created', user.email, _("Welcome to Hello Sales!"), c, cms=True)
             return Response(AccountSerializer(user).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
