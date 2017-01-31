@@ -26,6 +26,10 @@ class ShopifyStore(AbstractDataProvider):
     store_url = models.URLField()
     MAX_REQUEST_LIMIT = 250
 
+    def __init__(self, *args, **kwargs):
+        super(ShopifyStore, self).__init__(*args, **kwargs)
+        self.official_channel_name = 'Shopify'
+
     class Meta:
         unique_together = (('user', 'name'), ('user', 'store_url'))
 
@@ -82,6 +86,7 @@ class ShopifyStore(AbstractDataProvider):
             'total_tax': Decimal(imported_shopify_order.total_tax),
             'total_discount': Decimal(imported_shopify_order.total_discounts),
             'total_total': Decimal(imported_shopify_order.total_price),
+            'currency_code': imported_shopify_order.currency,
             'products': []
         }
 

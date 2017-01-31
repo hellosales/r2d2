@@ -15,22 +15,23 @@ from r2d2.utils.test_utils import APIBaseTestCase
 
 ETSY_MAPPED_DATA = {
     'transaction_id': '1062792031',
+    'currency_code': 'USD',
     'date': '2015-12-08T13:49:44',
     'products': [{
         'name': u'Silk Scarf',
         'sku': '259848284',
         'quantity': Decimal("3"),
         'price': Decimal('0.20'),
-        'tax': None,
-        'discount': None,
+        'tax': Decimal('0'),
+        'discount': Decimal('0'),
         'total': Decimal('0.20')
     }, {
         'name': 'Silk Scarf Clasp',
         'sku': '259743529',
         'quantity': Decimal("1"),
         'price': Decimal('0.30'),
-        'tax': None,
-        'discount': None,
+        'tax': Decimal('0'),
+        'discount': Decimal('0'),
         'total': Decimal('0.30')
     }],
     'total_price': Decimal('0.9'),
@@ -90,4 +91,4 @@ class TestImport(APIBaseTestCase):
 
                             self.assertEqual(CommonTransaction.objects.count(), 1)
                             common_transaction = CommonTransaction.objects.all()[0]
-                            self.assertEqual(common_transaction.source, "EtsyAccount")
+                            self.assertEqual(common_transaction.source, "Etsy")

@@ -18,6 +18,7 @@ from r2d2.utils.fields import JSONField
 class AbstractDataProvider(models.Model):
     user = models.ForeignKey(Account)
     name = models.CharField(max_length=255, db_index=True)
+    official_channel_name = None  # intended as official Hello Sales display name for channel
     access_token = models.CharField(max_length=255)
     authorization_date = models.DateTimeField()
     last_successfull_call = models.DateTimeField(null=True, blank=True)
@@ -173,3 +174,22 @@ class AbstractErrorLog(models.Model):
         if not self.error_description:
             self.error_description = self.map_error(self.error)
         return super(AbstractErrorLog, self).save(*args, **kwargs)
+
+
+def reconstitute_data_provider(name, pk):
+    """
+    Given a DataProvider name and pk will attempt to pull the record from the db
+    """
+    from r2d2.data_importer.api import DataImporter
+
+    if not name or not pk:
+        return None
+
+    model = DataImporter.get_model_by_name(name)
+
+    if model is None:
+        return None
+
+    di = model.objects.get(pk=pk)
+
+    return di

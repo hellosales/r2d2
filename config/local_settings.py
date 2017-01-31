@@ -7,7 +7,7 @@ ADMINS = ()
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'transaction_hooks.backends.mysql',
         'NAME': 'XXX',
         'USER': 'XXX',
         'PASSWORD': 'XXX',

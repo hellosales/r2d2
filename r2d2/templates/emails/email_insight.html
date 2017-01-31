@@ -8,14 +8,14 @@
                 <table cellpadding="0" cellspacing="0" class="header">
                     <tr>
                         <td class="logo"><img src="https://r2d2-dev-arabella.s3.amazonaws.com/upload/page_5/logo-1465212086.0-r2logo2.jpg" alt=""></td>
-                        <td class="logo-right_text">We’ve taken a look at your sales activity and have a new insight ready for you.  Take a look below.  You can also view it directly in the <a href="{{ protocol }}{{ client_domain }}/insights">Hello Sales Dashboard</a>.</td>
+                        <td class="logo-right_text">{{ header_text }} <a href="{{ protocol }}{{ client_domain }}/insights">Hello Sales dashboard</a>.</td>
                     </tr>
                 </table>
                 <table cellpadding="0" cellspacing="0">
                     <tr><td><img src="https://r2d2-dev-arabella.s3.amazonaws.com/upload/page_5/tabletop-1465212087.39-table-top.jpg" alt=""></td></tr>
                     <tr>
                         <td class="content">
-                            <p>{{ insight.text|linebreaksbr }}</p>
+                            <p>{%autoescape off%}{{ insight.text }}{%endautoescape%}</p>
                             <p>
                                 {% for attachment in insight.attachments.all %}
                                     {% if not attachment.is_image %}
