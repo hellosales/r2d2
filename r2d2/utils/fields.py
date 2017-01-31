@@ -194,7 +194,9 @@ class CompressedTextField(models.TextField):
 
     def db_type(self, **kwargs):
         from django.conf import settings
-        db_types = {'django.db.backends.mysql': 'longblob', 'transaction_hooks.backends.mysql': 'longblob', 'django.db.backends.sqlite3': 'blob'}
+        db_types = {'django.db.backends.mysql': 'longblob',
+                    'transaction_hooks.backends.mysql': 'longblob',
+                    'django.db.backends.sqlite3': 'blob'}
         try:
             return db_types[settings.DATABASES['default']['ENGINE']]
         except KeyError:

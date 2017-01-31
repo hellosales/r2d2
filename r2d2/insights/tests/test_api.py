@@ -49,7 +49,7 @@ class InsightsAPITestCase(APIBaseTestCase):
         self.account = EtsyAccount.objects.create(user=self.user, name='name', access_token='fake token',
                                                   authorization_date=timezone.now())
         ct_account = ShopifyStore.objects.create(user=self.user, name='name', access_token='fake token',
-                                                   authorization_date=timezone.now())
+                                                 authorization_date=timezone.now())
         self.account = ct_account
         self.account = SquareupAccount.objects.create(user=self.user, name='name', access_token='fake token',
                                                       authorization_date=timezone.now())
