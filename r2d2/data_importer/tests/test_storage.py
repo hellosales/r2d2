@@ -39,3 +39,4 @@ class TestStorage(APIBaseTestCase):
 
         self.assertEqual(iso.account_id, self.account.id)
         self.assertEqual(iso.user_id, self.user.id)
+        self.assertEqual(iso.prefix, 'shopify')

@@ -18,9 +18,9 @@ class SquareupAccountSerializer(R2D2ModelSerializer):
         model = SquareupAccount
 
         fields = ['pk', 'name', 'authorization_date', 'last_successfull_call', 'is_active', 'next_sync', 'last_updated',
-                  'fetch_status', 'created', 'code']
+                  'fetch_status', 'created', 'code', 'official_channel_name']
         read_only_fields = ['pk', 'authorization_date', 'last_successfull_call', 'next_sync', 'last_updated',
-                            'fetch_status', 'created']
+                            'fetch_status', 'created', 'official_channel_name']
 
     def validate(self, validated_data):
         errors = {}

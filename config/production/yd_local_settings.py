@@ -24,7 +24,7 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'transaction_hooks.backends.mysql',
         'NAME': 'api-hello-sales',
         'USER': 'api-hello-sales',
         'PASSWORD': 'MenUtheewajFugAisBochainOlmAmt',
