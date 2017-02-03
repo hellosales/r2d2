@@ -25,7 +25,6 @@ def send_email(template, to, subject, variables={}, fail_silently=False, cms=Fal
     replace_variables['protocol'] = protocol
     domain = variables['site'].domain
     replace_variables['domain'] = domain
-    print variables
     for key, value in replace_variables.iteritems():
         if not value:
             value = ''
