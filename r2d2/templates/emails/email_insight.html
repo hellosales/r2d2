@@ -7,12 +7,12 @@
             <td>
                 <table cellpadding="0" cellspacing="0" class="header">
                     <tr>
-                        <td class="logo"><img src="https://r2d2-dev-arabella.s3.amazonaws.com/upload/page_5/logo-1465212086.0-r2logo2.jpg" alt=""></td>
+                        <td class="logo"><img src="{{MEDIA_URL}}upload/page_5/logo-1465212086.0-r2logo2.jpg" alt=""></td>
                         <td class="logo-right_text">{{ header_text }} <a href="{{ protocol }}{{ client_domain }}/insights">Hello Sales dashboard</a>.</td>
                     </tr>
                 </table>
                 <table cellpadding="0" cellspacing="0">
-                    <tr><td><img src="https://r2d2-dev-arabella.s3.amazonaws.com/upload/page_5/tabletop-1465212087.39-table-top.jpg" alt=""></td></tr>
+                    <tr><td><img src="{{MEDIA_URL}}upload/page_5/tabletop-1465212087.39-table-top.jpg" alt=""></td></tr>
                     <tr>
                         <td class="content">
                             <p>{%autoescape off%}{{ insight.text }}{%endautoescape%}</p>
@@ -30,7 +30,7 @@
                             {% endfor %}
                         </td>
                     </tr>
-                    <tr><td><img src="https://r2d2-dev-arabella.s3.amazonaws.com/upload/page_5/tablebottom-1465212087.87-table-bottom.jpg" alt=""></td></tr>
+                    <tr><td><img src="{{MEDIA_URL}}upload/page_5/tablebottom-1465212087.87-table-bottom.jpg" alt=""></td></tr>
                 </table>
                 <table cellpadding="0" cellspacing="0" width="100%">
                     <tr>
