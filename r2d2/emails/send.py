@@ -18,6 +18,7 @@ def send_email(template, to, subject, variables={}, fail_silently=False, cms=Fal
         to = [to]
     variables['site'] = Site.objects.get_current()
     variables['STATIC_URL'] = settings.STATIC_URL
+    variables['MEDIA_URL'] = settings.MEDIA_URL
     variables['is_secure'] = getattr(settings, 'IS_SECURE', False)
     html = render_to_string('emails/email_%s.html' % template, variables)
     protocol = 'https://' if variables['is_secure'] else 'http://'
