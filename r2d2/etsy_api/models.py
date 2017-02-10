@@ -59,7 +59,7 @@ class EtsyAccount(AbstractDataProvider):
                                              config.CLIENT_DOMAIN, settings.ETSY_CALLBACK_ENDPOINT,
                                              etsy_request_token.pk)
 
-        authorization_url = client.get_signin_url(oauth_callback=callback_link)
+        authorization_url = client.get_signin_url(oauth_callback=callback_link, **{'scope': settings.ETSY_SCOPE})
         etsy_request_token.request_token = client.token.to_string()
         etsy_request_token.save()
 

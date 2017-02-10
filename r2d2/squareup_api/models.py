@@ -54,7 +54,8 @@ class SquareupAccount(AbstractDataProvider):
     @classmethod
     def authorization_url(cls):
         """ getting authorization url for the account """
-        return settings.SQUAREUP_AUTHORIZATION_ENDPOINT % settings.SQUAREUP_API_KEY
+        return settings.SQUAREUP_AUTHORIZATION_ENDPOINT % {'client_id': settings.SQUAREUP_API_KEY,
+                                                           'scope': settings.SQUAREUP_SCOPE}
 
     @classmethod
     def get_access_token(cls, authorization_code):
