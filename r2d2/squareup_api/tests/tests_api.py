@@ -46,7 +46,8 @@ class SquareupApiTestCase(APIBaseTestCase):
         response = self.client.post(reverse('data-importer-generate-oauth-url'), {'class': 'SquareupAccount'})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['oauth_url'],
-                         settings.SQUAREUP_AUTHORIZATION_ENDPOINT % settings.SQUAREUP_API_KEY)
+                         settings.SQUAREUP_AUTHORIZATION_ENDPOINT % {'client_id': settings.SQUAREUP_API_KEY,
+                                                                     'scope': settings.SQUAREUP_SCOPE})
 
         # creating a new account
         with requests_mock.mock() as m:
