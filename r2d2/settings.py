@@ -385,8 +385,9 @@ DEFAULT_FILE_STORAGE = 'r2d2.utils.storage.S3BotoStorageFixed'
 
 SHOPIFY_API_KEY = '9701bcb247e85adcb062a0b210d5f1cb'
 SHOPIFY_API_SECRET = 'f8070f057e7bcc15a64a881d07d5b3f8'
-SHOPIFY_SCOPES = ['read_content', 'read_themes', 'read_products', 'read_customers', 'read_orders',
-                  'read_script_tags', 'read_fulfillments', 'read_shipping']
+#SHOPIFY_SCOPES = ['read_content', 'read_themes', 'read_products', 'read_customers', 'read_orders',
+#                  'read_script_tags', 'read_fulfillments', 'read_shipping']
+SHOPIFY_SCOPES = ['read_orders']
 SHOPIFY_CALLBACK_ENDPOINT = '/shopify/auth/callback'
 # other possible scopes:
 # write_themes, write_products, write_customers, write_orders, write_script_tags, write_fulfillments, write_shipping
@@ -396,16 +397,17 @@ ETSY_API_KEY = "7gw45bcpljnujp2wlfe6398b"
 ETSY_API_SECRET = "zpruv2b1cs"
 # ETSY_API_KEY = 'a4elzoo928uftgjb8vgk3ej0'
 # ETSY_API_SECRET = 'hifylh7a8o'
-ETSY_SCOPE = ['email_r', 'listings_r', 'transactions_r', 'billing_r', 'profile_r', 'address_r']
+ETSY_SCOPE = 'transactions_r'
 ETSY_CALLBACK_ENDPOINT = '/etsy/auth/callback'
-# other possible scopes:
+# other possible scopes. Multiple scopes should be separated with spaces
 # 'listings_w', 'listings_d', 'transactions_w', 'profile_w', 'address_w', 'favorites_rw', 'shops_rw', 'cart_rw',
 # 'recommend_rw', 'feedback_r', 'treasury_r', 'treasury_w'
 
 SQUAREUP_API_KEY = 'fQa48ZcUHUUNZR542VGfxg'
 SQUAREUP_API_SECRET = 'dwt11ZGm1cxSb1Kk94JprNSbInsFUfupOEdz3bwnAEs'
 SQUAREUP_BASE_URL = 'https://connect.squareup.com/'
-SQUAREUP_AUTHORIZATION_ENDPOINT = SQUAREUP_BASE_URL + 'oauth2/authorize?client_id=%s'
+SQUAREUP_SCOPE = "PAYMENTS_READ"
+SQUAREUP_AUTHORIZATION_ENDPOINT = SQUAREUP_BASE_URL + 'oauth2/authorize?client_id=%(client_id)s&scope=%(scope)s'
 SQUAREUP_ACCESS_TOKEN_ENDPOINT = SQUAREUP_BASE_URL + 'oauth2/token'
 SQUAREUP_RENEW_TOKEN_ENDPOINT = SQUAREUP_BASE_URL + 'oauth2/clients/%s/access-token/renew'
 
