@@ -440,3 +440,9 @@ FAKE_EMAIL_TO = 'michals@arabel.la'
 if TESTING:
     from test_settings import *
     update_settings_for_tests(locals())
+
+# disable api docs in production
+if ENV_PREFIX == 'api-hello-sales':
+    SWAGGER_SETTINGS["is_authenticated"] = True,  # Set to True to enforce user authentication,
+    SWAGGER_SETTINGS["is_superuser"] = True,  # Set to True to enforce admin only access
+    REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = ['rest_framework.renderers.JSONRenderer']
