@@ -16,6 +16,7 @@ urlpatterns = patterns(
     url(r'^etsy/', include('r2d2.etsy_api.api_urls')),
     url(r'^shopify/', include('r2d2.shopify_api.api_urls')),
     url(r'^squareup/', include('r2d2.squareup_api.api_urls')),
+    url(r'^stripe/', include('r2d2.stripe_api.api_urls')),
 )
 
 router = DefaultRouter()
