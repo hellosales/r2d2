@@ -4,7 +4,6 @@ import urllib
 import requests
 import stripe
 
-from constance import config
 from decimal import Decimal
 from datetime import datetime
 

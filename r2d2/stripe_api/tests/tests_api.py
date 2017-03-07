@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """ tests for stripe """
-import mock
 import requests_mock
 import urllib
 

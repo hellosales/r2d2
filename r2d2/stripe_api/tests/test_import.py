@@ -2,7 +2,6 @@ import mock
 
 from datetime import datetime
 from decimal import Decimal
-from freezegun import freeze_time
 
 from django.utils import timezone
 
