@@ -39,8 +39,8 @@ MONGODB_DATABASES = {
         'name': 'yd-mongodb-prod',
         'username': 'db',
         'password': 'BzUatHShXTFN9qyfHFnX',
-        'host': 'ds025389.mlab.com',
-        'port': 25389,
+        'host': 'ds125140-a0.mlab.com',
+        'port': 25140,
     }
 }
 
