@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import os.path
 
 DEBUG = False
@@ -416,8 +417,7 @@ SQUAREUP_ACCESS_TOKEN_ENDPOINT = SQUAREUP_BASE_URL + 'oauth2/token'
 SQUAREUP_RENEW_TOKEN_ENDPOINT = SQUAREUP_BASE_URL + 'oauth2/clients/%s/access-token/renew'
 
 # Stripe
-# STRIPE_API_KEY = 'sk_test_NHzDG8LysdhmJq3o6cGNyHSG'  # Testing only
-STRIPE_API_KEY = 'sk_live_ifufH5vjeCCodNsjg6Fhhrie'  # Production only
+STRIPE_API_KEY = 'sk_test_NHzDG8LysdhmJq3o6cGNyHSG'
 STRIPE_CLIENT_ID = 'ca_A76NdvjLvYuqRLgpsgAJyhBPYH7LXSFC'
 STRIPE_BASE_URL = 'https://connect.stripe.com/'
 STRIPE_SCOPE = 'read_only'

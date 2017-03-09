@@ -27,8 +27,8 @@ class StripeAccount(AbstractDataProvider):
         this model keeps also token if the user authorized
         our app to use this account"""
 
-    merchant_id = models.CharField(max_length=255, null=True, blank=True)
-    the_refresh_token = models.CharField(max_length=255, null=True, blank=True)
+    merchant_id = models.CharField(max_length=255, blank=True)
+    the_refresh_token = models.CharField(max_length=255, blank=True)
     MAX_REQUEST_LIMIT = 100
 
     def __init__(self, *args, **kwargs):
