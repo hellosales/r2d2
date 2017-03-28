@@ -253,7 +253,7 @@ class InsightsAPITestCase(APIBaseTestCase):
 
             test = txnsDF
             test.index = test.date
-            test = test.groupby([grouper, 'product_name', 'sku'])
+            test = test.groupby([grouper, 'product_name', 'product_sku'])
             test = test.agg({'product_quantity': 'sum', 'product_total_converted': 'sum'})
             out = gen.salesByPeriod(txnsDF, period, True)
             self.assertTrue(out.product_quantity.equals(test.product_quantity))
@@ -279,7 +279,7 @@ class InsightsAPITestCase(APIBaseTestCase):
                       'currency_code': 'Currency',
                       'source': 'Channel',
                       'product_name': 'Name',
-                      'sku': 'SKU',
+                      'product_sku': 'SKU',
                       'product_quantity': 'Item Quantity',
                       'product_price': 'Price',
                       'product_tax': 'Item Tax',

@@ -13,6 +13,7 @@ import pandas as pd
 import numpy as np
 
 from r2d2.common_layer.models import CommonTransaction
+from r2d2.common_layer.models import CommonTransactionDataFrame as CTDF
 import r2d2.common_layer.models as clmodels
 import r2d2.common_layer.currency as curr
 
@@ -387,8 +388,8 @@ class InsightDispatcher(BaseGenerator):
             im_params = {'rolling_window': rolling_window,
                          'account': account}
 
-        all_txns = None
-        all_txns_for_source = None
+        all_txns_df = None
+        all_txns_for_source_df = None
 
         while insight is None:
             insight_model = cls.choose_insight_model(account.user_id,
@@ -405,9 +406,8 @@ class InsightDispatcher(BaseGenerator):
 
             # Fetch appropriate txns data
             if insight_model.compares_sources:
-                if all_txns is None:
-                    all_txns = CommonTransaction.objects.filter(user_id=account.user_id)
-                    all_txns_df = curr.convert_common_transactions_df(clmodels.common_transactions_to_df(all_txns),
+                if all_txns_df is None:            
+                    all_txns_df = curr.convert_common_transactions_df(CTDF.find(user_id=account.user_id),
                                                                       'USD', False)
 
                 if all_txns_df is not None:
@@ -415,14 +415,13 @@ class InsightDispatcher(BaseGenerator):
                 else:
                     txns = None
             else:
-                if all_txns_for_source is None:
-                    all_txns_for_source = CommonTransaction.objects.filter(
-                                            user_id=account.user_id,
-                                            data_provider_name=account.__class__.__name__,
-                                            data_provider_id=account.id)
+                if all_txns_for_source_df is None:
                     all_txns_for_source_df = curr.convert_common_transactions_df(
-                                            clmodels.common_transactions_to_df(all_txns_for_source),
-                                            'USD', False)
+                                                             CTDF.find(
+                                                                       user_id=account.user_id,
+                                                                       data_provider_name=account.__class__.__name__,
+                                                                       data_provider_id=account.id),
+                                                             'USD', False)
 
                 if all_txns_for_source_df is not None:
                     txns = all_txns_for_source_df.copy()
@@ -1568,7 +1567,7 @@ def salesByPeriod(txns, period, by_product=False):
     week:    by calendar week
     day:    by calendar day, on natural day breaks
     hour:    by hour, on the hour
-    by_product: if True groups by product_name and sku.  Defaults to False
+    by_product: if True groups by product_name and product_sku.  Defaults to False
 
     TODO:  should period just be the frequency offset from
     http://pandas.pydata.org/pandas-docs/stable/timeseries.html#offset-aliases?
@@ -1605,7 +1604,7 @@ def salesByPeriod(txns, period, by_product=False):
     txns.index = txns.date
 
     if (by_product):
-        txns = txns.groupby([grouper, 'product_name', 'sku'])
+        txns = txns.groupby([grouper, 'product_name', 'product_sku'])
     else:
         txns = txns.groupby(grouper)
 
@@ -1648,7 +1647,7 @@ def normalizeDFColumns(df):
                   'currency_code': 'Currency',
                   'source': 'Channel',
                   'product_name': 'Name',
-                  'sku': 'SKU',
+                  'product_sku': 'SKU',
                   'product_quantity': 'Item Quantity',
                   'product_price': 'Price',
                   'product_tax': 'Item Tax',
