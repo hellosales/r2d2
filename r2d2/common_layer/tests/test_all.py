@@ -7,7 +7,7 @@ from decimal import Decimal
 from django.utils import timezone
 import pandas as pd
 
-from r2d2.common_layer.models import CommonTransaction, ExchangeRate, ExchangeRateSource
+from r2d2.common_layer.models import CommonTransaction, ExchangeRate, ExchangeRateSource, CommonTransactionDataFrame
 import r2d2.common_layer.models as clmodels
 import r2d2.common_layer.currency as curr
 from r2d2.common_layer.signals import object_imported
@@ -117,12 +117,33 @@ class TestBase(APIBaseTestCase):
         self.assertEqual(test_df.currency_code.iloc[0], common_transaction.currency_code)
         self.assertEqual(test_df.source.iloc[0], common_transaction.source)
         self.assertEqual(test_df.product_name.iloc[0], common_transaction.products[0].name)
-        self.assertEqual(test_df.sku.iloc[0], common_transaction.products[0].sku)
+        self.assertEqual(test_df.product_sku.iloc[0], common_transaction.products[0].sku)
         self.assertEqual(test_df.product_quantity.iloc[0], common_transaction.products[0].quantity)
         self.assertEqual(test_df.product_price.iloc[0], common_transaction.products[0].price)
         self.assertEqual(test_df.product_tax.iloc[0], common_transaction.products[0].tax)
         self.assertEqual(test_df.product_discount.iloc[0], common_transaction.products[0].discount)
         self.assertEqual(test_df.product_total.iloc[0], common_transaction.products[0].total)
+
+        # Test the conversion done with the alternate DB to DataFrame conversion
+        # mechanism matches the above conversion too
+        test_alternate_df = CommonTransactionDataFrame.find(transaction_id=common_transaction.transaction_id)
+        self.assertEqual(len(test_alternate_df.index), len(test_df.index))
+        self.assertEqual(test_df.user_id.iloc[0], test_alternate_df.user_id.iloc[0])
+        self.assertEqual(test_df.transaction_id.iloc[0], test_alternate_df.transaction_id.iloc[0])
+        self.assertEqual(test_df.date.iloc[0], test_alternate_df.date.iloc[0])
+        self.assertEqual(test_df.total_price.iloc[0], test_alternate_df.total_price.iloc[0])
+        self.assertEqual(test_df.total_tax.iloc[0], test_alternate_df.total_tax.iloc[0])
+        self.assertEqual(test_df.total_discount.iloc[0], test_alternate_df.total_discount.iloc[0])
+        self.assertEqual(test_df.total_total.iloc[0], test_alternate_df.total_total.iloc[0])
+        self.assertEqual(test_df.currency_code.iloc[0], test_alternate_df.currency_code.iloc[0])
+        self.assertEqual(test_df.source.iloc[0], test_alternate_df.source.iloc[0])
+        self.assertEqual(test_df.product_name.iloc[0], test_alternate_df.product_name.iloc[0])
+        self.assertEqual(test_df.product_sku.iloc[0], test_alternate_df.product_sku.iloc[0])
+        self.assertEqual(test_df.product_quantity.iloc[0], test_alternate_df.product_quantity.iloc[0])
+        self.assertEqual(test_df.product_price.iloc[0], test_alternate_df.product_price.iloc[0])
+        self.assertEqual(test_df.product_tax.iloc[0], test_alternate_df.product_tax.iloc[0])
+        self.assertEqual(test_df.product_discount.iloc[0], test_alternate_df.product_discount.iloc[0])
+        self.assertEqual(test_df.product_total.iloc[0], test_alternate_df.product_total.iloc[0])
 
         # test currency conversion
         rates = ExchangeRate.objects.all()
