@@ -47,3 +47,8 @@ mongodata/journal/WiredTigerPreplog.0000000001
 mongodata/journal/WiredTigerPreplog.0000000002
 mongodata/local/collection-0--5864509133628972219.wt
 mongodata/local/index-1--5864509133628972219.wt
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

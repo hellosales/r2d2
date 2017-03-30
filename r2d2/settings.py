@@ -12,7 +12,7 @@ EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_HOST_PASSWORD = "adoipovyuHerdUttAbIb11"
 EMAIL_HOST_USER = 'rtwodtwo'
 EMAIL_PORT = 587
-DEFAULT_FROM_EMAIL = '"Arabella No-reply" <no-reply@ydtech.co>'
+DEFAULT_FROM_EMAIL = '"Hello Sales - No-reply" <no-reply@hello-sales.com>'
 
 ADMINS = (
     ('Team', 'team@ydtech.co'),
