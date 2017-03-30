@@ -8,11 +8,11 @@ location = lambda x: os.path.join(str(project()), str(x))
 
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
-EMAIL_USE_TLS = True  # fixme
-EMAIL_HOST = 'smtp.sendgrid.net'  # fixme
-EMAIL_HOST_PASSWORD = "edIdtatecyecThaxorrijkiQuotEb0"  # fixme
-EMAIL_HOST_USER = 'hello-sales'  # fixme
-EMAIL_PORT = 587  # fixme
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'email-smtp.us-east-1.amazonaws.com'
+EMAIL_HOST_PASSWORD = 'AhhBbt76BJLFSky4xbZ3RNt0KRntU8FnHAuCxHdeJ7RG'
+EMAIL_HOST_USER = 'AKIAJKORSLH4UBCGMXVQ'
+EMAIL_PORT = 587
 DEFAULT_FROM_EMAIL = '"HelloSales" <hello@hello-sales.com>'
 
 DEBUG = False
@@ -29,8 +29,8 @@ DATABASES = {
         'ENGINE': 'transaction_hooks.backends.mysql',
         'NAME': 'hello_sales',
         'USER': 'hello',
-        'PASSWORD': 'MenUtheewajFugAisBochainOlmAmt',
-        'HOST': 'hello-sales-prod.cmhvzu4rd3w9.us-east-1.rds.amazonaws.com:3306',
+        'PASSWORD': 'GxKGVmbGwh3MtRAMwASx',
+        'HOST': 'hello-sales-prod.cmhvzu4rd3w9.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
         'ATOMIC_REQUESTS': True
     },
@@ -41,19 +41,17 @@ MONGODB_DATABASES = {
         'name': 'mongodb-prod',
         'username': 'db',
         'password': 'BzUatHShXTFN9qyfHFnX',
-        'host': 'ds125140-a0.mlab.com',
+        'host': '10.0.63.200',
         'port': 25140,
     }
 }
 
+AWS_STORAGE_BUCKET_NAME = 'files.hello-sales.com'
 
 SECRET_KEY = 'prodvay&e&9hdwo_bniq-$z0j64q4w27-fm58nu9!m+i$nc0e!*!o0'
 
-
 CELERY_ALWAYS_EAGER = False
-BROKER_URL = 'librabbitmq://api-hello-sales:iydocuwjp9xt@localhost:5672/api-hello-sales'
-
-AWS_STORAGE_BUCKET_NAME = 'files.hello-sales.com'
+BROKER_URL = 'librabbitmq://api-hello-sales:iydocuwjp9xt@10.0.63.202:5672/api-hello-sales'
 
 SHOPIFY_API_KEY = '74ce0b5cb25ebb2fde10ba55fcf24cbc'
 SHOPIFY_API_SECRET = '9b6bd9a8ac0b7a7803fa735de0196989'
@@ -67,10 +65,8 @@ CONSTANCE_CONFIG = {
 }
 
 RAVEN_CONFIG = {
-    'dsn': 'https://97293106f2a543859de54e596489f320:7a544014f02644f289d2353dc452f2bb@sentry.arabel.la/17',
-    'private_dsn': 'https://97293106f2a543859de54e596489f320@sentry.arabel.la/17',
+    'dsn': 'https://0403f307016d4e69b5413f4d43689a26:b28b724d07c440889434553055d2f740@sentry.io/153766'
 }
-
 
 # Local memcache setting.
 # CACHES = {

@@ -15,19 +15,19 @@ EMAIL_PORT = 587
 DEFAULT_FROM_EMAIL = '"Hello Sales - No-reply" <no-reply@hello-sales.com>'
 
 ADMINS = (
-    ('Team', 'team@ydtech.co'),
+    ('Team', 'matt@hello-sales.com'),
 )
 MANAGERS = ADMINS
 
 DATABASES = {}
 MONGODB_DATABASES = {}
 
+WSGI_APPLICATION = 'r2d2.wsgi.application'
+
 FORCE_SCRIPT_NAME = ""
 
 TIME_ZONE = "US/Eastern"
 
-# Language code for this installation. All choices can be found here:
-# http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en'
 
 # If you set this to False, Django will make some optimizations so as not
@@ -58,42 +58,23 @@ PAGE_TEMPLATES = (
 
 PAGE_USE_SITE_ID = True
 
-
-# If you set this to False, Django will not format dates, numbers and
-# calendars according to the current locale
 USE_L10N = True
-
 DEFAULT_DATE_FORMAT = '%B %d, %Y'
 
-# Absolute filesystem path to the directory that will hold user-uploaded files.
-# Example: "/home/media/media.lawrence.com/media/"
 MEDIA_ROOT = location(os.path.join("site_media", "media"))
-
-# URL that handles the media served from MEDIA_ROOT. Make sure to use a
-# trailing slash.
-# Examples: "http://media.lawrence.com/media/", "http://example.com/media/"
 MEDIA_URL = '/media/'
 
-# Absolute path to the directory static files should be collected to.
-# Don't put anything in this directory yourself; store your static files
-# in apps' "static/" subdirectories and in STATICFILES_DIRS.
-# Example: "/home/media/media.lawrence.com/static/"
 STATIC_ROOT = location(os.path.join("site_media", "static"))
-
-# Additional directories which hold static files
+STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     location("static"),
 ]
-
 STATICFILES_FINDERS = (
     "django.contrib.staticfiles.finders.FileSystemFinder",
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
     "compressor.finders.CompressorFinder",
 )
 
-# URL prefix for static files.
-# Example: "http://media.lawrence.com/static/"
-STATIC_URL = "/static/"
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'localvay&e&9hdwo_bniq-$z0j64q4w27-fm58nu9!m+i$nc0e!*!o0'
@@ -291,7 +272,6 @@ AUTH_USER_MODEL = "accounts.Account"
 MIN_PASSWORD_LENGTH = 8
 
 ALLOWED_HOSTS = [
-    '.arabel.la',
     '.hello-sales.com',
 ]
 
@@ -385,8 +365,8 @@ DEFAULT_FILE_STORAGE = 'r2d2.utils.storage.S3BotoStorageFixed'
 
 SHOPIFY_API_KEY = '9701bcb247e85adcb062a0b210d5f1cb'
 SHOPIFY_API_SECRET = 'f8070f057e7bcc15a64a881d07d5b3f8'
-#SHOPIFY_SCOPES = ['read_content', 'read_themes', 'read_products', 'read_customers', 'read_orders',
-#                  'read_script_tags', 'read_fulfillments', 'read_shipping']
+# SHOPIFY_SCOPES = ['read_content', 'read_themes', 'read_products', 'read_customers', 'read_orders',
+#                   'read_script_tags', 'read_fulfillments', 'read_shipping']
 SHOPIFY_SCOPES = ['read_orders']
 SHOPIFY_CALLBACK_ENDPOINT = '/shopify/auth/callback'
 # other possible scopes:
@@ -423,10 +403,17 @@ CONSTANCE_CONFIG = {
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 
+
+
+# this should be much smarter
+# it should pull in the correct settings file based on a env prop
+# so we don't have to make different builds for the different envs.
+# - dv
+
 try:
     from local_settings import *
 except ImportError:
-    print ("no local_settings.py file?")
+    print ("no local_settings.py file???")
 
 MEDIA_URL = 'https://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
 
