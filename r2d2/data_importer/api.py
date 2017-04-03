@@ -77,7 +77,7 @@ class DataImporter(object):
 
 class DataImporterAccountsAPI(GenericAPIView):
     """ Allows to list, create & update data importer accounts.
-        Account can be of one of following class: EtsyAccount, ShopifyStore, SquareupAccount """
+        Account can be of one of following class: EtsyAccount, ShopifyStore, SquareupAccount, StripeAccount  """
 
     def get(self, request):
         """ Gets list of accounts, or single account if class & pk is passed

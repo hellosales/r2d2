@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import os.path
 
 DEBUG = False
@@ -161,6 +162,7 @@ PROJECT_APPS = (
     'r2d2.notifications',
     'r2d2.shopify_api',
     'r2d2.squareup_api',
+    'r2d2.stripe_api',
     'r2d2.utils',
 )
 
@@ -383,15 +385,17 @@ AWS_STORAGE_BUCKET_NAME = 'r2d2-dev-arabella'
 AWS_QUERYSTRING_AUTH = False
 DEFAULT_FILE_STORAGE = 'r2d2.utils.storage.S3BotoStorageFixed'
 
+# Shopify
 SHOPIFY_API_KEY = '9701bcb247e85adcb062a0b210d5f1cb'
 SHOPIFY_API_SECRET = 'f8070f057e7bcc15a64a881d07d5b3f8'
-#SHOPIFY_SCOPES = ['read_content', 'read_themes', 'read_products', 'read_customers', 'read_orders',
+# SHOPIFY_SCOPES = ['read_content', 'read_themes', 'read_products', 'read_customers', 'read_orders',
 #                  'read_script_tags', 'read_fulfillments', 'read_shipping']
 SHOPIFY_SCOPES = ['read_orders']
 SHOPIFY_CALLBACK_ENDPOINT = '/shopify/auth/callback'
 # other possible scopes:
 # write_themes, write_products, write_customers, write_orders, write_script_tags, write_fulfillments, write_shipping
 
+# Etsy
 # matt's keys
 ETSY_API_KEY = "7gw45bcpljnujp2wlfe6398b"
 ETSY_API_SECRET = "zpruv2b1cs"
@@ -403,6 +407,7 @@ ETSY_CALLBACK_ENDPOINT = '/etsy/auth/callback'
 # 'listings_w', 'listings_d', 'transactions_w', 'profile_w', 'address_w', 'favorites_rw', 'shops_rw', 'cart_rw',
 # 'recommend_rw', 'feedback_r', 'treasury_r', 'treasury_w'
 
+# Square
 SQUAREUP_API_KEY = 'fQa48ZcUHUUNZR542VGfxg'
 SQUAREUP_API_SECRET = 'dwt11ZGm1cxSb1Kk94JprNSbInsFUfupOEdz3bwnAEs'
 SQUAREUP_BASE_URL = 'https://connect.squareup.com/'
@@ -410,6 +415,16 @@ SQUAREUP_SCOPE = "PAYMENTS_READ"
 SQUAREUP_AUTHORIZATION_ENDPOINT = SQUAREUP_BASE_URL + 'oauth2/authorize?client_id=%(client_id)s&scope=%(scope)s'
 SQUAREUP_ACCESS_TOKEN_ENDPOINT = SQUAREUP_BASE_URL + 'oauth2/token'
 SQUAREUP_RENEW_TOKEN_ENDPOINT = SQUAREUP_BASE_URL + 'oauth2/clients/%s/access-token/renew'
+
+# Stripe
+STRIPE_API_KEY = 'sk_test_NHzDG8LysdhmJq3o6cGNyHSG'
+STRIPE_CLIENT_ID = 'ca_A76NdvjLvYuqRLgpsgAJyhBPYH7LXSFC'
+STRIPE_BASE_URL = 'https://connect.stripe.com/'
+STRIPE_SCOPE = 'read_only'
+STRIPE_RESPONSE_TYPE = 'code'
+STRIPE_CALLBACK_ENDPOINT = '/stripe/auth/callback?'
+STRIPE_AUTHORIZATION_ENDPOINT = STRIPE_BASE_URL + 'oauth/authorize'
+STRIPE_ACCESS_TOKEN_ENDPOINT = STRIPE_BASE_URL + 'oauth/token'
 
 DJANGO_MONEY_RATES = {
     'DEFAULT_BACKEND': 'djmoney_rates.backends.CurrencyLayerBackend',
