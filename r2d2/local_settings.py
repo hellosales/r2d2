@@ -68,10 +68,3 @@ RAVEN_CONFIG = {
     'dsn': 'https://0403f307016d4e69b5413f4d43689a26:b28b724d07c440889434553055d2f740@sentry.io/153766'
 }
 
-# Local memcache setting.
-# CACHES = {
-#    'default': {
-#        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-#        'LOCATION': '127.0.0.1:11211',
-#        }
-# }
