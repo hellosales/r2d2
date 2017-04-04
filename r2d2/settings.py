@@ -1,12 +1,20 @@
 # -*- coding: utf-8 -*-
-
-import os.path
+import os
 
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+PROJECT_ROOT = BASE_DIR
+
 project = lambda: os.path.dirname(os.path.realpath(__file__))
 location = lambda x: os.path.join(str(project()), str(x))
+
+ADMINS = (
+    ('Matt', 'matt@hello-sales.com'),
+)
+MANAGERS = ADMINS
+
 
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.sendgrid.net'
@@ -15,10 +23,6 @@ EMAIL_HOST_USER = 'rtwodtwo'
 EMAIL_PORT = 587
 DEFAULT_FROM_EMAIL = '"Hello Sales - No-reply" <no-reply@hello-sales.com>'
 
-ADMINS = (
-    ('Team', 'matt@hello-sales.com'),
-)
-MANAGERS = ADMINS
 
 DATABASES = {}
 MONGODB_DATABASES = {}
@@ -275,6 +279,7 @@ MIN_PASSWORD_LENGTH = 8
 
 ALLOWED_HOSTS = [
     '.hello-sales.com',
+    '.elasticbeanstalk.com'
 ]
 
 
