@@ -8,10 +8,10 @@ import sys
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
 PROJECT_ROOT = BASE_DIR
 
-print "!!!!!!!!!!!!!!!!"+BASE_DIR
+# this is a little goofy,  should be simpler. -dv
 
-project = lambda: os.path.dirname(os.path.join(os.path.realpath(__file__), os.path.pardir))
-location = lambda x: os.path.join(str(project()), str(x))
+project = lambda: os.path.dirname(os.path.join(os.path.realpath(__file__), os.path.pardir, os.path.pardir))
+location = lambda x: os.path.join(str(project()), os.path.pardir, str(x))
 
 ADMINS = (
     ('Matt Laszuk', 'matt.laszuk@gmail.com')
@@ -72,6 +72,10 @@ MEDIA_ROOT = location(os.path.join("site_media", "media"))
 MEDIA_URL = '/media/'
 
 STATIC_ROOT = location(os.path.join("site_media", "static"))
+
+print "!!!!!!!!!!!!!!!!"+location("static")
+
+
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     location("static"),
