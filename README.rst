@@ -128,7 +128,10 @@ https://addons.mozilla.org/en-US/firefox/addon/firesass-for-firebug/
 
     brew install mongodb
 
-:: run mongo
+
+Run mongo
+
+::
 
     mongod --dbpath "SOME_PATH_TO_DATA" --directoryperdb &
 
@@ -150,7 +153,6 @@ Create the static
 
 ::
 
-    ./manage.py bower_install
     ./manage.py collectstatic -v0 --noinput
     ./manage.py compress -f
 

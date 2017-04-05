@@ -42,7 +42,7 @@ MONGODB_DATABASES = {
         'username': 'db',
         'password': 'BzUatHShXTFN9qyfHFnX',
         'host': '10.0.63.200',
-        'port': 25140,
+        'port': 27017,
     }
 }
 
