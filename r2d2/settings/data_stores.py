@@ -20,13 +20,12 @@ else:
             'USER': 'hello',
             'PASSWORD': 'sales',
             'HOST': 'localhost',
-            'PORT': 3336,
+            'PORT': 3336,   # this matches the dockerfile
         }
     }
 
-
 if 'MONGO_NAME' in os.environ:
-    DATABASES = {
+    MONGODB_DATABASES = {
         'default': {
             'name': os.environ['MONGO_NAME'],
             'username': os.environ['MONGO_USERNAME'],
