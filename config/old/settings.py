@@ -67,10 +67,10 @@ PAGE_USE_SITE_ID = True
 USE_L10N = True
 DEFAULT_DATE_FORMAT = '%B %d, %Y'
 
-MEDIA_ROOT = location(os.path.join("site_media", "media"))
+MEDIA_ROOT = location(os.path.join("../../r2d2/site_media", "media"))
 MEDIA_URL = '/media/'
 
-STATIC_ROOT = location(os.path.join("site_media", "static"))
+STATIC_ROOT = location(os.path.join("../../r2d2/site_media", "static"))
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     location("static"),
@@ -303,7 +303,7 @@ LOGOUT_REDIRECT_URLNAME = "login"
 SU_LOGIN_REDIRECT_URL = '/login-admin/'
 SU_LOGOUT_REDIRECT_URL = '/'
 
-ADMIN_MEDIA_ROOT = location(os.path.join("static", "admin"))
+ADMIN_MEDIA_ROOT = location(os.path.join("../../r2d2/static", "admin"))
 
 TEMPLATE_DIRS = (
     location("templates"),
