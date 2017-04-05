@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import requests
 
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
@@ -281,7 +282,14 @@ ALLOWED_HOSTS = [
     '.hello-sales.com',
     '.elasticbeanstalk.com'
 ]
+EC2_PRIVATE_IP = None
+try:
+    EC2_PRIVATE_IP = requests.get('http://169.254.169.254/latest/meta-data/local-ipv4', timeout = 0.01).text
+except requests.exceptions.RequestException:
+    pass
 
+if EC2_PRIVATE_IP:
+    ALLOWED_HOSTS.append(EC2_PRIVATE_IP)
 
 SITE_ID = 1
 
@@ -453,3 +461,5 @@ if ENV_PREFIX == 'api-hello-sales':
     SWAGGER_SETTINGS["is_authenticated"] = True,  # Set to True to enforce user authentication,
     SWAGGER_SETTINGS["is_superuser"] = True,  # Set to True to enforce admin only access
     REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = ['rest_framework.renderers.JSONRenderer']
+
+

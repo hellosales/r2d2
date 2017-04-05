@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-import sys
-import os.path
-import djcelery
 from data_stores import *
+import djcelery
+import os.path
+import requests
+import sys
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 PROJECT_ROOT = BASE_DIR
@@ -275,6 +276,15 @@ ALLOWED_HOSTS = [
     '.hello-sales.com',
     '.elasticbeanstalk.com'
 ]
+EC2_PRIVATE_IP = None
+try:
+    EC2_PRIVATE_IP = requests.get('http://169.254.169.254/latest/meta-data/local-ipv4', timeout = 0.01).text
+except requests.exceptions.RequestException:
+    pass
+
+if EC2_PRIVATE_IP:
+    ALLOWED_HOSTS.append(EC2_PRIVATE_IP)
+
 
 SITE_ID = 1
 SITE_NAME = 'r2d2'

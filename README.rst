@@ -14,7 +14,7 @@ Python > 2.6, PIP, Homebrew (Mac OSX), Git (and a github account), VirtualEnv (m
 
 Dev requirements
 ================
-**MySQL, Nginx**
+**MySQL, Mongo, RabbitMq**
 
 Installing MySQL on OS X
 
@@ -58,15 +58,10 @@ Clone the Github repository if you have not done so yet. You will need a git acc
 
 ::
 
-    git clone git@bitbucket.com:ArabellaTech/r2d2.git
+    git clone git@bitbucket.org:mlasz/r2d2.git
 
 Move into the newly created Project Data folder.
 
-Initialize GitFlow (More info: http://wiki.ydtech.co/developers:gitflow)
-
-::
-
-    git flow init -d
 
 Install the Python requirements using PIP, which are located in the requirements.txt file. Ensure the platform requirements are installed (python-dev/python-devel).
 
@@ -74,11 +69,6 @@ Install the Python requirements using PIP, which are located in the requirements
 
     pip install -r requirements.txt
 
-Create local settings or copy one from config/develop into your project root and custom it.
-
-::
-
-    cp config/local_settings.py r2d2/local_settings.py
 
 Upon successful completion of the installation initialize the database. (NOTE: database must be running.)
 
@@ -107,7 +97,7 @@ Make sure sass is at least in 3.3.0 version to use advanced debuging in chrome.
 
 ::
 
-    gem install compass -v 1.0.0.alpha.19
+    gem install compass -v 1.0.0
     gem install sass -v 3.4.0
 
 Be sure to have
