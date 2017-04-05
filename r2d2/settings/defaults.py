@@ -5,10 +5,10 @@ import os.path
 import requests
 import sys
 
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
 PROJECT_ROOT = BASE_DIR
 
-project = lambda: os.path.dirname(os.path.realpath(__file__))
+project = lambda: os.path.dirname(os.path.join(os.path.realpath(__file__), os.path.pardir))
 location = lambda x: os.path.join(str(project()), str(x))
 
 ADMINS = (
