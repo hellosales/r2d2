@@ -39,7 +39,7 @@ amqp==1.4.9
 librabbitmq==1.6.1
 django-celery-email==1.1.4
 #/celery
-django-bower==5.1.0
+#django-bower==5.1.0
 django-filter==0.12.0
 django-templateaddons==0.1
 django-su==0.5.0
