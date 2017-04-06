@@ -13,14 +13,16 @@ PROJECT_ROOT = BASE_DIR
 project = lambda: os.path.dirname(os.path.join(os.path.realpath(__file__), os.path.pardir, os.path.pardir))
 location = lambda x: os.path.join(str(project()), os.path.pardir, str(x))
 
+WSGI_APPLICATION = 'r2d2.wsgi.application'
+
 ADMINS = (
-    ('Matt Laszuk', 'matt.laszuk@gmail.com')
+    ('Matt Laszuk', 'matt.laszuk@gmail.com'),
+    ('Deno Vichas', 'deno@fullstacksystems.com')
+
 )
 MANAGERS = ADMINS
 
-# Make this unique, and don't share it with anybody.
 SECRET_KEY = 'localvay&e&9hdwo_bniq-$z0j64q4w27-fm58nu9!m+i$nc0e!*!o0'
-
 
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'email-smtp.us-east-1.amazonaws.com'
@@ -29,13 +31,8 @@ EMAIL_HOST_USER = 'AKIAJKORSLH4UBCGMXVQ'
 EMAIL_PORT = 587
 DEFAULT_FROM_EMAIL = '"HelloSales" <hello@hello-sales.com>'
 
-
-WSGI_APPLICATION = 'r2d2.wsgi.application'
-
 FORCE_SCRIPT_NAME = ""
-
 TIME_ZONE = "US/Eastern"
-
 LANGUAGE_CODE = 'en'
 
 # If you set this to False, Django will make some optimizations so as not
@@ -47,6 +44,48 @@ DEFAULT_DATE_FORMAT = '%B %d, %Y'
 # This is defined here as a do-nothing function because we can't import
 # django.utils.translation -- that module depends on the settings.
 gettext_noop = lambda s: s
+
+
+# A sample logging configuration. The only tangible logging
+# performed by this configuration is to send an email to
+# the site admins on every HTTP 500 error when DEBUG=False.
+# See http://docs.djangoproject.com/en/dev/topics/logging for
+# more details on how to customize your logging configuration.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        }
+    },
+    'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler'
+        },
+        'applogfile': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(PROJECT_ROOT, 'r2d2.log'),
+            'maxBytes': 1024*1024*15,  # 15MB
+            'backupCount': 10,
+        }
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+        'APPNAME': {
+            'handlers': ['applogfile'],
+            'level': 'DEBUG',
+        }
+    }
+}
+
 
 # here is all the languages supported by the CMS
 PAGE_LANGUAGES = (
@@ -72,9 +111,6 @@ MEDIA_ROOT = location(os.path.join("site_media", "media"))
 MEDIA_URL = '/media/'
 
 STATIC_ROOT = location(os.path.join("site_media", "static"))
-
-print "!!!!!!!!!!!!!!!!"+location("static")
-
 
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [
