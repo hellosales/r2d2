@@ -1,11 +1,13 @@
 from defaults import *
 
 
-LOGGING['handlers']['applogfile']['filename'] = '/var/log/r2d2/r2d2.log'
-
 DEBUG = False
 
 ENV_PREFIX = 'api-hello-sales'
+
+LOGGING['handlers']['applogfile']['filename'] = '/var/log/r2d2/r2d2.log'
+
+DEFAULT_FROM_EMAIL = '"HelloSales" <hello@hello-sales.com>'
 
 AWS_STORAGE_BUCKET_NAME = 'files.hello-sales.com'
 MEDIA_URL = 'https://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME

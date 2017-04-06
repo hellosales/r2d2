@@ -79,7 +79,7 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
-        'APPNAME': {
+        'r2d2': {
             'handlers': ['applogfile'],
             'level': 'DEBUG',
         }

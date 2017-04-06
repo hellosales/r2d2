@@ -2,6 +2,8 @@ from defaults import *
 
 DEBUG = False
 
+LOGGING['handlers']['applogfile']['filename'] = '/var/log/r2d2/r2d2.log'
+
 DEFAULT_FROM_EMAIL = '"QA - HelloSales" <hello-qa@hello-sales.com>'
 
 AWS_STORAGE_BUCKET_NAME = 'files-qa.hello.sales'
