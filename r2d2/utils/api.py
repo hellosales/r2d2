@@ -44,7 +44,7 @@ class DjMoneyUpdateRatesAPI(GenericAPIView):
 
     def get(self, request):
         try:
-            command = update_rates.Command
+            command = update_rates.Command()
             command.handle('yesterday')
         except:
             # TODO:  should I return 500 or raise?
