@@ -14,5 +14,5 @@ urlpatterns = patterns(
     url(r'^accounts$', DataImporterAccountsAPI.as_view(), name='data-importer-accounts'),
     url(r'^generate-oauth-url$', DataImporterGenerateOauthUrl.as_view(), name='data-importer-generate-oauth-url'),
     url(r'^source-sugesstions$', SuggestionCreateAPI.as_view(), name='source-suggestions-api'),
-    url(r'^run-fetching-data$', DataImporterRunFetchingData.as_view(), name='data-importer-run-fetching-data'),
+    url(r'^schedule-fetching-data$', DataImporterRunFetchingData.as_view(), name='data-importer-schedule-fetching-data'),
 )
