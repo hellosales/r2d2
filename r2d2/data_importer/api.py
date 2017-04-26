@@ -12,6 +12,7 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
 from r2d2.accounts.models import Account
+from r2d2.accounts.permissions import IsSuperUser
 from r2d2.data_importer.models import SourceSuggestion
 from r2d2.data_importer.serializers import DataImporterAccountSerializer
 from r2d2.data_importer.serializers import SourceSuggestionSerializer
@@ -158,3 +159,16 @@ class SuggestionCreateAPI(UserFilteredMixin, CreateAPIView):
     """ API for creating source suggestions """
     serializer_class = SourceSuggestionSerializer
     queryset = SourceSuggestion.objects.all()
+
+
+class DataImporterRunFetchingData(GenericAPIView):
+    permission_classes = (IsSuperUser,)
+
+    def get(self, request):
+        try:
+            DataImporter.run_fetching_data()
+        except:
+            # TODO:  should I return 500 or raise?
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        return Response(status=status.HTTP_200_OK)
