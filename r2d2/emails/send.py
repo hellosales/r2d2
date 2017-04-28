@@ -10,12 +10,16 @@ from django.template.loader import render_to_string
 from premailer import Premailer
 
 cssutils.log.setLevel(logging.CRITICAL)
+logger = logging.getLogger(__name__)
 
 
-def send_email(template, to, subject, variables={}, fail_silently=False, cms=False, replace_variables={},
-               cc=None, bcc=None):
+def send_email(template, to, subject, variables={}, fail_silently=False, replace_variables={}, cc=None, bcc=None):
+
     if not isinstance(to, (list, tuple)):
         to = [to]
+
+    logger.info(u"Sending message '%s' to recipients: %s", subject, to)
+
     variables['site'] = Site.objects.get_current()
     variables['STATIC_URL'] = settings.STATIC_URL
     variables['MEDIA_URL'] = settings.MEDIA_URL
@@ -25,10 +29,12 @@ def send_email(template, to, subject, variables={}, fail_silently=False, cms=Fal
     replace_variables['protocol'] = protocol
     domain = variables['site'].domain
     replace_variables['domain'] = domain
+
     for key, value in replace_variables.iteritems():
         if not value:
             value = ''
         html = html.replace('{%s}' % key.upper(), value)
+
     # Update path to have domains
     base = protocol + domain
     html = Premailer(html,
@@ -40,4 +46,5 @@ def send_email(template, to, subject, variables={}, fail_silently=False, cms=Fal
                      base_url=base).transform()
     email = EmailMessage(subject, html, settings.DEFAULT_FROM_EMAIL, to, cc=cc, bcc=bcc)
     email.content_subtype = "html"
+
     email.send(fail_silently=fail_silently)
