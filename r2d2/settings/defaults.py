@@ -154,13 +154,13 @@ CORS_ALLOW_HEADERS = (
     'accept',
     'origin',
     'authorization',
+    'authentication',
     # 'x-csrftoken',
     # 'x-device-version',
     # 'x-app-version',
     # 'x-app-id',
     # 'x-device-model',
     # 'x-device-platform',
-    'authentication',
 )
 
 CORS_EXPOSE_HEADERS = (

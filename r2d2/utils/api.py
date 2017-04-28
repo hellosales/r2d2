@@ -11,6 +11,7 @@ import django.contrib.sessions.management.commands.clearsessions as clearsession
 
 from r2d2.accounts.permissions import IsSuperUser
 
+
 class BadRequestException(APIException):
     default_detail = 'Bad request'
 

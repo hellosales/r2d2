@@ -1,6 +1,5 @@
 from defaults import *
 
-
 DEBUG = False
 
 ENV_PREFIX = 'api-hello-sales'
