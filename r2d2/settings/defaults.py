@@ -154,13 +154,13 @@ CORS_ALLOW_HEADERS = (
     'accept',
     'origin',
     'authorization',
+    'authentication',
     # 'x-csrftoken',
     # 'x-device-version',
     # 'x-app-version',
     # 'x-app-id',
     # 'x-device-model',
     # 'x-device-platform',
-    'authentication',
 )
 
 CORS_EXPOSE_HEADERS = (
@@ -197,6 +197,11 @@ PROJECT_APPS = (
 )
 
 INSTALLED_APPS = (
+     'basic_cms',
+     'compressor',
+     'constance',
+     'constance.backends.database',
+     'corsheaders',
      'django.contrib.auth',
      'django.contrib.contenttypes',
      'django.contrib.sessions',
@@ -204,34 +209,29 @@ INSTALLED_APPS = (
      'django.contrib.messages',
      'django.contrib.staticfiles',
      'django.contrib.humanize',
-     'basic_cms',
-     'compressor',
-     'constance',
-     'constance.backends.database',
-     'taggit',
-     # 'mptt',
-     "tinymce",
-     'grappelli',
-     'filebrowser',
-     # 'modeltranslation',
+     'django_extensions',
+     'djcelery',
+     'djcelery_email',
      'django_su',
      'django.contrib.admin',
      'djmoney_rates',
      'django_mongoengine',
      'django_mongoengine.admin_support',
-     'raven.contrib.django.raven_compat',
      'django_jenkins',
-     'ydcommon',
-     'djcelery',
-     'djcelery_email',
+     # 'mptt',
+     'grappelli',
+     'filebrowser',
+     # 'modeltranslation',
+     'raven.contrib.django.raven_compat',
      'rest_framework_swagger',
      'rest_framework',
      'rest_framework.authtoken',
-     'templateaddons',
-     'corsheaders',
      'sorl.thumbnail',
-     'django_extensions'
- ) + PROJECT_APPS
+     'taggit',
+     'templateaddons',
+     "tinymce",
+     'ydcommon'
+) + PROJECT_APPS
 
 
 # SOUTH_MIGRATION_MODULES = {
