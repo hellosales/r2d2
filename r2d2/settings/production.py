@@ -22,6 +22,8 @@ SHOPIFY_API_SECRET = '9b6bd9a8ac0b7a7803fa735de0196989'
 SQUAREUP_API_KEY = 'sq0idp-bOxK1iCqtPUHmobFsqSsVg'
 SQUAREUP_API_SECRET = 'sq0csp-3ZxZ0wxmKVlPICcp6lU_XoUzWpbIuWgwiyPVGC362vU'
 
+STRIPE_API_KEY = 'sk_live_ifufH5vjeCCodNsjg6Fhhrie'
+
 CONSTANCE_CONFIG = {
     'CLIENT_DOMAIN': ('hello-sales.com', 'client domain'),
     'ALERTS_RECEIVERS': ('matt.laszuk@gmail.com', 'receivers of alerts - comma separated list')

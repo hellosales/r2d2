@@ -387,7 +387,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'r2d2.accounts.authentication.TokenAuthentication',
-        # 'r2d2.accounts.authentication.SessionAuthentication',
+        'r2d2.accounts.authentication.SessionAuthentication',
     ),
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
     'TEST_REQUEST_RENDERER_CLASSES': (
@@ -415,7 +415,8 @@ GOOGLE_TAG_MANAGER = ''
 
 AWS_ACCESS_KEY_ID = 'AKIAJBHLUW7GIEDLQXGQ'
 AWS_SECRET_ACCESS_KEY = '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'
-AWS_STORAGE_BUCKET_NAME = 'r2d2-dev-arabella'
+#AWS_STORAGE_BUCKET_NAME = 'r2d2-dev-arabella'
+AWS_STORAGE_BUCKET_NAME = 'files-dev.hello-sales.com'
 AWS_QUERYSTRING_AUTH = False
 DEFAULT_FILE_STORAGE = 'r2d2.utils.storage.S3BotoStorageFixed'
 
@@ -468,7 +469,7 @@ DJANGO_MONEY_RATES = {
 # here you can put settigns that can be edited through panel
 CONSTANCE_CONFIG = {
     'CLIENT_DOMAIN': ('localhost:3000', 'client domain'),
-    'ALERTS_RECEIVERS': ('team@ydtech.co', 'receivers of alerts - comma separated list')
+    'ALERTS_RECEIVERS': ('systemalerts@hello-sales.com', 'receivers of alerts - comma separated list')
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 
