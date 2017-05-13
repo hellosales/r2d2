@@ -1,5 +1,5 @@
-.. image:: https://requires.io/bitbucket/arabellatech/r2d2/requirements.svg?branch=develop
-     :target: https://requires.io/bitbucket/arabellatech/r2d2/requirements/?branch=develop
+.. image:: https://requires.io/bitbucket/mlasz/r2d2/requirements.svg?branch=develop
+     :target: https://requires.io/bitbucket/mlasz/r2d2/requirements/?branch=develop
      :alt: Requirements Status
 
 ********
@@ -58,7 +58,7 @@ Clone the Github repository if you have not done so yet. You will need a git acc
 
 ::
 
-    git clone git@bitbucket.com:ArabellaTech/r2d2.git
+    git clone git@bitbucket.com:mlasz/r2d2.git
 
 Move into the newly created Project Data folder.
 
@@ -241,4 +241,3 @@ Logins for each services can be found in the following document
 
 If you get empty string instead of authorization_url it probably means you've already authorized the account - check in
 admin if you have access token for it.
-
