@@ -7,16 +7,14 @@ from random import randint
 
 from django.utils.timezone import now
 from rest_framework import status
-from rest_framework.generics import CreateAPIView
-from rest_framework.generics import GenericAPIView
+from rest_framework.generics import CreateAPIView, GenericAPIView
 from rest_framework.response import Response
 
 from r2d2.accounts.models import Account
 from r2d2.accounts.permissions import IsSuperUser
 from r2d2.data_importer.models import SourceSuggestion
-from r2d2.data_importer.serializers import DataImporterAccountSerializer
-from r2d2.data_importer.serializers import SourceSuggestionSerializer
-from r2d2.data_importer.tasks import monitor_rate_limit
+from r2d2.data_importer.serializers import DataImporterAccountSerializer, SourceSuggestionSerializer
+from r2d2.data_importer.tasks import fetch_data_task, monitor_rate_limit
 from r2d2.utils.rest_api_helpers import UserFilteredMixin
 from r2d2.utils.class_tools import name_for_class
 
@@ -175,6 +173,19 @@ class SuggestionCreateAPI(UserFilteredMixin, CreateAPIView):
     """ API for creating source suggestions """
     serializer_class = SourceSuggestionSerializer
     queryset = SourceSuggestion.objects.all()
+
+
+class DataImporterRunFetchingData(GenericAPIView):
+    permission_classes = (IsSuperUser,)
+
+    def get(self, request):
+        try:
+            DataImporter.run_fetching_data()
+        except:
+            # TODO:  should I return 500 or raise?
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response(status=status.HTTP_200_OK)
 
 
 class DataImporterMonitorRateLimits(GenericAPIView):
