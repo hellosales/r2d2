@@ -5,6 +5,7 @@ from decimal import Decimal
 from django.utils import timezone
 
 from r2d2.common_layer.models import CommonTransaction
+from r2d2.data_importer.models import RateLimitError, RetriableError
 from r2d2.etsy_api.models import EtsyAccount
 from r2d2.etsy_api.models import ImportedEtsyReceipt
 from r2d2.etsy_api.models import ImportedEtsyShop
@@ -40,6 +41,8 @@ ETSY_MAPPED_DATA = {
     'total_total': Decimal('1.90')
 }
 
+ERROR_429 = 'Rate Limiting for API 429'
+ERROR_500 = 'Rate Limiting for API 500'
 
 class TestImport(APIBaseTestCase):
     """ test if importer flow works """
@@ -92,3 +95,16 @@ class TestImport(APIBaseTestCase):
                             self.assertEqual(CommonTransaction.objects.count(), 1)
                             common_transaction = CommonTransaction.objects.all()[0]
                             self.assertEqual(common_transaction.source, "Etsy")
+                            
+                            # Test 429 and 50x handling
+                            mocked_receipts.side_effect = Exception(ERROR_429)
+                            self.account.fetch_status = EtsyAccount.FETCH_SCHEDULED
+                            
+                            with self.assertRaises(RateLimitError) as re:
+                                self.account.fetch_data()
+                            
+                            mocked_receipts.side_effect = Exception(ERROR_500)
+                            self.account.fetch_status = EtsyAccount.FETCH_SCHEDULED
+
+                            with self.assertRaises(RetriableError) as re:
+                                self.account.fetch_data()

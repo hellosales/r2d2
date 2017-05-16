@@ -27,6 +27,7 @@ class SquareupAccount(AbstractDataProvider):
 
     token_expiration = models.DateTimeField(null=True, blank=True, db_index=True)
     merchant_id = models.CharField(max_length=255, null=True, blank=True)
+    update_timeframe = models.IntegerField(default=settings.SQUAREUP_DEFAULT_UPDATE_TIMEFRAME)
 
     def __init__(self, *args, **kwargs):
         super(SquareupAccount, self).__init__(*args, **kwargs)
@@ -40,6 +41,11 @@ class SquareupAccount(AbstractDataProvider):
     @classmethod
     def get_error_log_class(cls):
         return SquareupErrorLog
+
+    @classmethod
+    def get_fetch_data_task(cls):
+        from r2d2.squareup_api.tasks import fetch_data
+        return fetch_data
 
     @classmethod
     def get_oauth_url_serializer(cls):
@@ -108,6 +114,8 @@ class SquareupAccount(AbstractDataProvider):
                                 headers={'Authorization': 'Bearer %s' % self.access_token})
         if response.status_code == 200:
             return response.json()
+        elif self.check_for_retry_errors(response):
+            return  # will throw exception
         else:
             raise Exception('%d / %s' % (response.status_code, response.json().get('type', '')))
 
@@ -195,10 +203,20 @@ class SquareupAccount(AbstractDataProvider):
         return mapped_data
 
     def _fetch_data_inner(self):
-        start_time = self.MIN_TIME
+        """
+        Fetch transaction data worker.  Decides how much data to re-download (i.e. update) based on dynamically
+        determined transaction velocity from previous download.
+        """
+        txn_summary = []
         now = timezone.now()
-        while True:
+        if 'payment' in self.last_api_items_dates:
+            end_time = parse_date(self.last_api_items_dates['payment'])
+            start_time = end_time - timedelta(self.update_timeframe)
+        else:
+            start_time = self.MIN_TIME
             end_time = start_time + timedelta(days=365)
+
+        while True:
             if end_time > now:
                 end_time = now
 
@@ -210,15 +228,44 @@ class SquareupAccount(AbstractDataProvider):
 
                 # mapping data & sending it out
                 mapped_data = self.map_data(imported_squareup_payment)
+                txn_summary.append((mapped_data['date'], 1))
                 if mapped_data['products']:  # there are transactions with no sale - strange
                     object_imported.send(sender=None, importer_account=self, mapped_data=mapped_data)
 
+            if len(payments) > 0:
+                self.last_api_items_dates['payment'] = parse_date(payments[-1]['created_at']).isoformat()
+
             if len(payments) == self.MAX_REQUEST_LIMIT:
                 start_time = parse_date(payments[-1]['created_at'])
+                end_time = start_time + timedelta(days=365)
             elif end_time < now:
                 start_time = end_time
+                end_time = start_time + timedelta(days=365)
             else:
+                self.update_timeframe = self.calculate_update_timeframe(txn_summary)
+                self.save()
                 break
+
+    @classmethod
+    def calculate_update_timeframe(cls, txns):
+        """
+        Takes the passed transaction distribution to determine the number of days in the past that transactions should
+        be downloaded to keep delta transaction downloads to a minimum.
+        """
+        import pandas as pd
+        df = pd.DataFrame(txns, columns=["date", "count"])
+        df.index = pd.to_datetime(df.date)
+        df = df.groupby(pd.TimeGrouper("1D"))
+        mean = df.agg({'date': 'count'}).mean().date
+
+        if mean > settings.SQUAREUP_HIGH_VOLUME_LEVEL:
+            return settings.SQUAREUP_HIGH_UPDATE_TIMEFRAME
+        elif mean > settings.SQUAREUP_MEDIUM_VOLUME_LEVEL:
+            return settings.SQUAREUP_MEDIUM_UPDATE_TIMEFRAME
+        elif mean > settings.SQUAREUP_LOW_VOLUME_LEVEL:
+            return settings.SQUAREUP_LOW_UPDATE_TIMEFRAME
+        else:
+            return settings.SQUAREUP_DEFAULT_UPDATE_TIMEFRAME
 
     def __unicode__(self):
         return self.name

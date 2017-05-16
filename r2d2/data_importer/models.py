@@ -3,8 +3,9 @@
 from constance import config
 from datetime import timedelta
 
+from django import db
 from django.conf import settings
-from django.db import models
+from django.db import models, OperationalError
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.dateformat import DateFormat
@@ -43,6 +44,7 @@ class AbstractDataProvider(models.Model):
 
     OAUTH_ERROR = "There was a problem authorizing this channel. Please try again or contact Hello Sales."
     NAME_NOT_UNIQUE_ERROR = "Sorry, that Channel Name already exists. Please choose a different name for this Channel."
+    MAX_RETRIES = settings.MAX_DATA_IMPORTER_RETRIES  # set this way as an override-able settings default
 
     class Meta:
         abstract = True
@@ -54,15 +56,55 @@ class AbstractDataProvider(models.Model):
         raise NotImplementedError
 
     @classmethod
+    def get_fetch_data_task(cls):
+        """
+        Should return the task method (not class) for the specific data provider
+        """
+        raise NotImplementedError
+
+    @classmethod
     def get_error_log_class(cls):
         raise NotImplementedError
+
+    @classmethod
+    def check_for_retry_errors(cls, response):
+        """
+        Checks the passed HTTP response for rate limiting and retriable errors.
+        If found throws the appropriate exception.  If none found returns False.
+
+        NOTE:  Each channel implementation of header info may be different so this
+        should probably be overridden for each channel API implementation.
+
+        """
+        retry_time = None
+        rate_limit = None
+        if response.status_code == 429:
+            if response.headers['x-ratelimit-limit']:
+                rate_limit = response.headers['x-ratelimit-limit']
+            if response.headers['x-rate-limit-limit']:
+                rate_limit = response.headers['x-rate-limit-limit']
+
+            re = RateLimitError('%d / %s' % (response.status_code, response.json().get('type', '')), rate_limit=rate_limit)
+            raise re
+        elif response.status_code >= 500:
+            if response.headers['retry-after']:
+                retry_time = response.headers['retry-after']
+
+            re = RetriableError('%d / %s' % (response.status_code, response.json().get('type', '')), retry_time=retry_time)
+            raise re
+
+        return False
 
     def _fetch_data_inner(self):
         raise NotImplementedError
 
-    def log_error(self, error):
+    def log_error(self, error, with_status=True):
         error_cls = self.get_error_log_class()
         error_cls.objects.create(account=self, error=error)
+
+        if with_status:
+            self.fetch_status = self.FETCH_FAILED
+            self.save()
 
         # send email
         client_domain = config.CLIENT_DOMAIN
@@ -74,6 +116,17 @@ class AbstractDataProvider(models.Model):
                     'account_class': self.__class__.__name__}, bcc=bcc)
 
     def fetch_data(self):
+        """
+        Entry point for call to remote channel API for data fetching.  Calls
+        _fetch_data_inner() on child implementation to do channel-specific work.
+
+        Because error conditions are specific to each channel this method should
+        pass on exceptions thrown by _fetch_data_inner().  Error handling will
+        be done in the calling method instead.  Currently error handling is only
+        done in this method for status control.
+
+        TODO:  re-evaluate logic around fetched_from_all and simplify if possible
+        """
         from r2d2.data_importer.api import DataImporter
 
         if self.fetch_status != self.FETCH_SCHEDULED:
@@ -82,20 +135,29 @@ class AbstractDataProvider(models.Model):
         self.save()
 
         now = timezone.now()
+
         try:
             self._fetch_data_inner()
-            self.fetch_status = self.FETCH_SUCCESS
-            self.last_successfull_call = now
-        except:
-            # "try twice"
-            try:
-                self._fetch_data_inner()
-                self.fetch_status = self.FETCH_SUCCESS
-                self.last_successfull_call = now
-            except Exception, e:
-                self.fetch_status = self.FETCH_FAILED
-                self.log_error(unicode(e))
-        self.save()
+        except (RateLimitError, RetriableError) as re:
+            self.fetch_status = self.FETCH_SCHEDULED
+            self.save()
+            raise re  # IMPORTANT!!
+
+        self.fetch_status = self.FETCH_SUCCESS
+        self.last_successfull_call = now
+
+        # MySQL and Django interoperability bug kludge.  MySQL closes connections silently according to its wait_timeout
+        # setting but if Django is mid-process it won't notice, though it respects its CONN_MAX_AGE setting.  This
+        # affects us at transaction download here, so we check for the specific error then close the connection if
+        # needed.  See https://code.djangoproject.com/ticket/21597
+        try:
+            self.save()
+        except OperationalError as oe:
+            if len(oe.args) == 2 and oe.args[0] == 2006 and oe.args[1] == 'MySQL server has gone away':
+                db.connection.close()
+                self.save()
+            else:
+                raise
 
         # send out signal
         success = self.fetch_status == self.FETCH_SUCCESS
@@ -174,6 +236,30 @@ class AbstractErrorLog(models.Model):
         if not self.error_description:
             self.error_description = self.map_error(self.error)
         return super(AbstractErrorLog, self).save(*args, **kwargs)
+
+
+class RetriableError(Exception):
+    """
+    Indicates that the remote API call returned and error that we should retry
+    the call later.  Allows a retry time to be set for access by the catcher.
+
+    retry_time is in seconds
+    """
+    def __init__(self, msg, retry_time=None):
+        super(RetriableError, self).__init__(msg)
+        self.retry_time = retry_time
+
+
+class RateLimitError(RetriableError):
+    """
+    Indicates that the remote API call returned and error that we should set
+    rate limits on future calls.  Allows a rate limit to be set for access by the catcher.
+
+    rate_limit is in calls per minute
+    """
+    def __init__(self, msg, rate_limit=None, retry_time=None):
+        super(RateLimitError, self).__init__(msg, retry_time)
+        self.rate_limit = rate_limit
 
 
 def reconstitute_data_provider(name, pk):

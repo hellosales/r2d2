@@ -12,11 +12,13 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
 from r2d2.accounts.models import Account
+from r2d2.accounts.permissions import IsSuperUser
 from r2d2.data_importer.models import SourceSuggestion
 from r2d2.data_importer.serializers import DataImporterAccountSerializer
 from r2d2.data_importer.serializers import SourceSuggestionSerializer
-from r2d2.data_importer.tasks import fetch_data_task
+from r2d2.data_importer.tasks import monitor_rate_limit
 from r2d2.utils.rest_api_helpers import UserFilteredMixin
+from r2d2.utils.class_tools import name_for_class
 
 
 class DataImporter(object):
@@ -57,9 +59,15 @@ class DataImporter(object):
 
     @classmethod
     def create_import_task(cls, model, pk):
-        """ create celery task for data importer """
+        """
+        Create celery task for data importer.
+        Put each task in a queue for that specific channel.  Note routing_key
+        isn't needed if we create queues automatically.
+        """
         model.objects.filter(pk=pk).update(fetch_status=model.FETCH_SCHEDULED, fetch_scheduled_at=now())
-        fetch_data_task.apply_async(args=[model, pk], countdown=60 + randint(1, 200))
+        model.get_fetch_data_task().apply_async(args=[pk],
+                                                countdown=60 + randint(1, 200),
+                                                queue=model.__name__)
 
     @classmethod
     def run_fetching_data(cls):
@@ -73,6 +81,15 @@ class DataImporter(object):
             pks = query.values_list('pk', flat=True)
             for pk in pks:
                 cls.create_import_task(model, pk)
+
+    @classmethod
+    def monitor_queue_rate_limits(cls, worker, queue, task):
+        """
+        Launches a monitor to reset rate limits on the given queues, or on all queues if
+        called with no arguments
+        """
+        monitor_rate_limit.apply_async(args=[worker, task],
+                                       queue=queue)
 
 
 class DataImporterAccountsAPI(GenericAPIView):
@@ -158,3 +175,23 @@ class SuggestionCreateAPI(UserFilteredMixin, CreateAPIView):
     """ API for creating source suggestions """
     serializer_class = SourceSuggestionSerializer
     queryset = SourceSuggestion.objects.all()
+
+
+class DataImporterMonitorRateLimits(GenericAPIView):
+    permission_classes = (IsSuperUser,)
+
+    def get(self, request):
+        worker = request.query_params.get('worker', None)
+        queue = request.query_params.get('queue', None)
+        task = request.query_params.get('task', None)
+
+        if not worker or not queue or not task:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            DataImporter.monitor_queue_rate_limits(worker, queue, task)
+        except:
+            # TODO:  should I return 500 or raise?
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response(status=status.HTTP_200_OK)

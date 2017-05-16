@@ -15,6 +15,7 @@ from r2d2.common_layer.signals import object_imported
 from r2d2.data_importer.api import DataImporter
 from r2d2.data_importer.models import AbstractDataProvider
 from r2d2.data_importer.models import AbstractErrorLog
+from r2d2.data_importer.models import RetriableError, RateLimitError
 from r2d2.utils.documents import StorageDynamicDocument
 
 
@@ -38,6 +39,11 @@ class EtsyAccount(AbstractDataProvider):
     @classmethod
     def get_error_log_class(cls):
         return EtsyErrorLog
+
+    @classmethod
+    def get_fetch_data_task(cls):
+        from r2d2.etsy_api.tasks import fetch_data
+        return fetch_data
 
     @classmethod
     def get_oauth_url_serializer(cls):
@@ -194,22 +200,31 @@ class EtsyAccount(AbstractDataProvider):
         if not self._prepare_api():
             raise Exception('failed to set up API')
 
-        user_id = self._fetch_user()
-        shops_ids = self._fetch_user_shops(user_id)
-        for shop_id in shops_ids:
-            self._fetch_transactions(shop_id)
-            receipts = self._fetch_receipts(shop_id)
+        try:
+            user_id = self._fetch_user()
+            shops_ids = self._fetch_user_shops(user_id)
+            for shop_id in shops_ids:
+                self._fetch_transactions(shop_id)
+                receipts = self._fetch_receipts(shop_id)
 
-            for receipt in receipts:
-                transactions = ImportedEtsyTransaction.objects.filter(receipt_id=receipt.receipt_id)
-                mapped_data = self.map_data(receipt, transactions)
-                object_imported.send(sender=None, importer_account=self, mapped_data=mapped_data)
+                for receipt in receipts:
+                    transactions = ImportedEtsyTransaction.objects.filter(receipt_id=receipt.receipt_id)
+                    mapped_data = self.map_data(receipt, transactions)
+                    object_imported.send(sender=None, importer_account=self, mapped_data=mapped_data)
 
-            # ## it is reduntant, but if Matt decide he wants us to import it:
-            # for receipt_id in recepit_ids:
-            #     # self._etsy_api.findShopPaymentByReceipt(shop_id=, receipt_id=)
-            #     payment_id = self._fetch_payment(shop_id, receipt_id)
-            #     self._fetch_payment_adjustment(payment_id)  # self._etsy_api.findPaymentAdjustments(payment_id=)
+                    # ## it is redundant, but if Matt decide he wants us to import it:
+                    # for receipt_id in recepit_ids:
+                    #     # self._etsy_api.findShopPaymentByReceipt(shop_id=, receipt_id=)
+                    #     payment_id = self._fetch_payment(shop_id, receipt_id)
+                    #     self._fetch_payment_adjustment(payment_id)  # self._etsy_api.findPaymentAdjustments(payment_id=)
+        except Exception as e:
+            ue = unicode(e)
+            if '429' in ue:
+                raise RateLimitError(ue)
+            elif '500' in ue or '503' in ue:
+                raise RetriableError(ue)
+            else:
+                raise e
 
     def __init__(self, *args, **kwargs):
         super(EtsyAccount, self).__init__(*args, **kwargs)

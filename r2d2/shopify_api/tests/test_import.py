@@ -1,13 +1,16 @@
 import mock
+from mock import Mock
 
 from datetime import date
 from decimal import Decimal
 from freezegun import freeze_time
 from shopify import Order
+from pyactiveresource.connection import ClientError, ServerError, Response
 
 from django.utils import timezone
 
 from r2d2.common_layer.models import CommonTransaction
+from r2d2.data_importer.models import RateLimitError, RetriableError
 from r2d2.shopify_api.models import ImportedShopifyOrder
 from r2d2.shopify_api.models import ShopifyStore
 from r2d2.shopify_api.tests.sample_data import SHOPIFY_ORDERS
@@ -50,6 +53,11 @@ SHOPIFY_MAPPED_DATA = {
     'total_total': Decimal('409.94')
 }
 
+ERROR_429 = 'Rate Limiting for API 429'
+ERROR_500 = 'Rate Limiting for API 500'
+RESPONSE_HEADERS_429 = {'x-ratelimit-limit': 1,
+                        'x-rate-limit-limit': 1}
+RESPONSE_HEADERS_500 = {'retry-after': 1 }
 
 class TestImport(APIBaseTestCase):
     """ test if importer flow works """
@@ -93,6 +101,27 @@ class TestImport(APIBaseTestCase):
 
                 self.assertEqual(ImportedShopifyOrder.objects.filter(account_id=self.account.id).count(), 1)
                 imported_shopify_order = ImportedShopifyOrder.objects.filter(account_id=self.account.id)[0]
+
+                # Test 429 and 50x handling
+                mock_attrs = {'code': 429,
+                              'read.return_value': ERROR_429,
+                              'headers': RESPONSE_HEADERS_429,
+                              'msg': ERROR_429}
+                response = Mock(**mock_attrs)
+                mocked_find.side_effect = ClientError(response)
+                self.account.fetch_status = ShopifyStore.FETCH_SCHEDULED
+                with self.assertRaises(RateLimitError) as re:
+                    self.account.fetch_data()
+                
+                mock_attrs = {'code': 500,
+                              'read.return_value': ERROR_500,
+                              'headers': RESPONSE_HEADERS_500,
+                              'msg': ERROR_500}
+                response = Mock(**mock_attrs)
+                mocked_find.side_effect = ServerError(response)
+                self.account.fetch_status = ShopifyStore.FETCH_SCHEDULED
+                with self.assertRaises(RetriableError) as re:
+                    self.account.fetch_data()
 
                 # test mapping
                 mapped_data = self.account.map_data(imported_shopify_order)
