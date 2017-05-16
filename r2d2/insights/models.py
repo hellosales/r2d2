@@ -3,6 +3,7 @@
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_save
+from django.utils import timezone
 
 from r2d2.accounts.models import Account
 from r2d2.insights.generators import InsightDispatcher
@@ -36,7 +37,7 @@ class Insight(models.Model):
     model to store served insights
     """
     user = models.ForeignKey(Account, limit_choices_to={"approval_status": Account.APPROVED, 'is_active': True})
-    created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(default=timezone.now)
     text = models.TextField()
     generator_class = models.CharField(max_length=100, editable=False)
     is_initial = models.BooleanField()  # whether this was the initial insight for this user
