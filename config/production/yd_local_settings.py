@@ -16,7 +16,7 @@ EMAIL_PORT = 587  # fixme
 DEFAULT_FROM_EMAIL = '"HelloSales" <hello@hello-sales.com>'
 
 ADMINS = (
-    ('Team', 'team@ydtech.co'),
+    ('Team', 'systemalerts@hello-sales.com'),
     ('Matt Laszuk', 'matt.laszuk@gmail.com'),
 )
 
@@ -76,12 +76,10 @@ SQUAREUP_API_SECRET = 'sq0csp-3ZxZ0wxmKVlPICcp6lU_XoUzWpbIuWgwiyPVGC362vU'
 
 CONSTANCE_CONFIG = {
     'CLIENT_DOMAIN': ('hello-sales.com', 'client domain'),
-    'ALERTS_RECEIVERS': ('team@ydtech.co,matt.laszuk@gmail.com', 'receivers of alerts - comma separated list')
+    'ALERTS_RECEIVERS': ('systemalerts@hello-sales.com,matt.laszuk@gmail.com', 'receivers of alerts - comma separated list')
 }
 
 import raven
 
 RAVEN_CONFIG = {
-    'dsn': 'https://97293106f2a543859de54e596489f320:7a544014f02644f289d2353dc452f2bb@sentry.arabel.la/17',
-    'private_dsn': 'https://97293106f2a543859de54e596489f320@sentry.arabel.la/17',
 }

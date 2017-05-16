@@ -7,7 +7,7 @@ location = lambda x: os.path.join(str(project()), str(x))
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 ADMINS = (
-    ('Team', 'team@ydtech.co'),
+    ('Team', 'systemalerts@hello-sales.com'),
 )
 
 MANAGERS = ADMINS
@@ -64,10 +64,8 @@ SQUAREUP_API_SECRET = 'sq0csp-xSFx5gcCvqavEJsJx2m0E1vh0rdupk6MhcK9_8a2Smw'
 
 CONSTANCE_CONFIG = {
     'CLIENT_DOMAIN': ('r2d2-qa.arabel.la', 'client domain'),
-    'ALERTS_RECEIVERS': ('team@ydtech.co', 'receivers of alerts - comma separated list')
+    'ALERTS_RECEIVERS': ('systemalerts@hello-sales.com', 'receivers of alerts - comma separated list')
 }
 
 RAVEN_CONFIG = {
-    'dsn': 'https://97293106f2a543859de54e596489f320:7a544014f02644f289d2353dc452f2bb@sentry.arabel.la/7',
-    'private_dsn': 'https://97293106f2a543859de54e596489f320@sentry.arabel.la/7',
 }
