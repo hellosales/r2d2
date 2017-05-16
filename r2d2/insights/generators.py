@@ -1951,7 +1951,7 @@ def fancyDateTimeDeltaFormat(dt, from_date=datetime.now(), levels=2):
             if value > 1:
                 period += "s"
             fmt.append("%s %s" % (value, period))
-        count_levels += 1
+            count_levels += 1
         if (count_levels >= levels):
             break
     return (", ".join(fmt))

@@ -7,6 +7,7 @@ from rest_framework import serializers
 
 from r2d2.common_layer.models import CommonTransaction
 from r2d2.etsy_api.models import EtsyAccount
+from r2d2.stripe_api.models import StripeAccount
 from r2d2.insights.models import Insight
 from r2d2.insights.models import InsightAttachment
 from r2d2.shopify_api.models import ShopifyStore
@@ -54,7 +55,8 @@ class HeaderDataSerializer(R2D2Serializer):
     def get_channels_number(self, obj):
         return EtsyAccount.objects.filter(user=obj, is_active=True).count() + \
             ShopifyStore.objects.filter(user=obj, is_active=True).count() + \
-            SquareupAccount.objects.filter(user=obj, is_active=True).count()
+            SquareupAccount.objects.filter(user=obj, is_active=True).count() + \
+            StripeAccount.objects.filter(user=obj, is_active=True).count()
 
     def get_insights_number(self, obj):
         return Insight.objects.filter(user=obj).count()

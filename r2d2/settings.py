@@ -161,6 +161,7 @@ PROJECT_APPS = (
     'r2d2.notifications',
     'r2d2.shopify_api',
     'r2d2.squareup_api',
+    'r2d2.stripe_api',
     'r2d2.utils',
 )
 
@@ -384,6 +385,7 @@ AWS_STORAGE_BUCKET_NAME = 'r2d2-dev-arabella'
 AWS_QUERYSTRING_AUTH = False
 DEFAULT_FILE_STORAGE = 'r2d2.utils.storage.S3BotoStorageFixed'
 
+
 # Max # of times the importer will retry a channel API call before giving up for that call
 MAX_DATA_IMPORTER_RETRIES = 10
 
@@ -397,9 +399,10 @@ RATE_LIMIT_QUEUE_CHECK_COUNTDOWN = 20
 # Global remote API rate limit, in case our code begins to rate limit error without being caught (/sec)
 DEFAULT_CHANNEL_API_RATE_LIMIT = 2
 
-SHOPIFY_API_KEY = '25eaaa7692987d0c9fd9837f5716577f'
-SHOPIFY_API_SECRET = '508aa494fd0babdda52223c92eaf8a40'
-#  SHOPIFY_SCOPES = ['read_content', 'read_themes', 'read_products', 'read_customers', 'read_orders',
+# Shopify
+SHOPIFY_API_KEY = '9701bcb247e85adcb062a0b210d5f1cb'
+SHOPIFY_API_SECRET = 'f8070f057e7bcc15a64a881d07d5b3f8'
+# SHOPIFY_SCOPES = ['read_content', 'read_themes', 'read_products', 'read_customers', 'read_orders',
 #                  'read_script_tags', 'read_fulfillments', 'read_shipping']
 SHOPIFY_SCOPES = ['read_orders']
 SHOPIFY_CALLBACK_ENDPOINT = '/shopify/auth/callback'
@@ -407,6 +410,7 @@ SHOPIFY_RATE_LIMIT = 2  # Number of calls allowed per second.  See https://help.
 # other possible scopes:
 # write_themes, write_products, write_customers, write_orders, write_script_tags, write_fulfillments, write_shipping
 
+# Etsy
 # matt's keys
 ETSY_API_KEY = "7gw45bcpljnujp2wlfe6398b"
 ETSY_API_SECRET = "zpruv2b1cs"
@@ -434,6 +438,16 @@ SQUAREUP_MEDIUM_UPDATE_TIMEFRAME = 60  # Days to go back to look for transaction
 SQUAREUP_LOW_VOLUME_LEVEL = 250  # mean # transactions/day
 SQUAREUP_LOW_UPDATE_TIMEFRAME = 90  # Days to go back to look for transaction updates
 SQUAREUP_DEFAULT_UPDATE_TIMEFRAME = 180  # Days to go back to look for transaction updates
+
+# Stripe
+STRIPE_API_KEY = 'sk_test_NHzDG8LysdhmJq3o6cGNyHSG'
+STRIPE_CLIENT_ID = 'ca_A76NdvjLvYuqRLgpsgAJyhBPYH7LXSFC'
+STRIPE_BASE_URL = 'https://connect.stripe.com/'
+STRIPE_SCOPE = 'read_only'
+STRIPE_RESPONSE_TYPE = 'code'
+STRIPE_CALLBACK_ENDPOINT = '/stripe/auth/callback?'
+STRIPE_AUTHORIZATION_ENDPOINT = STRIPE_BASE_URL + 'oauth/authorize'
+STRIPE_ACCESS_TOKEN_ENDPOINT = STRIPE_BASE_URL + 'oauth/token'
 
 DJANGO_MONEY_RATES = {
     'DEFAULT_BACKEND': 'djmoney_rates.backends.CurrencyLayerBackend',
