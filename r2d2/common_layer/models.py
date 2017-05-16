@@ -89,12 +89,16 @@ class CommonTransactionDataFrame():
             find_dict['data_provider_id'] = data_provider_id
         if source:
             find_dict['source'] = source
-        if start_date:
-            find_dict['start_date'] = start_date
-        if end_date:
-            find_dict['end_date'] = end_date
         if transaction_id:
             find_dict['transaction_id'] = transaction_id
+
+        if start_date or end_date:
+            date_dict = {}
+            if start_date:
+                date_dict['$gte'] = start_date
+            if end_date:
+                date_dict['$lte'] = end_date
+            find_dict['date'] = date_dict
 
         results = list(coll.find(find_dict))
 
