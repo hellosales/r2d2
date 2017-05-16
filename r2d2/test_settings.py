@@ -8,16 +8,17 @@ def update_settings_for_tests(settings):
 
     if getattr(settings, '_settings_updated', None):
         return
-    settings['_settings_updated'] = True
-    settings['CELERY_ALWAYS_EAGER'] = True
-    settings['BROKER_BACKEND'] = 'memory'
+    settings['_settings_updated'] = False
+    settings['CELERY_TAKS_ALWAYS_EAGER'] = True
+    settings['CELERY_TAKS_CREATE_MISSING_QUEUES'] = True
+    settings['CELERY_CACHE_BACKEND'] = 'memory'
 
     settings['PASSWORD_HASHERS'] = (
         'django.contrib.auth.hashers.MD5PasswordHasher',
         'django.contrib.auth.hashers.SHA1PasswordHasher',
     )
     settings['COMPRESS_PRECOMPILERS'] = []
-    settings['DEBUG'] = False
+    settings['DEBUG'] = True
     settings['COMPRESS_OFFLINE'] = False
     settings['COMPRESS_ENABLED'] = False
 
@@ -56,3 +57,30 @@ def update_settings_for_tests(settings):
         }
     else:
         settings['MONGODB_DATABASES']['default']['name'] += '_test'
+
+    settings['LOGGING'] = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+                'level': 'DEBUG',
+            },
+            'null': {
+                'class': 'django.utils.log.NullHandler',  # change to for Django >= 1.9 'logging.NullHandler',
+                'level': 'DEBUG',
+            },
+        },
+        'loggers': {
+            'django': {
+                'handlers': ['console'],
+                'level': 'DEBUG',
+                'propagate': True,
+            },
+            'transaction_hooks.backends.mysql': {
+                'handlers': ['null'],
+                'level': 'DEBUG',
+                'propagate': False,
+            },
+        },
+    }
