@@ -16,6 +16,7 @@ from r2d2.accounts.forms import AuthenticationForm
 
 class LogoutView(RedirectView):
     url = reverse_lazy(settings.LOGOUT_REDIRECT_URLNAME)
+    permanent = True
 
     def get(self, request, *args, **kwargs):
         auth_logout(request)
@@ -37,7 +38,11 @@ class AccountAuthView(TemplateView):
 
     def get_context_data(self, *args, **kwargs):
         context = super(AccountAuthView, self).get_context_data(*args, **kwargs)
-        redirect_to = self.request.REQUEST.get(self.redirect_field_name, '')
+        redirect_to = self.request.GET.get(self.redirect_field_name, '')
+
+        if not redirect_to:
+            redirect_to = self.request.POST.get(self.redirect_field_name, '')
+
         context[self.redirect_field_name] = redirect_to
         context['form'] = AuthenticationForm(request=self.request, prefix=self.login_prefix)
         return context

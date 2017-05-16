@@ -406,7 +406,7 @@ class InsightDispatcher(BaseGenerator):
 
             # Fetch appropriate txns data
             if insight_model.compares_sources:
-                if all_txns_df is None:            
+                if all_txns_df is None:
                     all_txns_df = curr.convert_common_transactions_df(CTDF.find(user_id=account.user_id),
                                                                       'USD', False)
 
@@ -1209,9 +1209,8 @@ class TopProductsInsight(InsightModel):
         start_date = kwargs['start_date']
         end_date = kwargs['end_date']
 
+        channels = channels_from_common_transactions_df(txns)
         txnsDF = topProducts(txns, start_date, end_date)
-
-        channels = channels_from_common_transactions_df(txnsDF)
 
         if txnsDF is None or txnsDF.shape[0] == 0:
             return None

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """ shopify models """
 import shopify
+from pyactiveresource.connection import ClientError, ServerError
 
 from constance import config
 from decimal import Decimal
@@ -12,6 +13,7 @@ from r2d2.common_layer.signals import object_imported
 from r2d2.data_importer.api import DataImporter
 from r2d2.data_importer.models import AbstractDataProvider
 from r2d2.data_importer.models import AbstractErrorLog
+from r2d2.data_importer.models import RetriableError, RateLimitError
 from r2d2.utils.documents import StorageDynamicDocument
 
 
@@ -47,6 +49,11 @@ class ShopifyStore(AbstractDataProvider):
     @classmethod
     def get_error_log_class(cls):
         return ShopifyErrorLog
+
+    @classmethod
+    def get_fetch_data_task(cls):
+        from r2d2.shopify_api.tasks import fetch_data
+        return fetch_data
 
     @classmethod
     def get_oauth_url_serializer(cls):
@@ -122,7 +129,17 @@ class ShopifyStore(AbstractDataProvider):
 
         max_id = 0
         max_updated_at = ''
-        orders = shopify.Order.find(**kwargs)
+
+        try:
+            orders = shopify.Order.find(**kwargs)
+        except ServerError as se:
+            raise RetriableError(se)
+        except ClientError as ce:
+            if ce.code == 429:
+                raise RateLimitError(ce)
+            else:
+                raise ce
+
         for order in orders:
             # if objects with given ID already exists - we delete it and create a new one (it was updated, so we want
             # just to replace it)
@@ -187,6 +204,8 @@ class ShopifyErrorLog(AbstractErrorLog):
             return "The request did not specify the length of the content, which is required by the requested resource."
         elif '422' in error or 'Unprocessable Entity' in error:
             return "The request was well-formed but there was some semantic errors."
+        elif '429' in error or 'Too Many Requests' in error:
+            return "Exceeded Shopify's API call limit.  See https://help.shopify.com/api/getting-started/api-call-limit"
         elif '500' in error or '501' in error or '502' in error or 'Server Error' in error:
             return "Shopify Server Errors."
         elif '503' in error or 'Service Unavailable' in error:

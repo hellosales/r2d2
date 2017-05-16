@@ -12,10 +12,10 @@ EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_HOST_PASSWORD = "adoipovyuHerdUttAbIb11"
 EMAIL_HOST_USER = 'rtwodtwo'
 EMAIL_PORT = 587
-DEFAULT_FROM_EMAIL = '"Arabella No-reply" <no-reply@ydtech.co>'
+DEFAULT_FROM_EMAIL = '"Hello Sales" <no-reply@hello-sales.com>'
 
 ADMINS = (
-    ('Team', 'team@ydtech.co'),
+    ('Team', 'systemalerts@hello-sales.com'),
 )
 MANAGERS = ADMINS
 
@@ -190,7 +190,7 @@ INSTALLED_APPS = (
     'raven.contrib.django.raven_compat',
     'django_jenkins',
     'ydcommon',
-    'djcelery',
+    'celery',
     'djcelery_email',
     'rest_framework_swagger',
     'rest_framework',
@@ -198,7 +198,7 @@ INSTALLED_APPS = (
     'templateaddons',
     'corsheaders',
     'sorl.thumbnail',
-    'django_extensions'
+    'django_extensions',
 ) + PROJECT_APPS
 
 
@@ -291,7 +291,6 @@ AUTH_USER_MODEL = "accounts.Account"
 MIN_PASSWORD_LENGTH = 8
 
 ALLOWED_HOSTS = [
-    '.arabel.la',
     '.hello-sales.com',
 ]
 
@@ -350,7 +349,6 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'r2d2.accounts.authentication.TokenAuthentication',
-        # 'r2d2.accounts.authentication.SessionAuthentication',
     ),
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
     'TEST_REQUEST_RENDERER_CLASSES': (
@@ -363,17 +361,20 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 20,
     'TEST_REQUEST_DEFAULT_FORMAT': 'json'
 }
-BROKER_URL = ""
-CELERY_ALWAYS_EAGER = False
-CELERYD_POOL_RESTARTS = True
-CELERY_IGNORE_RESULT = True
-CELERY_RESULT_BACKEND = 'amqp'
-CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
+
+# Celery settings
+CELERY_BROKER_URL = ""
+CELERY_TASK_ALWAYS_EAGER = True  # whether celery should queue tasks or execute them immediately (for testing)
+CELERY_WORKER_POOL_RESTARTS = True
+CELERY_TASK_IGNORE_RESULT = True
+CELERY_RESULT_BACKEND = None  # or 'rpc://'
+CELERY_TASK_EAGER_PROPAGATES = True
+CELERY_TASK_CREATE_MISSING_QUEUES = True  # IMPORTANT! unless we manually create our own queues.
+CELERY_TASK_DEFAULT_QUEUE = 'default'
+CELERY_TASK_DEFAULT_EXCHANGE = 'default'
+CELERY_TASK_DEFAULT_EXCHANGE_TYPE = 'direct'  # Can do smart higher/lower level queuing with different types
 
 EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
-
-import djcelery
-djcelery.setup_loader()
 
 GOOGLE_TAG_MANAGER = ''
 
@@ -383,12 +384,26 @@ AWS_STORAGE_BUCKET_NAME = 'r2d2-dev-arabella'
 AWS_QUERYSTRING_AUTH = False
 DEFAULT_FILE_STORAGE = 'r2d2.utils.storage.S3BotoStorageFixed'
 
-SHOPIFY_API_KEY = '9701bcb247e85adcb062a0b210d5f1cb'
-SHOPIFY_API_SECRET = 'f8070f057e7bcc15a64a881d07d5b3f8'
-#SHOPIFY_SCOPES = ['read_content', 'read_themes', 'read_products', 'read_customers', 'read_orders',
+# Max # of times the importer will retry a channel API call before giving up for that call
+MAX_DATA_IMPORTER_RETRIES = 10
+
+# Min retry time for first rate limited retry, in seconds
+MIN_RATE_LIMIT_RETRY_TIME = 60*60
+
+# Min time before rate limit monitor will check to reset the rate limit
+#RATE_LIMIT_QUEUE_CHECK_COUNTDOWN = 2 * MIN_RATE_LIMIT_RETRY_TIME
+RATE_LIMIT_QUEUE_CHECK_COUNTDOWN = 20
+
+# Global remote API rate limit, in case our code begins to rate limit error without being caught (/sec)
+DEFAULT_CHANNEL_API_RATE_LIMIT = 2
+
+SHOPIFY_API_KEY = '25eaaa7692987d0c9fd9837f5716577f'
+SHOPIFY_API_SECRET = '508aa494fd0babdda52223c92eaf8a40'
+#  SHOPIFY_SCOPES = ['read_content', 'read_themes', 'read_products', 'read_customers', 'read_orders',
 #                  'read_script_tags', 'read_fulfillments', 'read_shipping']
 SHOPIFY_SCOPES = ['read_orders']
 SHOPIFY_CALLBACK_ENDPOINT = '/shopify/auth/callback'
+SHOPIFY_RATE_LIMIT = 2  # Number of calls allowed per second.  See https://help.shopify.com/api/getting-started/api-call-limit
 # other possible scopes:
 # write_themes, write_products, write_customers, write_orders, write_script_tags, write_fulfillments, write_shipping
 
@@ -399,6 +414,7 @@ ETSY_API_SECRET = "zpruv2b1cs"
 # ETSY_API_SECRET = 'hifylh7a8o'
 ETSY_SCOPE = 'transactions_r'
 ETSY_CALLBACK_ENDPOINT = '/etsy/auth/callback'
+ETSY_RATE_LIMIT = 10  # Number of calls allowed per second.  See https://www.etsy.com/developers/documentation/getting_started/api_basics#section_rate_limiting 
 # other possible scopes. Multiple scopes should be separated with spaces
 # 'listings_w', 'listings_d', 'transactions_w', 'profile_w', 'address_w', 'favorites_rw', 'shops_rw', 'cart_rw',
 # 'recommend_rw', 'feedback_r', 'treasury_r', 'treasury_w'
@@ -410,16 +426,24 @@ SQUAREUP_SCOPE = "PAYMENTS_READ"
 SQUAREUP_AUTHORIZATION_ENDPOINT = SQUAREUP_BASE_URL + 'oauth2/authorize?client_id=%(client_id)s&scope=%(scope)s'
 SQUAREUP_ACCESS_TOKEN_ENDPOINT = SQUAREUP_BASE_URL + 'oauth2/token'
 SQUAREUP_RENEW_TOKEN_ENDPOINT = SQUAREUP_BASE_URL + 'oauth2/clients/%s/access-token/renew'
+SQUAREUP_RATE_LIMIT = None  # No explicit rate limit
+SQUAREUP_HIGH_VOLUME_LEVEL = 1000  # mean # transactions/day
+SQUAREUP_HIGH_UPDATE_TIMEFRAME = 45  # Days to go back to look for transaction updates
+SQUAREUP_MEDIUM_VOLUME_LEVEL = 500  # mean # transactions/day
+SQUAREUP_MEDIUM_UPDATE_TIMEFRAME = 60  # Days to go back to look for transaction updates
+SQUAREUP_LOW_VOLUME_LEVEL = 250  # mean # transactions/day
+SQUAREUP_LOW_UPDATE_TIMEFRAME = 90  # Days to go back to look for transaction updates
+SQUAREUP_DEFAULT_UPDATE_TIMEFRAME = 180  # Days to go back to look for transaction updates
 
 DJANGO_MONEY_RATES = {
     'DEFAULT_BACKEND': 'djmoney_rates.backends.CurrencyLayerBackend',
     'CURRENCYLAYER_KEY': '601a320b8b2e70e3cba08579d74c2095'
 }
 
-# here you can put settigns that can be edited through panel
+# here you can put settings that can be edited through panel
 CONSTANCE_CONFIG = {
     'CLIENT_DOMAIN': ('localhost:3000', 'client domain'),
-    'ALERTS_RECEIVERS': ('team@ydtech.co', 'receivers of alerts - comma separated list')
+    'ALERTS_RECEIVERS': ('systemalerts@hello-sales.com', 'receivers of alerts - comma separated list')
 }
 CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 
@@ -435,7 +459,7 @@ TESTING = ('test' in sys.argv or 'jenkins' in sys.argv)
 TEST_CHARSET = 'utf8'
 PEP8_RCFILE = 'pep8.rc'
 
-FAKE_EMAIL_TO = 'michals@arabel.la'
+FAKE_EMAIL_TO = 'matt@hello-sales.com'
 
 if TESTING:
     from test_settings import *
