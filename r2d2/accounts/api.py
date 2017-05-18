@@ -97,7 +97,7 @@ class ResetPasswordAPI(CreateAPIView):
             }
             subject = loader.render_to_string('emails/resetPassword/subject.txt', c)
             subject = ''.join(subject.splitlines())
-            send_email('reset_password', user.email, subject, c, cms=False)
+            send_email('reset_password', user.email, subject, c)
 
 
 class ResetPasswordConfirmAPI(GenericAPIView):
@@ -149,7 +149,7 @@ class RegisterAPI(CreateAPIView):
                 'client_domain': config.CLIENT_DOMAIN,
                 'protocol': self.request.is_secure() and 'https' or 'http',
             }
-            send_email('account_created', user.email, _("Welcome to Hello Sales!"), c, cms=True)
+            send_email('account_created', user.email, _("Welcome to Hello Sales!"), c)
             return Response(AccountSerializer(user).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

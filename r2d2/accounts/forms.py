@@ -206,7 +206,7 @@ class PasswordResetForm(YDForm, DjangoPasswordResetForm, NonHTML5Fields):
             }
             subject = loader.render_to_string(subject_template_name, c)
             subject = ''.join(subject.splitlines())
-            send_email('reset_password', user.email, subject, c, cms=True)
+            send_email('reset_password', user.email, subject, c)
 
 
 class AdminUserChangeForm(forms.ModelForm):

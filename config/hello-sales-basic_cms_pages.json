@@ -1,0 +1,200 @@
+{
+  "basic_cms_page_export_version": 4, 
+  "pages": [
+    {
+      "author_email": "team@arabel.la", 
+      "children": [], 
+      "complete_slug": {
+        "en": "email-user"
+      }, 
+      "content": {
+        "fb_image": {
+          "en": ""
+        }, 
+        "fb_page_type": {
+          "en": ""
+        }, 
+        "meta_author": {
+          "en": ""
+        }, 
+        "meta_description": {
+          "en": ""
+        }, 
+        "meta_keywords": {
+          "en": ""
+        }, 
+        "meta_title": {
+          "en": ""
+        }
+      }, 
+      "content_language_updated_order": [
+        "en"
+      ], 
+      "creation_date": "2016-04-05T00:26:48.000000", 
+      "last_modification_date": "2016-06-15T09:22:34.000000", 
+      "publication_date": null, 
+      "publication_end_date": null, 
+      "redirect_to_complete_slug": null, 
+      "redirect_to_url": "", 
+      "sites": [
+        "example.com"
+      ], 
+      "status": "draft", 
+      "tags": [], 
+      "template": "pages/email-user.html", 
+      "title": {
+        "en": "Email user"
+      }
+    }, 
+    {
+      "author_email": "team@arabel.la", 
+      "children": [], 
+      "complete_slug": {
+        "en": "email-user-second"
+      }, 
+      "content": {
+        "fb_image": {
+          "en": ""
+        }, 
+        "fb_page_type": {
+          "en": ""
+        }, 
+        "meta_author": {
+          "en": ""
+        }, 
+        "meta_description": {
+          "en": ""
+        }, 
+        "meta_keywords": {
+          "en": ""
+        }, 
+        "meta_title": {
+          "en": ""
+        }
+      }, 
+      "content_language_updated_order": [
+        "en"
+      ], 
+      "creation_date": "2016-04-05T00:38:25.000000", 
+      "last_modification_date": "2016-06-15T09:22:34.000000", 
+      "publication_date": null, 
+      "publication_end_date": null, 
+      "redirect_to_complete_slug": null, 
+      "redirect_to_url": "", 
+      "sites": [
+        "example.com"
+      ], 
+      "status": "draft", 
+      "tags": [], 
+      "template": "pages/email-user-second.html", 
+      "title": {
+        "en": "email user second"
+      }
+    }, 
+    {
+      "author_email": "team@arabel.la", 
+      "children": [], 
+      "complete_slug": {
+        "en": "email-admin"
+      }, 
+      "content": {
+        "fb_image": {
+          "en": ""
+        }, 
+        "fb_page_type": {
+          "en": ""
+        }, 
+        "meta_author": {
+          "en": ""
+        }, 
+        "meta_description": {
+          "en": ""
+        }, 
+        "meta_keywords": {
+          "en": ""
+        }, 
+        "meta_title": {
+          "en": ""
+        }
+      }, 
+      "content_language_updated_order": [
+        "en"
+      ], 
+      "creation_date": "2016-04-05T00:38:51.000000", 
+      "last_modification_date": "2016-06-15T09:22:34.000000", 
+      "publication_date": null, 
+      "publication_end_date": null, 
+      "redirect_to_complete_slug": null, 
+      "redirect_to_url": "", 
+      "sites": [
+        "example.com"
+      ], 
+      "status": "draft", 
+      "tags": [], 
+      "template": "pages/email-admin.html", 
+      "title": {
+        "en": "email admin"
+      }
+    }, 
+    {
+      "author_email": "team@arabel.la", 
+      "children": [], 
+      "complete_slug": {
+        "en": "landing"
+      }, 
+      "content": {
+        "Body": {
+          "en": ""
+        }, 
+        "fb_image": {
+          "en": ""
+        }, 
+        "fb_page_type": {
+          "en": ""
+        }, 
+        "meta_author": {
+          "en": ""
+        }, 
+        "meta_description": {
+          "en": ""
+        }, 
+        "meta_keywords": {
+          "en": ""
+        }, 
+        "meta_title": {
+          "en": ""
+        }, 
+        "section_1_header": {
+          "en": "All your sales data in one place"
+        }, 
+        "section_1_text": {
+          "en": "Hello Sales brings your transactions from Shopify, Square, and Etsy together in one place, helping you compare sales activity to price better."
+        }, 
+        "section_2_header": {
+          "en": "Expert insights in your mailbox"
+        }, 
+        "section_2_text": {
+          "en": "We slice and dice your transactions data to find patterns, then send the results to your mailbox to help you sell more."
+        }
+      }, 
+      "content_language_updated_order": [
+        "en"
+      ], 
+      "creation_date": "2016-05-25T15:55:12.000000", 
+      "last_modification_date": "2016-08-05T01:30:59.000000", 
+      "publication_date": "2016-08-05T01:30:59.000000", 
+      "publication_end_date": null, 
+      "redirect_to_complete_slug": null, 
+      "redirect_to_url": "", 
+      "sites": [
+        "example.com"
+      ], 
+      "status": "published", 
+      "tags": [], 
+      "template": "pages/landing.html", 
+      "title": {
+        "en": "landing"
+      }
+    }
+  ]
+}
