@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import os.path
 
 DEBUG = False
@@ -365,7 +366,7 @@ REST_FRAMEWORK = {
 
 # Celery settings
 CELERY_BROKER_URL = ""
-CELERY_TASK_ALWAYS_EAGER = True  # whether celery should queue tasks or execute them immediately (for testing)
+CELERY_TASK_ALWAYS_EAGER = False  # whether celery should queue tasks or execute them immediately (for testing)
 CELERY_WORKER_POOL_RESTARTS = True
 CELERY_TASK_IGNORE_RESULT = True
 CELERY_RESULT_BACKEND = None  # or 'rpc://'
@@ -448,6 +449,7 @@ STRIPE_RESPONSE_TYPE = 'code'
 STRIPE_CALLBACK_ENDPOINT = '/stripe/auth/callback?'
 STRIPE_AUTHORIZATION_ENDPOINT = STRIPE_BASE_URL + 'oauth/authorize'
 STRIPE_ACCESS_TOKEN_ENDPOINT = STRIPE_BASE_URL + 'oauth/token'
+STRIPE_RATE_LIMIT = None  # No explicit rate limit
 
 DJANGO_MONEY_RATES = {
     'DEFAULT_BACKEND': 'djmoney_rates.backends.CurrencyLayerBackend',
