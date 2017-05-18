@@ -2,6 +2,7 @@
 """ etsy models """
 import pytz
 import requests
+import logging
 
 from datetime import datetime
 from datetime import timedelta
@@ -17,6 +18,8 @@ from r2d2.data_importer.api import DataImporter
 from r2d2.data_importer.models import AbstractDataProvider
 from r2d2.data_importer.models import AbstractErrorLog
 from r2d2.utils.documents import StorageDynamicDocument
+
+logger = logging.getLogger('django')
 
 
 class SquareupAccount(AbstractDataProvider):
@@ -108,6 +111,12 @@ class SquareupAccount(AbstractDataProvider):
             )
             if response.status_code == 200:
                 return self._save_token(response.json())
+            else:
+                err_msg = 'Error code %(code)s.\
+                  Could not refresh Square access token for SquareupAccount %(account_id)s:\n%(msg)s'
+                logger.error(err_msg % {"code": response.status_code,
+                                        "account_id": self.pk,
+                                        "msg": response.text})
 
     def _call_payments_api(self, location, **kwargs):
         response = requests.get(settings.SQUAREUP_BASE_URL + 'v1/%s/payments' % location, params=kwargs,
@@ -251,6 +260,9 @@ class SquareupAccount(AbstractDataProvider):
         """
         Takes the passed transaction distribution to determine the number of days in the past that transactions should
         be downloaded to keep delta transaction downloads to a minimum.
+        
+        Another idea here is to change the window based on type of business.  E.g. food/bev businesses probably don't
+        need to update transactions so much.
         """
         import pandas as pd
         df = pd.DataFrame(txns, columns=["date", "count"])
