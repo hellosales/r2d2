@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from data_stores import *
-import djcelery
 import os.path
 import requests
 import sys
@@ -210,7 +209,6 @@ INSTALLED_APPS = (
      'django.contrib.staticfiles',
      'django.contrib.humanize',
      'django_extensions',
-     'djcelery',
      'djcelery_email',
      'django_su',
      'django.contrib.admin',
@@ -400,16 +398,20 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 20,
     'TEST_REQUEST_DEFAULT_FORMAT': 'json'
 }
-BROKER_URL = ""
-CELERY_ALWAYS_EAGER = False
-CELERYD_POOL_RESTARTS = True
-CELERY_IGNORE_RESULT = True
-CELERY_RESULT_BACKEND = 'amqp'
-CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
+
+# Celery settings
+CELERY_BROKER_URL = ""
+CELERY_TASK_ALWAYS_EAGER = False  # whether celery should queue tasks or execute them immediately (for testing)
+CELERY_WORKER_POOL_RESTARTS = True
+CELERY_TASK_IGNORE_RESULT = True
+CELERY_RESULT_BACKEND = None  # or 'rpc://'
+CELERY_TASK_EAGER_PROPAGATES = True
+CELERY_TASK_CREATE_MISSING_QUEUES = True  # IMPORTANT! unless we manually create our own queues.
+CELERY_TASK_DEFAULT_QUEUE = 'default'
+CELERY_TASK_DEFAULT_EXCHANGE = 'default'
+CELERY_TASK_DEFAULT_EXCHANGE_TYPE = 'direct'  # Can do smart higher/lower level queuing with different types
 
 EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
-
-djcelery.setup_loader()
 
 GOOGLE_TAG_MANAGER = ''
 
@@ -420,15 +422,28 @@ AWS_STORAGE_BUCKET_NAME = 'files-dev.hello-sales.com'
 AWS_QUERYSTRING_AUTH = False
 DEFAULT_FILE_STORAGE = 'r2d2.utils.storage.S3BotoStorageFixed'
 
+# Max # of times the importer will retry a channel API call before giving up for that call
+MAX_DATA_IMPORTER_RETRIES = 10
+
+# Min retry time for first rate limited retry, in seconds
+MIN_RATE_LIMIT_RETRY_TIME = 60*60
+
+# Min time before rate limit monitor will check to reset the rate limit
+RATE_LIMIT_QUEUE_CHECK_COUNTDOWN = 2 * MIN_RATE_LIMIT_RETRY_TIME
+
+# Global remote API rate limit, in case our code begins to rate limit error without being caught (/sec)
+DEFAULT_CHANNEL_API_RATE_LIMIT = 2
+
 # Shopify
 SHOPIFY_API_KEY = '9701bcb247e85adcb062a0b210d5f1cb'
 SHOPIFY_API_SECRET = 'f8070f057e7bcc15a64a881d07d5b3f8'
 # SHOPIFY_SCOPES = ['read_content', 'read_themes', 'read_products', 'read_customers', 'read_orders',
 #                  'read_script_tags', 'read_fulfillments', 'read_shipping']
-SHOPIFY_SCOPES = ['read_orders']
-SHOPIFY_CALLBACK_ENDPOINT = '/shopify/auth/callback'
 # other possible scopes:
 # write_themes, write_products, write_customers, write_orders, write_script_tags, write_fulfillments, write_shipping
+SHOPIFY_SCOPES = ['read_orders']
+SHOPIFY_CALLBACK_ENDPOINT = '/shopify/auth/callback'
+SHOPIFY_RATE_LIMIT = 2  # Number of calls allowed per second.  See https://help.shopify.com/api/getting-started/api-call-limit
 
 # Etsy
 # matt's keys
@@ -437,10 +452,11 @@ ETSY_API_SECRET = "zpruv2b1cs"
 # ETSY_API_KEY = 'a4elzoo928uftgjb8vgk3ej0'
 # ETSY_API_SECRET = 'hifylh7a8o'
 ETSY_SCOPE = 'transactions_r'
-ETSY_CALLBACK_ENDPOINT = '/etsy/auth/callback'
 # other possible scopes. Multiple scopes should be separated with spaces
 # 'listings_w', 'listings_d', 'transactions_w', 'profile_w', 'address_w', 'favorites_rw', 'shops_rw', 'cart_rw',
 # 'recommend_rw', 'feedback_r', 'treasury_r', 'treasury_w'
+ETSY_CALLBACK_ENDPOINT = '/etsy/auth/callback'
+ETSY_RATE_LIMIT = 10  # Number of calls allowed per second.  See https://www.etsy.com/developers/documentation/getting_started/api_basics#section_rate_limiting 
 
 # Square
 SQUAREUP_API_KEY = 'fQa48ZcUHUUNZR542VGfxg'
@@ -450,6 +466,14 @@ SQUAREUP_SCOPE = "PAYMENTS_READ"
 SQUAREUP_AUTHORIZATION_ENDPOINT = SQUAREUP_BASE_URL + 'oauth2/authorize?client_id=%(client_id)s&scope=%(scope)s'
 SQUAREUP_ACCESS_TOKEN_ENDPOINT = SQUAREUP_BASE_URL + 'oauth2/token'
 SQUAREUP_RENEW_TOKEN_ENDPOINT = SQUAREUP_BASE_URL + 'oauth2/clients/%s/access-token/renew'
+SQUAREUP_RATE_LIMIT = None  # No explicit rate limit
+SQUAREUP_HIGH_VOLUME_LEVEL = 1000  # mean # transactions/day
+SQUAREUP_HIGH_UPDATE_TIMEFRAME = 45  # Days to go back to look for transaction updates
+SQUAREUP_MEDIUM_VOLUME_LEVEL = 500  # mean # transactions/day
+SQUAREUP_MEDIUM_UPDATE_TIMEFRAME = 60  # Days to go back to look for transaction updates
+SQUAREUP_LOW_VOLUME_LEVEL = 250  # mean # transactions/day
+SQUAREUP_LOW_UPDATE_TIMEFRAME = 90  # Days to go back to look for transaction updates
+SQUAREUP_DEFAULT_UPDATE_TIMEFRAME = 180  # Days to go back to look for transaction updates
 
 # Stripe
 STRIPE_API_KEY = 'sk_test_NHzDG8LysdhmJq3o6cGNyHSG'
@@ -460,6 +484,7 @@ STRIPE_RESPONSE_TYPE = 'code'
 STRIPE_CALLBACK_ENDPOINT = '/stripe/auth/callback?'
 STRIPE_AUTHORIZATION_ENDPOINT = STRIPE_BASE_URL + 'oauth/authorize'
 STRIPE_ACCESS_TOKEN_ENDPOINT = STRIPE_BASE_URL + 'oauth/token'
+STRIPE_RATE_LIMIT = None  # No explicit rate limit
 
 DJANGO_MONEY_RATES = {
     'DEFAULT_BACKEND': 'djmoney_rates.backends.CurrencyLayerBackend',

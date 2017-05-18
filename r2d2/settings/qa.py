@@ -19,8 +19,8 @@ RAVEN_CONFIG = {
 
 ENV_PREFIX = 'r2d2-qa'
 
-CELERY_ALWAYS_EAGER = False
-BROKER_URL = 'librabbitmq://r2d2-api-qa:r2d2-api-qa@localhost:5672/r2d2-api-qa'
+CELERY_TASK_ALWAYS_EAGER = False  # whether celery should queue tasks or execute them immediately (for testing)
+CELERY_BROKER_URL = 'librabbitmq://r2d2-api-qa:r2d2-api-qa@localhost:5672/r2d2-api-qa'
 
 SQUAREUP_API_KEY = 'sq0idp-XK_5K4LY55FBbUQcpqLtRw'
 SQUAREUP_API_SECRET = 'sq0csp-xSFx5gcCvqavEJsJx2m0E1vh0rdupk6MhcK9_8a2Smw'

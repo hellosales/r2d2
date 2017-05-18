@@ -9,8 +9,8 @@ def update_settings_for_tests(settings):
     if getattr(settings, '_settings_updated', None):
         return
     settings['_settings_updated'] = True
-    settings['CELERY_ALWAYS_EAGER'] = True
-    settings['BROKER_BACKEND'] = 'memory'
+    settings['CELERY_TASK_ALWAYS_EAGER'] = True
+    settings['CELERY_BROKER_TRANSPORT'] = 'memory'
 
     settings['PASSWORD_HASHERS'] = (
         'django.contrib.auth.hashers.MD5PasswordHasher',

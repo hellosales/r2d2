@@ -13,8 +13,8 @@ MEDIA_URL = 'https://%s.s3.amazonaws.com/' % AWS_STORAGE_BUCKET_NAME
 
 SECRET_KEY = 'prodvay&e&9hdwo_bniq-$z0j64q4w27-fm58nu9!m+i$nc0e!*!o0'
 
-CELERY_ALWAYS_EAGER = False
-BROKER_URL = 'librabbitmq://api-hello-sales:iydocuwjp9xt@10.0.63.202:5672/api-hello-sales'
+CELERY_TASK_ALWAYS_EAGER = False  # whether celery should queue tasks or execute them immediately (for testing)
+CELERY_BROKER_URL = 'librabbitmq://api-hello-sales:iydocuwjp9xt@10.0.63.202:5672/api-hello-sales'
 
 SHOPIFY_API_KEY = '74ce0b5cb25ebb2fde10ba55fcf24cbc'
 SHOPIFY_API_SECRET = '9b6bd9a8ac0b7a7803fa735de0196989'
