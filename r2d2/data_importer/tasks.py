@@ -1,5 +1,8 @@
 from __future__ import absolute_import
 
+import logging
+import traceback
+
 from django.conf import settings
 from celery import Task  # http://docs.celeryproject.org/en/latest/userguide/application.html#abstract-tasks
 from celery.utils.log import get_task_logger
@@ -8,9 +11,8 @@ from r2d2.celery import app
 from r2d2.data_importer.models import RetriableError, RateLimitError
 from r2d2.utils.class_tools import class_for_name
 
-import logging
-logger = logging.getLogger('django')
-#logger = get_task_logger(__name__)
+#logger = logging.getLogger('django')
+logger = get_task_logger(__name__)
 
 
 class BaseImporterTask(Task):
@@ -103,9 +105,7 @@ class BaseImporterTask(Task):
                        exc=re)
         except Exception, e:
             # Not an exception we can retry.  Log error and fail the fetch
-            import traceback
-            logger.debug(e)
-            logger.debug(traceback.format_exc())
+            logger.error(traceback.format_exc())
             obj.log_error(unicode(e))
 
     def retry_backoff(self, attempts):

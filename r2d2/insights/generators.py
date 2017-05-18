@@ -1,21 +1,26 @@
 # -*- coding: utf-8 -*-
 """ insights generators
     each generator must be connected with fetched_data signal in order to work """
+import logging
 from bson.code import Code
 from datetime import datetime, timedelta
 from functools import partial
 from collections import OrderedDict
 from decimal import Decimal
-from django.db import transaction
 import importlib
 import math
+
 import pandas as pd
 import numpy as np
+
+from django.db import transaction
 
 from r2d2.common_layer.models import CommonTransaction
 from r2d2.common_layer.models import CommonTransactionDataFrame as CTDF
 import r2d2.common_layer.models as clmodels
 import r2d2.common_layer.currency as curr
+
+logger = logging.getLogger('django')
 
 
 class BaseGenerator(object):
@@ -431,6 +436,10 @@ class InsightDispatcher(BaseGenerator):
             (insight, channels, products) = insight_model.execute(account.user_id,
                                                                   account.official_channel_name,
                                                                   txns, period, **im_params) or (None, None, None)
+            
+            logger.info("InsightModel %(insight_model)s resulted in Insight %(insight)s" % 
+                        {'insight_model': insight_model,
+                         'insight': insight})
 
         if insight is not None:
             insight.is_initial = is_initial

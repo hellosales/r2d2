@@ -4,6 +4,7 @@
     - runs data importing on registered models """
 from datetime import timedelta
 from random import randint
+import logging, traceback
 
 from django.utils.timezone import now
 from rest_framework import status
@@ -14,9 +15,11 @@ from r2d2.accounts.models import Account
 from r2d2.accounts.permissions import IsSuperUser
 from r2d2.data_importer.models import SourceSuggestion
 from r2d2.data_importer.serializers import DataImporterAccountSerializer, SourceSuggestionSerializer
-from r2d2.data_importer.tasks import fetch_data_task, monitor_rate_limit
+from r2d2.data_importer.tasks import monitor_rate_limit
 from r2d2.utils.rest_api_helpers import UserFilteredMixin
 from r2d2.utils.class_tools import name_for_class
+
+logger = logging.getLogger('django')
 
 
 class DataImporter(object):
@@ -181,8 +184,8 @@ class DataImporterRunFetchingData(GenericAPIView):
     def get(self, request):
         try:
             DataImporter.run_fetching_data()
-        except:
-            # TODO:  should I return 500 or raise?
+        except Exception as e:
+            logger.error(traceback.format_exc())
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response(status=status.HTTP_200_OK)
@@ -202,7 +205,7 @@ class DataImporterMonitorRateLimits(GenericAPIView):
         try:
             DataImporter.monitor_queue_rate_limits(worker, queue, task)
         except:
-            # TODO:  should I return 500 or raise?
+            logger.error(traceback.format_exc())
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response(status=status.HTTP_200_OK)
