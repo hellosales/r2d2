@@ -13,8 +13,8 @@ from django.utils import timezone
 
 from r2d2.common_layer.signals import object_imported
 from r2d2.data_importer.api import DataImporter
-from r2d2.data_importer.models import AbstractDataProvider
-from r2d2.data_importer.models import AbstractErrorLog
+from r2d2.data_importer.models import AbstractDataProvider, AbstractErrorLog
+from r2d2.data_importer.models import RetriableError, RateLimitError
 from r2d2.utils.documents import StorageDynamicDocument
 
 
@@ -53,6 +53,11 @@ class StripeAccount(AbstractDataProvider):
     def get_oauth_url_serializer(cls):
         from r2d2.stripe_api.serializers import StripeOauthUrlSerializer
         return StripeOauthUrlSerializer
+    
+    @classmethod
+    def get_fetch_data_task(cls):
+        from r2d2.stripe_api.tasks import fetch_data
+        return fetch_data
 
     @classmethod
     def authorization_url(cls):
@@ -184,7 +189,15 @@ class StripeAccount(AbstractDataProvider):
         Only broken out from _import_orders to allow for unit testing
         """
         stripe.api_key = api_key
-        stripe_response = stripe.Order.list(limit=limit, starting_after=starting_after)
+        
+        try:
+            stripe_response = stripe.Order.list(limit=limit, starting_after=starting_after)
+        except stripe.error.RateLimitError as e:
+            raise RateLimitError(unicode(e))
+        except stripe.error.APIConnectionError as e:
+            raise RetriableError(unicode(e))
+        except stripe.error.APIError as e:
+            raise RetriableError(unicode(e))
 
         return stripe_response
 

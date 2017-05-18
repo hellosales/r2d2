@@ -1,4 +1,5 @@
 import mock
+import stripe
 
 from datetime import datetime
 from decimal import Decimal
@@ -6,8 +7,8 @@ from decimal import Decimal
 from django.utils import timezone
 
 from r2d2.common_layer.models import CommonTransaction
-from r2d2.stripe_api.models import ImportedStripeOrder
-from r2d2.stripe_api.models import StripeAccount
+from r2d2.data_importer.models import RateLimitError, RetriableError
+from r2d2.stripe_api.models import ImportedStripeOrder, StripeAccount
 from r2d2.stripe_api.tests.sample_data import STRIPE_TEST_ORDER_RESPONSE
 from r2d2.utils.test_utils import APIBaseTestCase
 
@@ -66,3 +67,26 @@ class TestImport(APIBaseTestCase):
             self.assertEqual(CommonTransaction.objects.count(), 3)
             common_transaction = CommonTransaction.objects.all()[0]
             self.assertEqual(common_transaction.source, "Stripe")
+            
+    def test_errors(self):
+        """ Test special error handling for stripe """
+
+        # Test 429 and 50x handling
+        with mock.patch('stripe.Order.list') as mocked_orders:
+            mocked_orders.side_effect = stripe.error.RateLimitError(message='testing')
+            self.account.fetch_status = StripeAccount.FETCH_SCHEDULED
+        
+            with self.assertRaises(RateLimitError) as re:
+                self.account.fetch_data()
+        
+            mocked_orders.side_effect = stripe.error.APIConnectionError(message='testing')
+            self.account.fetch_status = StripeAccount.FETCH_SCHEDULED
+
+            with self.assertRaises(RetriableError) as re:
+                self.account.fetch_data()
+
+            mocked_orders.side_effect = stripe.error.APIError(message='testing')
+            self.account.fetch_status = StripeAccount.FETCH_SCHEDULED
+
+            with self.assertRaises(RetriableError) as re:
+                self.account.fetch_data()
