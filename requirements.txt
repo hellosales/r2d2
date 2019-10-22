@@ -47,7 +47,7 @@ django-rest-swagger==0.3.5
 ShopifyAPI==2.1.5
 oauth2==1.9.0.post1
 git+https://github.com/hellosales/etsy-python.git#egg=etsy
-requests==2.9.1
+requests==2.20.0
 requests_mock==0.7.0
 git+https://github.com/hellosales/django-money-rates#egg=django-money-rates
 py-moneyed==0.6.0
